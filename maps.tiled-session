@@ -1,0 +1,78 @@
+{
+    "activeFile": "tiled/map.tmx",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        "collision.tsx": {
+            "scaleInDock": 16,
+            "scaleInEditor": 1
+        },
+        "map.tmx": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 48,
+                "y": 145.25
+            }
+        },
+        "map.tmx#collision": {
+            "scaleInDock": 1
+        },
+        "map.tmx#tileset (day) 1": {
+            "scaleInDock": 8
+        },
+        "overworldDay.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 3,
+            "scaleInEditor": 8
+        },
+        "test.tmx": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 208.5,
+                "y": 142.75
+            }
+        },
+        "tiled/collision.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tiled/map.tmx": {
+            "scale": 2.0715277777777774,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 159.78545088836745,
+                "y": 223.2651692926584
+            }
+        },
+        "tiled/map.tmx#collision": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tiled/map.tmx#tileset (day) 1": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset (day) 1.tsx": {
+            "scaleInDock": 5.5,
+            "scaleInEditor": 1
+        }
+    },
+    "openFiles": [
+        "tiled/map.tmx"
+    ],
+    "recentFiles": [
+        "tiled/map.tmx",
+        "tiled/collision.tsx",
+        "collision.tsx",
+        "tileset (day) 1.tsx",
+        "map.tmx",
+        "test.tmx",
+        "overworldDay.tsx"
+    ]
+}
