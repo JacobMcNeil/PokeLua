@@ -209,7 +209,14 @@ local function loadMap(path, spawnTX, spawnTY, spawnDir)
     player.targetX = player.x
     player.targetY = player.y
     player.moving = false
-    if spawnDir then player.dir = spawnDir end
+    if spawnDir then
+        player.dir = spawnDir
+        local frames = animFrames[player.dir]
+        if frames then
+            player.animIndex = (#frames == 3) and frames[2] or frames[1]
+            if #frames == 3 then player.stepLeft = true end
+        end
+    end
 
     return tmx
 end
@@ -222,7 +229,7 @@ end
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    local tmx = loadMap("tiled/inside.tmx", 8, 24, "down")
+    local tmx = loadMap("tiled/inside.tmx", 8, 24, "right")
 
     -- character sheet (single row, 1px border + spacing)
     charSheet = love.graphics.newImage("tiled/sprites/Characters (Overworld).png")
