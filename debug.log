@@ -1,0 +1,799 @@
+[2026-01-12 14:14:23] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:14:23] battle.start: loadFromJSON ok=	true	tbl_type=	nil	len=	nil
+[2026-01-12 14:15:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:15:51] battle.start: loadFromJSON ok=	true	tbl_type=	nil	tbl_or_err=	nil
+[2026-01-12 14:17:49] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:17:49] battle.start: loadFromJSON ok=	true	tbl_type=	nil	reported=	pokemon.lua:145: pokemon.lua:10: JSON decode error at 31: expected string for object key
+[2026-01-12 14:20:35] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:20:35] battle.start: loadFromJSON ok=	true	tbl_type=	nil	reported=	pokemon.lua:145: pokemon.lua:10: JSON decode error at 31: expected string for object key
+[2026-01-12 14:23:28] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:23:28] battle.start: loadFromJSON ok=	true	tbl_type=	nil	reported=	pokemon.lua:145: pokemon.lua:10: JSON decode error at 31: expected string for object key
+[2026-01-12 14:26:29] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:26:29] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:26:34] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:26:34] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:26:36] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:26:36] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:26:37] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:26:37] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:26:39] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:26:39] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:21] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:21] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:23] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:23] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:24] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:24] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:26] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:26] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:30:27] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:30:27] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:33:55] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:33:55] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:34:03] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:34:03] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:35:42] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:35:42] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:36:00] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:36:00] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:36:01] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:36:01] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:36:02] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:36:02] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:38:11] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:38:11] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:38:19] battle: selected move=	Scratch
+[2026-01-12 14:38:23] battle: selected move=	Scratch
+[2026-01-12 14:38:25] battle: selected move=	Scratch
+[2026-01-12 14:38:26] battle: selected move=	Scratch
+[2026-01-12 14:38:27] battle: selected move=	Scratch
+[2026-01-12 14:41:20] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:41:20] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:41:26] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:41:26] battle: Squirtle took 20 dmg, hp=	24
+[2026-01-12 14:41:26] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:41:26] battle: Charmander took 20 dmg, hp=	19
+[2026-01-12 14:41:32] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:41:32] battle: Squirtle took 20 dmg, hp=	4
+[2026-01-12 14:41:32] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:41:32] battle: Charmander took 20 dmg, hp=	0
+[2026-01-12 14:41:32] battle: Charmander fainted
+[2026-01-12 14:41:42] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:41:42] battle: Squirtle took 20 dmg, hp=	0
+[2026-01-12 14:41:42] battle: Squirtle fainted
+[2026-01-12 14:44:21] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:44:21] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:44:27] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:44:27] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:44:40] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:44:40] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:44:40] battle: Charmander fainted
+[2026-01-12 14:44:59] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:44:59] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:45:03] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:45:03] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:45:07] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:45:07] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:45:21] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:45:21] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:45:29] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:45:29] battle: Squirtle fainted
+[2026-01-12 14:47:53] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:47:53] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:47:56] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:47:56] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:48:05] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:48:05] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:48:05] battle: Charmander fainted
+[2026-01-12 14:48:13] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:48:13] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:48:17] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:48:17] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:48:20] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:48:20] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:48:20] battle: Pikachu fainted
+[2026-01-12 14:48:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:48:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:48:29] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:48:29] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:48:31] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:48:31] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:48:32] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:48:32] battle: Squirtle fainted
+[2026-01-12 14:48:34] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:48:34] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:48:38] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:48:38] battle: 	Pikachu	 uses 	Quick Attack
+[2026-01-12 14:50:19] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:50:19] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:50:23] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:50:23] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:50:25] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:50:25] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:50:25] battle: Charmander fainted
+[2026-01-12 14:50:27] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:50:27] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:50:31] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:50:31] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:50:35] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:50:35] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:50:36] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:50:36] battle: Squirtle fainted
+[2026-01-12 14:50:39] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:50:39] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:50:42] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:50:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:53:49] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:53:49] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:54:06] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:54:06] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:54:08] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:54:08] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:54:08] battle: Charmander fainted
+[2026-01-12 14:54:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:54:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:54:13] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:54:13] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:54:16] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:54:16] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:54:16] battle: Pikachu fainted
+[2026-01-12 14:54:21] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:54:21] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:54:28] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:54:28] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:54:29] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:54:29] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:54:29] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:54:29] battle: Squirtle fainted
+[2026-01-12 14:54:30] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:54:30] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:54:40] battle: 	Pikachu	 uses 	Quick Attack
+[2026-01-12 14:54:40] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:54:45] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 14:54:45] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 14:54:45] battle: Pikachu fainted
+[2026-01-12 14:54:54] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:54:54] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:54:56] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:54:56] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:55:07] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:55:07] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:55:10] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 14:55:10] battle: Squirtle fainted
+[2026-01-12 14:57:57] battle.start: require ok=	true	module_type=	table
+[2026-01-12 14:57:57] battle.start: created manual pokemon list, len=	4
+[2026-01-12 14:58:00] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:58:00] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:58:01] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 14:58:01] battle: 	Squirtle	 uses 	Water Gun
+[2026-01-12 14:58:01] battle: Charmander fainted
+[2026-01-12 15:02:09] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:02:09] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:02:53] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:02:53] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:04:09] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:04:09] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:04:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:04:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:04:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:04:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:05:32] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:05:32] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:05:36] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:05:36] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:05:39] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:05:39] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:05:39] battle: Charmander fainted
+[2026-01-12 15:08:05] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:08:05] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:08:07] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:08:07] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:08:08] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:08:08] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:08:09] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:08:09] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:10:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:10:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:10:31] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:10:31] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:10:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:10:34] battle: Charmander fainted
+[2026-01-12 15:10:36] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:10:36] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:10:38] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:10:38] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:10:38] battle: Pikachu fainted
+[2026-01-12 15:10:41] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:10:41] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:10:43] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:10:43] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:10:43] battle: Pikachu fainted
+[2026-01-12 15:13:00] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:13:00] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:13:02] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:13:02] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:13:03] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:13:03] battle: Charmander fainted
+[2026-01-12 15:13:07] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:13:07] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:13:13] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:13:13] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:13:23] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:13:23] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:14:14] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:14:14] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:15:47] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:15:47] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:15:50] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:15:50] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:15:50] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:15:50] battle: Charmander fainted
+[2026-01-12 15:15:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:15:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:15:58] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:15:58] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:17:34] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:17:34] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:17:39] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:17:39] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:17:40] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:17:40] battle: Charmander fainted
+[2026-01-12 15:17:47] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:17:47] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:17:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:17:51] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:17:53] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:17:53] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:17:57] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:17:57] battle: Pikachu fainted
+[2026-01-12 15:18:02] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:18:02] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:20:06] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:20:07] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:20:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:20:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:20:28] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:20:28] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:20:30] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:20:30] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:20:30] battle: Pikachu fainted
+[2026-01-12 15:22:18] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:22:18] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:22:21] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:22:21] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:22:22] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:22:22] battle: Charmander fainted
+[2026-01-12 15:25:40] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:25:40] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:25:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:25:42] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:25:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:25:42] battle: Charmander fainted
+[2026-01-12 15:25:45] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:25:45] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:29:43] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:29:43] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:29:44] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:29:44] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:29:45] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:29:45] battle: Charmander fainted
+[2026-01-12 15:29:47] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:29:47] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:29:48] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:29:48] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:29:48] battle: Pikachu fainted
+[2026-01-12 15:29:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:29:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:31:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:31:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:31:26] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:31:26] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:31:27] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:31:27] battle: Charmander fainted
+[2026-01-12 15:31:28] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:31:28] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:31:30] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:31:30] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:31:30] battle: Pikachu fainted
+[2026-01-12 15:31:32] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:31:32] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:31:35] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:31:35] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:31:37] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:31:37] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:31:37] battle: Charmander fainted
+[2026-01-12 15:39:26] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:26] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:28] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:39:28] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:39:28] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:39:28] battle: Charmander fainted
+[2026-01-12 15:39:30] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:30] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:32] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:39:32] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:39:32] battle: Pikachu fainted
+[2026-01-12 15:39:35] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:39:35] battle: Charmander fainted
+[2026-01-12 15:39:37] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:37] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:38] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:39:38] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 15:39:40] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:39:40] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 15:39:40] battle: Charmander fainted
+[2026-01-12 15:39:46] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:46] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:47] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:39:47] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:39:47] battle: Pikachu fainted
+[2026-01-12 15:39:49] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:49] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:39:55] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:39:55] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:40:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:40:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:40:14] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:40:14] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:40:19] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:40:19] battle: Pikachu fainted
+[2026-01-12 15:40:22] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:40:22] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:40:25] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:40:25] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:40:25] battle: Pikachu fainted
+[2026-01-12 15:40:30] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:40:30] battle: Pikachu fainted
+[2026-01-12 15:41:48] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:41:48] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:41:49] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:41:49] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:41:50] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:41:50] battle: Charmander fainted
+[2026-01-12 15:41:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:41:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:41:53] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:41:53] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:41:53] battle: Pikachu fainted
+[2026-01-12 15:42:14] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:42:14] battle: Charmander fainted
+[2026-01-12 15:42:20] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:42:20] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:42:25] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:42:25] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:42:26] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:42:26] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:42:26] battle: Charmander fainted
+[2026-01-12 15:42:28] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:42:28] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:42:33] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:42:33] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:42:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:42:34] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 15:42:37] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:42:37] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 15:42:37] battle: Pikachu fainted
+[2026-01-12 15:42:52] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:42:52] battle: Bulbasaur fainted
+[2026-01-12 15:44:33] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:44:33] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:44:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:44:34] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:44:35] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:44:35] battle: Charmander fainted
+[2026-01-12 15:44:36] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:44:36] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:44:38] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:44:38] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:44:38] battle: Pikachu fainted
+[2026-01-12 15:44:58] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:44:58] battle: Charmander fainted
+[2026-01-12 15:45:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:45:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:45:16] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:45:16] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:45:21] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:21] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:45:26] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:26] battle: Pikachu fainted
+[2026-01-12 15:45:31] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:45:31] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:45:38] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:38] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:45:38] battle: Pikachu fainted
+[2026-01-12 15:45:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:42] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:45:42] battle: Pikachu fainted
+[2026-01-12 15:45:45] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:45:45] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:45:46] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:45:46] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:45:46] battle: Charmander fainted
+[2026-01-12 15:45:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:45:51] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:45:53] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:53] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:45:54] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:45:54] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:45:54] battle: Pikachu fainted
+[2026-01-12 15:53:22] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:53:22] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:53:25] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:53:25] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:53:26] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:53:26] battle: Charmander fainted
+[2026-01-12 15:53:28] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:53:28] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:53:29] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:53:29] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:53:29] battle: Pikachu fainted
+[2026-01-12 15:53:44] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:53:44] battle: Charmander fainted
+[2026-01-12 15:57:12] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:57:12] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:57:14] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:57:14] battle: 	Charmander	 uses 	Growl
+[2026-01-12 15:57:15] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:57:15] battle: Charmander fainted
+[2026-01-12 15:57:16] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:57:16] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:57:17] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:57:17] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:57:17] battle: Pikachu fainted
+[2026-01-12 15:57:50] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:57:50] battle: Charmander fainted
+[2026-01-12 15:58:05] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:05] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:07] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:07] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 15:58:07] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:07] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:58:07] battle: Pikachu fainted
+[2026-01-12 15:58:10] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:58:10] battle: Squirtle fainted
+[2026-01-12 15:58:15] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:15] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:18] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:18] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:21] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:21] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:22] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:22] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:58:24] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:24] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 15:58:24] battle: Pikachu fainted
+[2026-01-12 15:58:26] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:58:26] battle: Squirtle fainted
+[2026-01-12 15:58:36] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:36] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:44] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:44] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:58:47] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:47] battle: Pikachu fainted
+[2026-01-12 15:58:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:58:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:58:54] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:58:54] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:58:54] battle: Pikachu fainted
+[2026-01-12 15:58:57] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:58:57] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:58:57] battle: Pikachu fainted
+[2026-01-12 15:59:06] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:59:06] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:59:08] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:08] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:12] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:12] battle: Pikachu fainted
+[2026-01-12 15:59:16] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:59:16] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:59:18] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:18] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:59:18] battle: Pikachu fainted
+[2026-01-12 15:59:21] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 15:59:21] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:59:21] battle: Pikachu fainted
+[2026-01-12 15:59:23] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:59:23] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:59:24] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:24] battle: Charmander fainted
+[2026-01-12 15:59:26] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:59:26] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:59:30] battle.start: require ok=	true	module_type=	table
+[2026-01-12 15:59:30] battle.start: created manual pokemon list, len=	4
+[2026-01-12 15:59:32] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:32] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 15:59:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 15:59:34] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 15:59:34] battle: Pikachu fainted
+[2026-01-12 15:59:37] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 15:59:37] battle: Bulbasaur fainted
+[2026-01-12 16:03:00] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:03:00] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:03:20] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:03:20] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:03:27] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:03:27] battle: Charmander fainted
+[2026-01-12 16:03:32] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:03:32] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:03:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:03:34] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:03:34] battle: Pikachu fainted
+[2026-01-12 16:03:40] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:03:40] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:03:41] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:03:41] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:03:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:03:42] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 16:03:42] battle: Pikachu fainted
+[2026-01-12 16:03:45] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:03:45] battle: Squirtle fainted
+[2026-01-12 16:04:08] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:04:08] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:04:30] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:04:30] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:06:12] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:06:12] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:06:24] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:06:24] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:06:24] battle: Charmander fainted
+[2026-01-12 16:06:34] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:06:34] battle: Charmander fainted
+[2026-01-12 16:06:39] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:06:39] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:06:45] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:06:45] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:06:46] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:06:46] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 16:06:46] battle: Pikachu fainted
+[2026-01-12 16:07:08] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:07:08] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:07:09] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:07:09] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:07:09] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:07:09] battle: Charmander fainted
+[2026-01-12 16:07:12] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:07:12] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:07:14] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:07:14] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:07:14] battle: Pikachu fainted
+[2026-01-12 16:07:32] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:07:32] battle: Charmander fainted
+[2026-01-12 16:07:59] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:07:59] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:08:00] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:08:00] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:08:01] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:08:01] battle: Charmander fainted
+[2026-01-12 16:08:02] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:08:02] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:08:03] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:08:03] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:08:03] battle: Pikachu fainted
+[2026-01-12 16:08:08] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:08:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:08:08] battle: Charmander fainted
+[2026-01-12 16:08:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:08:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:08:11] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 16:08:11] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:08:13] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 16:08:13] battle: Squirtle fainted
+[2026-01-12 16:14:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:14:51] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:14:56] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:14:56] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:14:58] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:14:58] battle: Charmander fainted
+[2026-01-12 16:15:03] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:15:03] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:15:05] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:15:05] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:15:05] battle: Pikachu fainted
+[2026-01-12 16:15:08] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:15:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:15:08] battle: Charmander fainted
+[2026-01-12 16:15:10] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:15:10] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:15:16] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 16:15:16] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:15:50] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 16:15:50] battle: Squirtle fainted
+[2026-01-12 16:15:57] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:15:57] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:18:04] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:18:04] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:18:08] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:18:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:18:10] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:18:10] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 16:18:10] battle: Pikachu fainted
+[2026-01-12 16:18:22] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:18:22] battle: Squirtle fainted
+[2026-01-12 16:18:27] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:18:27] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:18:30] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:18:30] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:18:31] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:18:31] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:18:31] battle: Charmander fainted
+[2026-01-12 16:18:49] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:18:49] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:18:55] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:18:55] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:18:57] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:18:57] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:19:00] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:19:00] battle: Charmander fainted
+[2026-01-12 16:20:43] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:20:43] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:20:46] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:20:46] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:20:47] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:20:47] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 16:20:47] battle: Pikachu fainted
+[2026-01-12 16:20:51] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:20:51] battle: Squirtle fainted
+[2026-01-12 16:20:53] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:20:53] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:22:31] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:22:31] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:22:36] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:22:36] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:22:37] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:22:37] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 16:22:37] battle: Pikachu fainted
+[2026-01-12 16:22:45] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:22:45] battle: Squirtle fainted
+[2026-01-12 16:22:47] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:22:47] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:22:52] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:22:52] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:23:13] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:23:13] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:23:16] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:23:16] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:23:17] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:23:17] battle: Charmander fainted
+[2026-01-12 16:23:21] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:23:21] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:23:25] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:23:25] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 16:23:25] battle: Pikachu fainted
+[2026-01-12 16:23:27] battle: 	Bulbasaur	 uses 	Tackle
+[2026-01-12 16:23:27] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:23:27] battle: 	Bulbasaur	 uses 	Growl
+[2026-01-12 16:23:27] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:23:27] battle: Bulbasaur fainted
+[2026-01-12 16:31:20] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:20] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:25] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:25] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:34] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:34] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:36] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:36] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:40] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:40] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:42] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:42] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:46] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:46] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:31:52] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:31:52] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:32:03] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:32:03] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:32:14] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:32:14] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:33:07] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:33:07] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:33:12] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:33:12] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:33:20] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:33:20] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:34:39] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:34:39] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:38:09] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:38:09] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:38:15] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:38:15] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:45:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:45:51] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:46:00] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:46:00] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:46:01] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:46:01] battle: Charmander fainted
+[2026-01-12 16:46:04] battle.start: require ok=	true	module_type=	table
+[2026-01-12 16:46:04] battle.start: created manual pokemon list, len=	4
+[2026-01-12 16:46:15] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:46:15] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:46:16] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 16:46:16] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 16:46:16] battle: Charmander fainted
+[2026-01-12 16:56:42] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:56:42] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:56:44] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:56:44] battle: Charmander fainted
+[2026-01-12 16:56:44] battle: leveled up 	Pikachu	 to 	6
+[2026-01-12 16:58:04] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:04] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:58:05] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:05] battle: Charmander fainted
+[2026-01-12 16:58:05] battle: leveled up 	Pikachu	 to 	6
+[2026-01-12 16:58:15] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:15] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:18] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:18] battle: Pikachu fainted
+[2026-01-12 16:58:18] battle: leveled up 	Pikachu	 to 	7
+[2026-01-12 16:58:35] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:58:35] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:58:51] battle: 	Pikachu	 uses 	Growl
+[2026-01-12 16:58:51] battle: Charmander fainted
+[2026-01-12 16:58:51] battle: leveled up 	Pikachu	 to 	8
+[2026-01-12 16:59:51] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:59:51] battle: 	Charmander	 uses 	Growl
+[2026-01-12 16:59:51] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:59:51] battle: Charmander fainted
+[2026-01-12 16:59:51] battle: leveled up 	Pikachu	 to 	6
+[2026-01-12 16:59:59] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:59:59] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 16:59:59] battle: Pikachu fainted
+[2026-01-12 17:00:03] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 17:00:03] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 17:00:03] battle: Pikachu fainted
+[2026-01-12 17:00:03] battle: leveled up 	Squirtle	 to 	6
+[2026-01-12 17:00:21] battle: 	Charmander	 uses 	Growl
+[2026-01-12 17:00:21] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 17:00:30] battle: 	Charmander	 uses 	Scratch
+[2026-01-12 17:00:30] battle: Squirtle fainted
+[2026-01-12 18:36:44] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 18:36:44] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:36:45] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 18:36:45] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 18:36:45] battle: Pikachu fainted
+[2026-01-12 18:36:51] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:36:51] battle: Squirtle fainted
+[2026-01-12 18:36:51] battle: leveled up 	Squirtle	 to 	7
+[2026-01-12 18:49:51] battle.start: require ok=	true	module_type=	table
+[2026-01-12 18:49:51] battle.start: created manual pokemon list, len=	4
+[2026-01-12 18:49:56] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 18:49:56] battle: 	Charmander	 uses 	Growl
+[2026-01-12 18:57:09] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 18:57:09] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 18:57:09] battle: Pikachu fainted
+[2026-01-12 18:57:21] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:57:21] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:57:25] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:57:25] battle: Squirtle fainted
+[2026-01-12 18:57:25] battle: leveled up 	Squirtle	 to 	6
+[2026-01-12 18:57:57] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:57:57] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 18:58:02] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 18:58:02] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 18:58:02] battle: Squirtle fainted
+[2026-01-12 19:00:31] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 19:00:31] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:00:31] battle: Pikachu fainted
+[2026-01-12 19:00:40] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:00:40] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 19:00:42] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:00:42] battle: Squirtle fainted
+[2026-01-12 19:00:42] battle: leveled up 	Squirtle	 to 	6
+[2026-01-12 19:00:58] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 19:00:58] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 19:00:59] battle: 	Pikachu	 uses 	Thunder Shock
+[2026-01-12 19:00:59] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 19:00:59] battle: Pikachu fainted
+[2026-01-12 19:01:02] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:01:02] battle: Squirtle fainted
+[2026-01-12 19:01:02] battle: leveled up 	Squirtle	 to 	7
+[2026-01-12 19:01:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:01:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:01:08] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:01:08] battle: 	Squirtle	 uses 	Tail Whip
+[2026-01-12 19:01:09] battle: 	Squirtle	 uses 	Tackle
+[2026-01-12 19:01:09] battle: Squirtle fainted
+[2026-01-12 19:01:09] battle: leveled up 	Squirtle	 to 	8

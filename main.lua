@@ -8,10 +8,36 @@ local povW, povH = 160, 144 -- camera viewport in game pixels
 local cameraX, cameraY = 0, 0
 local cameraLerpSpeed = 100 -- higher = snappier camera
 local playerStep = 2 -- tiles per move (16px)
-local debugText = ""
+local infoText = ""
+local encounterText = ""
+
+-- Lightweight JSON loader: converts JSON text into Lua table by converting
+-- JSON array/object syntax to Lua table syntax and using load. This is
+-- intentionally small and expects well-formed JSON produced by our encoder.
+local function decode_json(json)
+    if not json or json == "" then return nil end
+    -- convert JSON arrays to Lua tables
+    local s = json
+    -- replace true/false/null
+    s = s:gsub("%f[%w]null%f[%W]", "nil")
+    s = s:gsub("%f[%w]true%f[%W]", "true")
+    s = s:gsub("%f[%w]false%f[%W]", "false")
+    -- convert brackets to braces for arrays
+    s = s:gsub('%[', '{')
+    s = s:gsub('%]', '}')
+    -- convert JSON object keys "key": to ["key"]=
+    s = s:gsub('"([^"\n]-)"%s*:', '["%1"]=')
+    -- now attempt to load
+    local loader = loadstring or load
+    local fn, err = loader("return " .. s)
+    if not fn then return nil, err end
+    local ok, res = pcall(fn)
+    if not ok then return nil, res end
+    return res
+end
 
 -- on-screen input state
-local uiInput = {up=false, down=false, left=false, right=false}
+local uiInput = {up=false, down=false, left=false, right=false, a=false, start=false}
 local activeTouches = {} -- map touch id / "mouse" -> dir
 local uiButtons = {} -- populated in love.load (screen pixels)
 -- when a turn is made, block movement while that same input remains held
@@ -54,6 +80,24 @@ local player = {
     stepLeft = true
 }
 
+-- track which map the player is currently on (saved/loaded)
+player.currentMap = ""
+
+-- Player's current Pokemon party (populate with a starter)
+player.party = {}
+do
+    local ok, pmod = pcall(require, "pokemon")
+    if ok and pmod then
+        -- prefer species constructor when available; fallback to base Pokemon
+        if pmod.Pikachu and pmod.Pikachu.new then
+            table.insert(player.party, pmod.Pikachu.new())
+            table.insert(player.party, pmod.Squirtle.new())
+        elseif pmod.Pokemon and pmod.Pokemon.new then
+            table.insert(player.party, pmod.Pokemon.new{ name = "Pikachu", level = 5, hp = 35, maxHp = 35, moves = {"Thunder Shock", "Quick Attack"} })
+        end
+    end
+end
+
 -------------------------------------------------
 -- MAP DATA
 -------------------------------------------------
@@ -61,6 +105,14 @@ local player = {
 local mapWidth, mapHeight
 local groundLayer = {}
 local collisionLayer = {}
+local tileProperties = {}
+local unlockedWater = {}
+local unlockedWaterAll = false
+local menu = require("menu")
+local battle = require("battle")
+
+-- expose player to the menu so menu actions can access `player.party`
+if menu then menu.player = player end
 
 -------------------------------------------------
 -- TILESET
@@ -89,6 +141,8 @@ end
 
 local charSheet
 local charQuads = {}
+local charWaterQuads = {}
+local shadowQuad = nil
 
 local animFrames = {
     down  = {1, 2, 3},
@@ -114,7 +168,9 @@ end
 -- COLLISION (2x2 PLAYER)
 -------------------------------------------------
 
-local function isBlocked(tx, ty)
+local function isBlocked(tx, ty, approachDx, approachDy)
+    approachDx = approachDx or 0
+    approachDy = approachDy or 0
     local checks = {
         {tx, ty}, {tx + 1, ty},
         {tx, ty + 1}, {tx + 1, ty + 1}
@@ -126,8 +182,115 @@ local function isBlocked(tx, ty)
             return true
         end
         local idx = (y - 1) * mapWidth + x
-        if collisionLayer[idx] ~= 0 then
+        local collCount = #collisionLayer
+        local rawgid = collisionLayer[idx]
+        -- Defensive guard: if computed index is outside the parsed collision array,
+        -- treat as blocked so movement doesn't go off-map.
+        if idx < 1 or idx > collCount then
             return true
+        end
+
+        if rawgid and rawgid ~= 0 then
+            local gid = decodeGid(rawgid)
+            local props = tileProperties[gid]
+            -- If tile has explicit properties, respect them:
+            -- - `blocked=true` => blocked
+            -- - `jump=true`    => not blocked (passable)
+            -- If no properties found, treat as blocked by default.
+            -- set brief debug: gid and how many tileProperties entries we have
+            local tpCount = 0
+            for _ in pairs(tileProperties) do tpCount = tpCount + 1 end
+            infoText = string.format("gid=%d tileProperties=%d", gid, tpCount)
+            if props then
+                -- log succinctly that this tile has properties
+                local parts = {}
+                for k, v in pairs(props) do table.insert(parts, k .. "=" .. tostring(v)) end
+                infoText = string.format("gid=%d props=%s", gid, table.concat(parts, ","))
+                    if props.blocked == true then
+                        return true
+                    end
+                    -- water tiles are blocked until unlocked by talking ('z')
+                    if props.water then
+                        local key = string.format("%d,%d", x, y)
+                        if not (unlockedWaterAll or unlockedWater[key]) then
+                            return true
+                        end
+                    end
+                -- `jump` may be a string specifying allowed approach direction.
+                -- Only enforce jump-based blocking when the `jump` property exists.
+                local j = props.jump
+                if j then
+                    if j == true or j == "down" then
+                        if not (approachDy and approachDy > 0) then
+                            return true
+                        end
+                    elseif j == "left" then
+                        if not (approachDx and approachDx < 0) then
+                            return true
+                        end
+                    elseif j == "right" then
+                        if not (approachDx and approachDx > 0) then
+                            return true
+                        end
+                    else
+                        return true
+                    end
+                end
+            else
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function tileHasJumpAt(tx, ty, approachDx, approachDy)
+    approachDx = approachDx or 0
+    approachDy = approachDy or 0
+    local checks = {
+        {tx, ty}, {tx + 1, ty},
+        {tx, ty + 1}, {tx + 1, ty + 1}
+    }
+    for _, c in ipairs(checks) do
+        local x, y = c[1], c[2]
+        if x >= 1 and y >= 1 and x <= mapWidth and y <= mapHeight then
+            local idx = (y - 1) * mapWidth + x
+            local rawgid = collisionLayer[idx]
+            if rawgid and rawgid ~= 0 then
+                local gid = decodeGid(rawgid)
+                local props = tileProperties[gid]
+                if props and props.jump then
+                    local j = props.jump
+                    if j == true or j == "down" or j == "left" or j == "right" then
+                        if j == true then return true end
+                        if j == "down" and approachDy and approachDy > 0 then return true end
+                        if j == "left" and approachDx and approachDx < 0 then return true end
+                        if j == "right" and approachDx and approachDx > 0 then return true end
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function playerIsOnWater()
+    local checks = {
+        {player.tx, player.ty}, {player.tx + 1, player.ty},
+        {player.tx, player.ty + 1}, {player.tx + 1, player.ty + 1}
+    }
+    for _, c in ipairs(checks) do
+        local x, y = c[1], c[2]
+        if x >= 1 and y >= 1 and x <= mapWidth and y <= mapHeight then
+            local idx = (y - 1) * mapWidth + x
+            local raw = collisionLayer[idx]
+            if raw and raw ~= 0 then
+                local gid = decodeGid(raw)
+                local props = tileProperties[gid]
+                if props and props.water then
+                    return true
+                end
+            end
         end
     end
     return false
@@ -174,6 +337,65 @@ local function loadMap(path, spawnTX, spawnTY, spawnDir)
         end
     end
 
+    -- Parse tileset <tile> property definitions (map local ids -> global gids)
+    tileProperties = {}
+    -- Determine base directory of the TMX so relative tileset sources can be resolved
+    local baseDir = path:match("(.*/)") or ""
+
+    local function tryRead(pathCandidates)
+        for _, p in ipairs(pathCandidates) do
+            local ok, data = pcall(love.filesystem.read, p)
+            if ok and data and data ~= "" then return data, p end
+        end
+        return nil, nil
+    end
+
+    -- Handle self-closing tileset tags that reference external .tsx files
+    for tilesetBlock in tmx:gmatch("<tileset.-/>") do
+        local firstgid = tonumber(tilesetBlock:match('firstgid="(%d+)"')) or 1
+        local source = tilesetBlock:match('source="([^"]+)"')
+        if source then
+            local candidates = {
+                source,
+                baseDir .. source,
+                source:gsub('^%./', ''),
+                baseDir .. source:gsub('^%./', ''),
+                source:gsub('^%.%./', ''),
+                'tiled/' .. source:gsub('^%.%./', ''),
+            }
+            local tilesetContent, resolved = tryRead(candidates)
+            if tilesetContent then
+                for tileBlock in tilesetContent:gmatch("<tile.->.-</tile>") do
+                    local id = tonumber(tileBlock:match('id="(%d+)"')) or 0
+                    local gid = firstgid + id
+                    local props = {}
+                    for k,v in tileBlock:gmatch('<property[^>]-name="([^\"]+)"[^>]-value="([^\"]*)"') do
+                        local val = v
+                        if v == "true" then val = true elseif v == "false" then val = false end
+                        props[k] = val
+                    end
+                    if next(props) then tileProperties[gid] = props end
+                end
+            end
+        end
+    end
+
+    -- Also handle embedded tileset blocks that include inline <tile> definitions
+    for tilesetBlock in tmx:gmatch("<tileset.->.-</tileset>") do
+        local firstgid = tonumber(tilesetBlock:match('firstgid="(%d+)"')) or 1
+        for tileBlock in tilesetBlock:gmatch("<tile.->.-</tile>") do
+            local id = tonumber(tileBlock:match('id="(%d+)"')) or 0
+            local gid = firstgid + id
+            local props = {}
+            for k,v in tileBlock:gmatch('<property[^>]-name="([^\"]+)"[^>]-value="([^\"]*)"') do
+                local val = v
+                if v == "true" then val = true elseif v == "false" then val = false end
+                props[k] = val
+            end
+            if next(props) then tileProperties[gid] = props end
+        end
+    end
+
     -- Parse layers
     for layer in tmx:gmatch("<layer.->.-</layer>") do
         local name = layer:match('name="([^"]+)"')
@@ -183,6 +405,10 @@ local function loadMap(path, spawnTX, spawnTY, spawnDir)
         if name == "ground" then groundLayer = csv end
         if name == "collision" then collisionLayer = csv end
     end
+
+    -- clear unlocked water on map load
+    unlockedWater = {}
+    unlockedWaterAll = false
 
     -- Parse warp objects
     for og in tmx:gmatch("<objectgroup.->.-</objectgroup>") do
@@ -229,7 +455,50 @@ end
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    local tmx = loadMap("tiled/inside.tmx", 8, 24, "right")
+    local defaultMapPath = "tiled/inside.tmx"
+    local defaultSpawnTX, defaultSpawnTY, defaultSpawnDir = 9, 25, "right"
+    loadMap(defaultMapPath, defaultSpawnTX, defaultSpawnTY, defaultSpawnDir)
+
+    -- Attempt to load saved player state from `save/player.json` and merge into `player`.
+    local saved = nil
+    if love.filesystem.getInfo("save/player.json") then
+        local data = love.filesystem.read("save/player.json")
+        if data then
+            local tbl_or_err, derr = decode_json(data)
+            if tbl_or_err then
+                saved = tbl_or_err
+            else
+                infoText = "Save load failed: " .. tostring(derr or "invalid save")
+            end
+        end
+    end
+
+    if saved then
+        -- merge saved fields into existing player table (preserve runtime-only fields)
+        for k, v in pairs(saved) do
+            player[k] = v
+        end
+        -- If save specifies a different map, load it and place the player there.
+        if player.currentMap and player.currentMap ~= "" then
+            local mpath = player.currentMap
+            local tx = player.tx or defaultSpawnTX
+            local ty = player.ty or defaultSpawnTY
+            local dir = player.dir or defaultSpawnDir
+            loadMap(mpath, tx, ty, dir)
+            player.currentMap = currentMap
+        else
+            player.currentMap = currentMap
+        end
+        infoText = "Save loaded"
+    else
+        player.currentMap = currentMap
+    end
+
+    -- If the player is placed on water after loading, unlock all water tiles.
+    if playerIsOnWater() then
+        unlockedWaterAll = true
+        unlockedWater = {}
+    end
 
     -- character sheet (single row, 1px border + spacing)
     charSheet = love.graphics.newImage("tiled/sprites/Characters (Overworld).png")
@@ -242,6 +511,24 @@ function love.load()
         local sx = margin + (i - 1) * (cw + spacing)
         local sy = margin
         charQuads[i] = love.graphics.newQuad(sx, sy, cw, ch, imgw, imgh)
+    end
+
+    -- shadow is located at row 3, column 5 (1-based)
+    do
+        local row, col = 3, 5
+        local sx = margin + (col - 1) * (cw + spacing)
+        local sy = margin + (row - 1) * (ch + spacing)
+        shadowQuad = love.graphics.newQuad(sx, sy, cw, ch, imgw, imgh)
+    end
+
+    -- build water-row quads (fourth row matches ordering of the first row)
+    do
+        local waterRow = 4
+        local waterRowSy = margin + (waterRow - 1) * (ch + spacing)
+        for i = 1, count do
+            local sx = margin + (i - 1) * (cw + spacing)
+            charWaterQuads[i] = love.graphics.newQuad(sx, waterRowSy, cw, ch, imgw, imgh)
+        end
     end
 
     -- set fixed window size to requested POV * render scale
@@ -263,6 +550,9 @@ function love.load()
         addButton("down",  midX,       midY + b)
         addButton("left",  midX - b,   midY)
         addButton("right", midX + b,   midY)
+        -- action button 'A' on the right side
+        addButton("a", ww - margin - b, midY)
+        addButton("start", ww - margin - b, midY - b)
     end
 
     -- initialize camera to follow player (in game pixels, before scaling)
@@ -284,6 +574,7 @@ end
 
 -- resolve input into a single direction
 local function getInputDir()
+    if (menu and menu.isOpen and menu.isOpen()) or (battle and battle.isActive and battle.isActive()) then return nil, 0, 0 end
     local dx, dy = 0, 0
     if love.keyboard.isDown("up")    or uiInput.up    then dy = -1 end
     if love.keyboard.isDown("down")  or uiInput.down  then dy =  1 end
@@ -299,6 +590,8 @@ local function getInputDir()
 end
 
 function love.update(dt)
+    if menu and menu.update then menu.update(dt) end
+    if battle and battle.update then battle.update(dt) end
     local requestedDir, dx, dy = getInputDir()
 
     -- if we're not currently moving, handle rotate-first behavior
@@ -331,18 +624,46 @@ function love.update(dt)
         local nx = player.tx + dx * playerStep
         local ny = player.ty + dy * playerStep
 
-        if not isBlocked(nx, ny) then
+        -- If the intended landing tile(s) are jump tiles (and approach allows),
+        -- advance the landing past them so the player cannot stop on jump tiles.
+        local jumped = false
+        if tileHasJumpAt(nx, ny, dx, dy) then
+            jumped = true
+            nx = nx + dx
+            ny = ny + dy
+            -- if there are consecutive jump tiles, keep skipping up to a small limit
+            local tries = 0
+            while tileHasJumpAt(nx, ny, dx, dy) and tries < 4 do
+                nx = nx + dx
+                ny = ny + dy
+                tries = tries + 1
+            end
+        end
+
+        if not isBlocked(nx, ny, dx, dy) then
             player.tx, player.ty = nx, ny
             player.startX, player.startY = player.x, player.y
             player.targetX = (nx - 1) * tileSize
             player.targetY = (ny - 1) * tileSize
             player.moving = true
 
+            -- mark jumping state for horizontal jumps and downward jumps
+            player.jumping = jumped and (dx ~= 0 or dy > 0)
+            player.moveProgress = 0
+
             inputBlockDir = nil
             inputBlockTimer = 0
 
             local frames = animFrames[player.dir]
-            if frames then player.animIndex = (#frames == 3) and frames[2] or frames[1] end
+            if frames then
+                if player.jumping and (player.dir == "left" or player.dir == "right") then
+                    player.animIndex = frames[1]
+                elseif player.jumping and player.dir == "down" and #frames == 3 then
+                    player.animIndex = frames[2]
+                else
+                    player.animIndex = (#frames == 3) and frames[2] or frames[1]
+                end
+            end
         end
     end
 
@@ -355,28 +676,117 @@ function love.update(dt)
         if dist < 1 then
             player.x, player.y = player.targetX, player.targetY
             player.moving = false
+            player.jumping = false
+            player.moveProgress = 0
 
             local frames = animFrames[player.dir]
             if frames then
                 player.animIndex = (#frames == 3) and frames[2] or frames[1]
                 if #frames == 3 then player.stepLeft = not player.stepLeft end
             end
+            -- After completing a step, check for encounter objects (encounters layer)
+            -- Objects parsed into `warps` may include encounter rects with a `grass` property.
+            local cx = player.x + player.size * 0.5
+            local cy = player.y + player.size * 0.5
+            for _, w in ipairs(warps) do
+                if w and w.properties then
+                    local gv = w.properties.grass
+                    local isGrass = (gv == true) or (gv == "true") or (gv == "1")
+                    if isGrass then
+                        if cx >= w.x and cx <= w.x + w.width and cy >= w.y and cy <= w.y + w.height then
+                            if battle and battle.start and (not battle.isActive or not battle.isActive()) then
+                                local roll = math.random(1, 100)
+                                if roll <= 10 then
+                                    -- If the encounter object specifies a comma-separated list of species dex numbers,
+                                    -- build a wild list from those species; otherwise fall back to random wilds.
+                                    local speciesProp = w.properties.species
+                                    local wildList = nil
+                                    if speciesProp and speciesProp ~= "" then
+                                        local ok, pmod = pcall(require, "pokemon")
+                                        if ok and pmod then
+                                            wildList = {}
+                                            -- parse optional min/max level CSVs (order corresponds to species list)
+                                            local minsProp = w.properties.minlevel or w.properties.minlevels or w.properties.min_levels or ""
+                                            local maxsProp = w.properties.maxlevel or w.properties.maxlevels or w.properties.max_levels or ""
+                                            local mins = {}
+                                            local maxs = {}
+                                            local function splitToList(str)
+                                                local t = {}
+                                                for part in (str or ""):gmatch("([^,]+)") do
+                                                    table.insert(t, part:match("^%s*(.-)%s*$"))
+                                                end
+                                                return t
+                                            end
+                                            mins = splitToList(minsProp)
+                                            maxs = splitToList(maxsProp)
+
+                                            local idx = 0
+                                            for item in speciesProp:gmatch("([^,]+)") do
+                                                idx = idx + 1
+                                                local s = item:match("^%s*(.-)%s*$")
+                                                local dexnum = tonumber(s)
+                                                if dexnum then
+                                                    for k, v in pairs(pmod) do
+                                                        if type(v) == "table" and v.defaults and (v.defaults.dex == dexnum or v.defaults.pokedex == dexnum) then
+                                                            if v.new then
+                                                                local inst = v.new()
+                                                                -- determine level from min/max lists if provided
+                                                                local minn = tonumber(mins[idx])
+                                                                local maxn = tonumber(maxs[idx])
+                                                                if minn and maxn then
+                                                                    if minn > maxn then local tmp = minn; minn = maxn; maxn = tmp end
+                                                                    inst.level = math.max(1, math.random(minn, maxn))
+                                                                elseif minn then
+                                                                    inst.level = math.max(1, minn)
+                                                                elseif maxn then
+                                                                    inst.level = math.max(1, maxn)
+                                                                end
+                                                                table.insert(wildList, inst)
+                                                            end
+                                                            break
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                            if #wildList == 0 then wildList = nil end
+                                        end
+                                    end
+
+                                    if wildList then
+                                        battle.start(wildList, player)
+                                    else
+                                        battle.start(nil, player)
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         else
             player.x = player.x + (dxp / dist) * player.speed * dt
             player.y = player.y + (dyp / dist) * player.speed * dt
 
             local progress = (total > 0) and (1 - dist / total) or 0
+            player.moveProgress = progress
             local frames = animFrames[player.dir]
 
             if frames then
                 if #frames == 3 then
-                    if progress < 0.25 or progress >= 0.75 then
+                    if player.jumping and player.dir == "down" then
+                        player.animIndex = frames[2]
+                    elseif progress < 0.25 or progress >= 0.75 then
                         player.animIndex = frames[2]
                     else
                         player.animIndex = player.stepLeft and frames[1] or frames[3]
                     end
                 else
-                    player.animIndex = (progress < 0.5) and frames[1] or frames[2]
+                    if player.jumping and (player.dir == "left" or player.dir == "right") then
+                        player.animIndex = frames[1]
+                    else
+                        player.animIndex = (progress < 0.5) and frames[1] or frames[2]
+                    end
                 end
             end
         end
@@ -394,9 +804,50 @@ function love.update(dt)
 
             if targetMap and tx and ty then
                 loadMap(targetMap, tx, ty, dir)
+                player.currentMap = currentMap
+                -- If the player spawns on water after warping, unlock all water tiles.
+                if playerIsOnWater() then
+                    unlockedWaterAll = true
+                    unlockedWater = {}
+                end
                 break
             end
         end
+    end
+
+    -- Update encounter hint text when standing inside a grass encounter rect
+    encounterText = ""
+    for _, w in ipairs(warps) do
+        if w and w.properties then
+            local gv = w.properties.grass
+            local isGrass = (gv == true) or (gv == "true") or (gv == "1")
+            if isGrass then
+                if cx >= w.x and cx <= w.x + w.width and cy >= w.y and cy <= w.y + w.height then
+                    -- robustly find any property whose name begins with 'species' (case-insensitive)
+                    local sp = ""
+                    for pk, pv in pairs(w.properties) do
+                        if type(pk) == "string" and pk:lower():match("^species") then
+                            if pv ~= nil and tostring(pv) ~= "" then
+                                sp = tostring(pv)
+                                break
+                            end
+                        end
+                    end
+                    if sp ~= "" then
+                        encounterText = "Species: " .. sp
+                    else
+                        encounterText = "Species: (any)"
+                    end
+                    break
+                end
+            end
+        end
+    end
+
+    -- If player is not on water anymore, re-lock all water tiles.
+    if not player.moving and unlockedWaterAll and not playerIsOnWater() then
+        unlockedWaterAll = false
+        unlockedWater = {}
     end
 
     local centerX = player.x + player.size / 2
@@ -413,12 +864,83 @@ end
 -------------------------------------------------
 
 function love.keypressed(key)
+    if menu and menu.isOpen and menu.isOpen() then
+        if menu.keypressed then menu.keypressed(key) end
+        return
+    end
+
+    if battle and battle.isActive and battle.isActive() then
+        if battle.keypressed then battle.keypressed(key) end
+        return
+    end
+
     if key == "[" then
         player.speed = math.max(10, player.speed - 20)
         debugText = "speed: " .. tostring(player.speed)
     elseif key == "]" then
         player.speed = player.speed + 20
         debugText = "speed: " .. tostring(player.speed)
+    elseif key == "b" or key == "B" then
+        -- start/stop a simple battle
+        if battle and battle.isActive and battle.isActive() then
+            if battle["end"] then battle["end"]() end
+        elseif battle and battle.start then
+            -- Start battle and pass the player so their first party member is used
+            battle.start(nil, player)
+        end
+        return
+    elseif key == "z" or key == "Z" then
+        -- talk / interact: unlock water tile in front of the player
+        local dx, dy = 0, 0
+        if player.dir == "up" then dy = -1 end
+        if player.dir == "down" then dy = 1 end
+        if player.dir == "left" then dx = -1 end
+        if player.dir == "right" then dx = 1 end
+        -- target top-left tile of the tile-sized step in front
+        local tx = player.tx + dx * playerStep
+        local ty = player.ty + dy * playerStep
+        if tx >= 1 and ty >= 1 and tx <= mapWidth and ty <= mapHeight then
+            local idx = (ty - 1) * mapWidth + tx
+            local raw = collisionLayer[idx]
+            if raw and raw ~= 0 then
+                local gid = decodeGid(raw)
+                local props = tileProperties[gid]
+                if props and props.water then
+                        local key = string.format("%d,%d", tx, ty)
+                        unlockedWater[key] = true
+                        unlockedWaterAll = true
+                        infoText = "Water unlocked"
+                        -- attempt to step forward into the unlocked water tile
+                        if not player.moving then
+                            if not isBlocked(tx, ty, dx, dy) then
+                                player.tx, player.ty = tx, ty
+                                player.startX, player.startY = player.x, player.y
+                                player.targetX = (tx - 1) * tileSize
+                                player.targetY = (ty - 1) * tileSize
+                                player.moving = true
+                                player.jumping = false
+                                player.moveProgress = 0
+                                inputBlockDir = nil
+                                inputBlockTimer = 0
+                                local frames = animFrames[player.dir]
+                                if frames then
+                                    player.animIndex = (#frames == 3) and frames[2] or frames[1]
+                                end
+                            end
+                        end
+                else
+                    infoText = "Nothing to talk to"
+                end
+            else
+                infoText = "Nothing to talk to"
+            end
+        else
+            infoText = "Nothing to talk to"
+        end
+    end
+
+    if key == "space" then
+        if menu and menu.toggle then menu.toggle() end
     end
 
 end
@@ -433,6 +955,31 @@ function love.mousepressed(x, y, button)
         if pointInRect(x, y, b.x, b.y, b.w, b.h) then
             uiInput[dir] = true
             activeTouches["mouse"] = dir
+            -- If menu is open, route on-screen presses to the menu instead
+            if menu and menu.isOpen and menu.isOpen() then
+                if dir == "up" or dir == "down" or dir == "left" or dir == "right" then
+                    if menu.keypressed then menu.keypressed(dir) end
+                elseif dir == "a" then
+                    if menu.keypressed then menu.keypressed("return") end
+                elseif dir == "start" then
+                    if menu.keypressed then menu.keypressed("space") end
+                end
+            elseif battle and battle.isActive and battle.isActive() then
+                -- Route on-screen presses to battle controls while a battle is active
+                if dir == "up" or dir == "down" or dir == "left" or dir == "right" then
+                    if battle.keypressed then battle.keypressed(dir) end
+                elseif dir == "a" then
+                    if battle.keypressed then battle.keypressed("z") end
+                elseif dir == "start" then
+                    if battle.keypressed then battle.keypressed("space") end
+                end
+            else
+                if dir == "a" then
+                    love.keypressed("z")
+                elseif dir == "start" then
+                    love.keypressed("space")
+                end
+            end
         end
     end
 end
@@ -449,6 +996,31 @@ function love.touchpressed(id, x, y)
         if pointInRect(sx, sy, b.x, b.y, b.w, b.h) then
             uiInput[dir] = true
             activeTouches[id] = dir
+            -- If menu is open, route on-screen presses to the menu instead
+            if menu and menu.isOpen and menu.isOpen() then
+                if dir == "up" or dir == "down" or dir == "left" or dir == "right" then
+                    if menu.keypressed then menu.keypressed(dir) end
+                elseif dir == "a" then
+                    if menu.keypressed then menu.keypressed("return") end
+                elseif dir == "start" then
+                    if menu.keypressed then menu.keypressed("space") end
+                end
+            elseif battle and battle.isActive and battle.isActive() then
+                -- Route on-screen presses to battle controls while a battle is active
+                if dir == "up" or dir == "down" or dir == "left" or dir == "right" then
+                    if battle.keypressed then battle.keypressed(dir) end
+                elseif dir == "a" then
+                    if battle.keypressed then battle.keypressed("z") end
+                elseif dir == "start" then
+                    if battle.keypressed then battle.keypressed("space") end
+                end
+            else
+                if dir == "a" then
+                    love.keypressed("z")
+                elseif dir == "start" then
+                    love.keypressed("space")
+                end
+            end
         end
     end
 end
@@ -503,25 +1075,70 @@ function love.draw()
         end
     end
 
-    love.graphics.draw(
-        charSheet,
-        charQuads[player.animIndex],
-        math.floor(player.x + 0.5),
-        math.floor(player.y + 0.5)
-    )
+    -- character draw with optional jump vertical offset and shadow
+    local drawX = math.floor(player.x + 0.5)
+    local drawY = math.floor(player.y + 0.5)
+    if player.jumping and player.moveProgress then
+        local jumpH = 6 -- pixels to move up at peak
+        local off = -math.sin((player.moveProgress or 0) * math.pi) * jumpH
+        drawY = math.floor(player.y + off + 0.5)
+    end
+
+    -- draw shadow under character while jumping
+    if shadowQuad and player.jumping then
+        local shadowCx = math.floor(player.x + player.size * 0.5 + 0.5)
+        local shadowCy = math.floor(player.y + player.size - 2 + 0.5)
+        local prog = player.moveProgress or 0
+        local scale = 1 - 0.25 * math.sin(prog * math.pi)
+        local alpha = 0.85 - 0.4 * math.sin(prog * math.pi)
+        love.graphics.setColor(1, 1, 1, alpha)
+        love.graphics.draw(charSheet, shadowQuad, shadowCx, shadowCy, 0, scale, scale, player.size * 0.5, player.size * 0.5)
+        love.graphics.setColor(1,1,1,1)
+    end
+
+    do
+        local drawQuad = charQuads[player.animIndex] or charQuads[1]
+        if playerIsOnWater() and charWaterQuads[player.animIndex] then
+            drawQuad = charWaterQuads[player.animIndex]
+        end
+        love.graphics.draw(charSheet, drawQuad, drawX, drawY)
+    end
 
     love.graphics.pop()
 
-    -- debug text (unscaled)
-    love.graphics.setColor(1,1,1)
-    local infoText = debugText or ""
-    if warpDebug and warpDebug ~= "" then
-        if infoText ~= "" then infoText = infoText .. "\n" .. warpDebug else infoText = warpDebug end
+    -- debug text (unscaled) with background so it's always visible
+    local displayText = ""
+    if encounterText and encounterText ~= "" then
+        displayText = encounterText
     end
-    love.graphics.print(infoText, 4, 4)
-    love.graphics.setColor(1,1,1,1)
+    if infoText and infoText ~= "" then
+        if displayText ~= "" then displayText = displayText .. "\n" .. infoText else displayText = infoText end
+    end
+    if warpDebug and warpDebug ~= "" then
+        if displayText ~= "" then displayText = displayText .. "\n" .. warpDebug else displayText = warpDebug end
+    end
+    if displayText ~= "" then
+        local font = love.graphics.getFont()
+        local maxw = 0
+        local lines = {}
+        for line in displayText:gmatch("([^\n]+)") do
+            table.insert(lines, line)
+            local w = font and font:getWidth(line) or 0
+            if w > maxw then maxw = w end
+        end
+        local h = (font and font:getHeight() or 12) * #lines
+        love.graphics.setColor(0, 0, 0, 0.6)
+        love.graphics.rectangle("fill", 2, 2, maxw + 8, h + 6, 4, 4)
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.print(displayText, 6, 4)
+    end
 
-    -- draw on-screen D-pad (unscaled, screen pixels)
+    -- draw menu overlay (unscaled)
+    if menu and menu.draw then menu.draw() end
+    -- draw battle overlay (unscaled)
+    if battle and battle.draw then battle.draw() end
+
+    -- draw on-screen D-pad (unscaled, screen pixels) on top of overlays
     for dir, b in pairs(uiButtons) do
         local cx = b.x + b.w/2
         local cy = b.y + b.h/2
@@ -539,6 +1156,18 @@ function love.draw()
             love.graphics.polygon("fill", cx - s, cy, cx + s, cy - s, cx + s, cy + s)
         elseif dir == "right" then
             love.graphics.polygon("fill", cx + s, cy, cx - s, cy - s, cx - s, cy + s)
+        elseif dir == "a" then
+            local font = love.graphics.getFont()
+            local text = "A"
+            local fw = font and font:getWidth(text) or 8
+            local fh = font and font:getHeight() or 8
+            love.graphics.print(text, cx - fw/2, cy - fh/2)
+        elseif dir == "start" then
+            local font = love.graphics.getFont()
+            local text = "START"
+            local fw = font and font:getWidth(text) or 28
+            local fh = font and font:getHeight() or 8
+            love.graphics.print(text, cx - fw/2, cy - fh/2)
         end
     end
     love.graphics.setColor(1,1,1)
