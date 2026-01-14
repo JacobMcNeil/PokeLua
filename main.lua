@@ -46,8 +46,6 @@ local inputBlockTimer = 0
 local inputBlockDelay = 0.1 -- seconds to wait while holding after a turn before movement starts
 
 local warps = {}
--- local warpDebug = "" -- unused (kept commented for safety)
-
 
 local function pointInRect(px, py, rx, ry, rw, rh)
     return px >= rx and py >= ry and px <= rx + rw and py <= ry + rh
@@ -87,14 +85,10 @@ player.currentMap = ""
 player.party = {}
 do
     local ok, pmod = pcall(require, "pokemon")
-    if ok and pmod then
-        -- prefer species constructor when available; fallback to base Pokemon
-        if pmod.Pikachu and pmod.Pikachu.new then
-            table.insert(player.party, pmod.Pikachu.new())
-            table.insert(player.party, pmod.Squirtle.new())
-        elseif pmod.Pokemon and pmod.Pokemon.new then
-            table.insert(player.party, pmod.Pokemon.new{ name = "Pikachu", level = 5, hp = 35, maxHp = 35, moves = {"Thunder Shock", "Quick Attack"} })
-        end
+    if ok and pmod and pmod.Pokemon then
+        -- Create starter Pokemon using the new speciesId-based constructor
+        table.insert(player.party, pmod.Pokemon:new("pikachu", 5))
+        table.insert(player.party, pmod.Pokemon:new("squirtle", 5))
     end
 end
 
@@ -152,19 +146,6 @@ local animFrames = {
 }
 
 -------------------------------------------------
--- CSV PARSER
--------------------------------------------------
-
--- CSV helper (currently unused, kept for future maps)
-local function loadCSV(data)
-    local t = {}
-    for n in data:gmatch("(%d+)") do
-        table.insert(t, tonumber(n))
-    end
-    return t
-end
-
--------------------------------------------------
 -- COLLISION (2x2 PLAYER)
 -------------------------------------------------
 
@@ -193,29 +174,17 @@ local function isBlocked(tx, ty, approachDx, approachDy)
         if rawgid and rawgid ~= 0 then
             local gid = decodeGid(rawgid)
             local props = tileProperties[gid]
-            -- If tile has explicit properties, respect them:
-            -- - `blocked=true` => blocked
-            -- - `jump=true`    => not blocked (passable)
-            -- If no properties found, treat as blocked by default.
-            -- set brief debug: gid and how many tileProperties entries we have
-            local tpCount = 0
-            for _ in pairs(tileProperties) do tpCount = tpCount + 1 end
-            infoText = string.format("gid=%d tileProperties=%d", gid, tpCount)
             if props then
-                -- log succinctly that this tile has properties
-                local parts = {}
-                for k, v in pairs(props) do table.insert(parts, k .. "=" .. tostring(v)) end
-                infoText = string.format("gid=%d props=%s", gid, table.concat(parts, ","))
-                    if props.blocked == true then
+                if props.blocked == true then
+                    return true
+                end
+                -- water tiles are blocked until unlocked by talking ('z')
+                if props.water then
+                    local key = string.format("%d,%d", x, y)
+                    if not (unlockedWaterAll or unlockedWater[key]) then
                         return true
                     end
-                    -- water tiles are blocked until unlocked by talking ('z')
-                    if props.water then
-                        local key = string.format("%d,%d", x, y)
-                        if not (unlockedWaterAll or unlockedWater[key]) then
-                            return true
-                        end
-                    end
+                end
                 -- `jump` may be a string specifying allowed approach direction.
                 -- Only enforce jump-based blocking when the `jump` property exists.
                 local j = props.jump
@@ -478,6 +447,19 @@ function love.load()
         for k, v in pairs(saved) do
             player[k] = v
         end
+        
+        -- Reconstruct Pokemon instances from saved data (to restore metatables and methods)
+        if player.party and #player.party > 0 then
+            local ok, pmod = pcall(require, "pokemon")
+            if ok and pmod and pmod.Pokemon then
+                for i, pokemonData in ipairs(player.party) do
+                    if type(pokemonData) == "table" and pokemonData.speciesId then
+                        player.party[i] = pmod.Pokemon.fromSavedData(pokemonData)
+                    end
+                end
+            end
+        end
+        
         -- If save specifies a different map, load it and place the player there.
         if player.currentMap and player.currentMap ~= "" then
             local mpath = player.currentMap
@@ -703,7 +685,7 @@ function love.update(dt)
                                     local wildList = nil
                                     if speciesProp and speciesProp ~= "" then
                                         local ok, pmod = pcall(require, "pokemon")
-                                        if ok and pmod then
+                                        if ok and pmod and pmod.Pokemon and pmod.PokemonSpecies then
                                             wildList = {}
                                             -- parse optional min/max level CSVs (order corresponds to species list)
                                             local minsProp = w.properties.minlevel or w.properties.minlevels or w.properties.min_levels or ""
@@ -726,23 +708,23 @@ function love.update(dt)
                                                 local s = item:match("^%s*(.-)%s*$")
                                                 local dexnum = tonumber(s)
                                                 if dexnum then
-                                                    for k, v in pairs(pmod) do
-                                                        if type(v) == "table" and v.defaults and (v.defaults.dex == dexnum or v.defaults.pokedex == dexnum) then
-                                                            if v.new then
-                                                                local inst = v.new()
-                                                                -- determine level from min/max lists if provided
-                                                                local minn = tonumber(mins[idx])
-                                                                local maxn = tonumber(maxs[idx])
-                                                                if minn and maxn then
-                                                                    if minn > maxn then local tmp = minn; minn = maxn; maxn = tmp end
-                                                                    inst.level = math.max(1, math.random(minn, maxn))
-                                                                elseif minn then
-                                                                    inst.level = math.max(1, minn)
-                                                                elseif maxn then
-                                                                    inst.level = math.max(1, maxn)
-                                                                end
-                                                                table.insert(wildList, inst)
+                                                    -- Search PokemonSpecies table for matching dex number
+                                                    for speciesId, speciesData in pairs(pmod.PokemonSpecies) do
+                                                        if speciesData.id == dexnum then
+                                                            -- Determine level from min/max lists if provided
+                                                            local minn = tonumber(mins[idx])
+                                                            local maxn = tonumber(maxs[idx])
+                                                            local level = 1
+                                                            if minn and maxn then
+                                                                if minn > maxn then local tmp = minn; minn = maxn; maxn = tmp end
+                                                                level = math.max(1, math.random(minn, maxn))
+                                                            elseif minn then
+                                                                level = math.max(1, minn)
+                                                            elseif maxn then
+                                                                level = math.max(1, maxn)
                                                             end
+                                                            local inst = pmod.Pokemon:new(speciesId, level)
+                                                            table.insert(wildList, inst)
                                                             break
                                                         end
                                                     end
