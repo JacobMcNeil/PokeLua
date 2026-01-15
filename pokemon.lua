@@ -27,7 +27,7 @@ PokemonSpecies = {
             speed = 90
         },
         learnset = {
-            [1] = {"thunder_shock"},
+            [1] = {"protect", "fly","hyper_beam", "mega_drain", "solar_beam" ,"thunder_shock","thunder_wave", "sleep_powder", "poison_powder", "confuse_ray","quick_attack","Swords Dance", "bite"},
             [5] = {"tail_whip"},
             [6] = {"growl"},
             [10] = {"quick_attack"},
@@ -39,8 +39,8 @@ PokemonSpecies = {
             into = "raichu"
         },
         sprite = {
-            front = "assets/pokemon/pikachu_front.png",
-            back  = "assets/pokemon/pikachu_back.png"
+            front = "tiled/sprites/pokemon_front/pikachu.png",
+            back  = "tiled/sprites/pokemon_back/pikachu.png"
         }
     },
 
@@ -77,8 +77,8 @@ PokemonSpecies = {
             }
         },
         sprite = {
-            front = "assets/pokemon/eevee_front.png",
-            back  = "assets/pokemon/eevee_back.png"
+            front = "tiled/sprites/pokemon_front/eevee.png",
+            back  = "tiled/sprites/pokemon_back/eevee.png"
         }
     },
 
@@ -112,8 +112,8 @@ PokemonSpecies = {
             into = "ivysaur"
         },
         sprite = {
-            front = "assets/pokemon/bulbasaur_front.png",
-            back  = "assets/pokemon/bulbasaur_back.png"
+            front = "tiled/sprites/pokemon_front/bulbasaur.png",
+            back  = "tiled/sprites/pokemon_back/bulbasaur.png"
         }
     },
 
@@ -147,8 +147,8 @@ PokemonSpecies = {
             into = "charmeleon"
         },
         sprite = {
-            front = "assets/pokemon/charmander_front.png",
-            back  = "assets/pokemon/charmander_back.png"
+            front = "tiled/sprites/pokemon_front/charmander.png",
+            back  = "tiled/sprites/pokemon_back/charmander.png"
         }
     },
 
@@ -174,7 +174,8 @@ PokemonSpecies = {
         learnset = {
             [1] = {"tackle", "tail_whip"},
             [7] = {"water_gun"},
-            [10] = {"withdraw"}
+            [10] = {"withdraw"},
+            [11] = {"thunder_shock"}
         },
         evolution = {
             method = "level",
@@ -182,8 +183,369 @@ PokemonSpecies = {
             into = "wartortle"
         },
         sprite = {
-            front = "assets/pokemon/squirtle_front.png",
-            back  = "assets/pokemon/squirtle_back.png"
+            front = "tiled/sprites/pokemon_front/squirtle.png",
+            back  = "tiled/sprites/pokemon_back/squirtle.png"
+        }
+    },
+
+    --------------------------------------------------
+    -- EVOLUTIONS
+    --------------------------------------------------
+
+    -- Pikachu evolution
+    raichu = {
+        id = 26,
+        name = "Raichu",
+        types = {"electric"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 75,
+        baseExpYield = 218,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"static"},
+        hiddenAbility = "lightning_rod",
+        baseStats = {
+            hp = 60,
+            attack = 90,
+            defense = 55,
+            spAttack = 90,
+            spDefense = 80,
+            speed = 110
+        },
+        learnset = {
+            [1] = {"thunder_shock", "tail_whip", "quick_attack", "thunderbolt"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/raichu.png",
+            back  = "tiled/sprites/pokemon_back/raichu.png"
+        }
+    },
+
+    -- Bulbasaur line
+    ivysaur = {
+        id = 2,
+        name = "Ivysaur",
+        types = {"grass", "poison"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"overgrow"},
+        hiddenAbility = "chlorophyll",
+        baseStats = {
+            hp = 60,
+            attack = 62,
+            defense = 63,
+            spAttack = 80,
+            spDefense = 80,
+            speed = 60
+        },
+        learnset = {
+            [1] = {"tackle", "growl", "vine_whip"},
+            [20] = {"razor_leaf"},
+            [28] = {"sleep_powder"}
+        },
+        evolution = {
+            method = "level",
+            level = 32,
+            into = "venusaur"
+        },
+        sprite = {
+            front = "tiled/sprites/pokemon_front/ivysaur.png",
+            back  = "tiled/sprites/pokemon_back/ivysaur.png"
+        }
+    },
+
+    venusaur = {
+        id = 3,
+        name = "Venusaur",
+        types = {"grass", "poison"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 236,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"overgrow"},
+        hiddenAbility = "chlorophyll",
+        baseStats = {
+            hp = 80,
+            attack = 82,
+            defense = 83,
+            spAttack = 100,
+            spDefense = 100,
+            speed = 80
+        },
+        learnset = {
+            [1] = {"tackle", "growl", "vine_whip", "razor_leaf"},
+            [32] = {"solar_beam"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/venusaur.png",
+            back  = "tiled/sprites/pokemon_back/venusaur.png"
+        }
+    },
+
+    -- Charmander line
+    charmeleon = {
+        id = 5,
+        name = "Charmeleon",
+        types = {"fire"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"blaze"},
+        hiddenAbility = "solar_power",
+        baseStats = {
+            hp = 58,
+            attack = 64,
+            defense = 58,
+            spAttack = 80,
+            spDefense = 65,
+            speed = 80
+        },
+        learnset = {
+            [1] = {"scratch", "growl", "ember"},
+            [17] = {"dragon_rage"},
+            [24] = {"slash"}
+        },
+        evolution = {
+            method = "level",
+            level = 36,
+            into = "charizard"
+        },
+        sprite = {
+            front = "tiled/sprites/pokemon_front/charmeleon.png",
+            back  = "tiled/sprites/pokemon_back/charmeleon.png"
+        }
+    },
+
+    charizard = {
+        id = 6,
+        name = "Charizard",
+        types = {"fire", "flying"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 240,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"blaze"},
+        hiddenAbility = "solar_power",
+        baseStats = {
+            hp = 78,
+            attack = 84,
+            defense = 78,
+            spAttack = 109,
+            spDefense = 85,
+            speed = 100
+        },
+        learnset = {
+            [1] = {"scratch", "growl", "ember", "slash"},
+            [36] = {"flamethrower"},
+            [46] = {"fire_blast"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/charizard.png",
+            back  = "tiled/sprites/pokemon_back/charizard.png"
+        }
+    },
+
+    -- Squirtle line
+    wartortle = {
+        id = 8,
+        name = "Wartortle",
+        types = {"water"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"torrent"},
+        hiddenAbility = "rain_dish",
+        baseStats = {
+            hp = 59,
+            attack = 63,
+            defense = 80,
+            spAttack = 65,
+            spDefense = 80,
+            speed = 58
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "water_gun"},
+            [20] = {"bite"},
+            [28] = {"rapid_spin"}
+        },
+        evolution = {
+            method = "level",
+            level = 36,
+            into = "blastoise"
+        },
+        sprite = {
+            front = "tiled/sprites/pokemon_front/wartortle.png",
+            back  = "tiled/sprites/pokemon_back/wartortle.png"
+        }
+    },
+
+    blastoise = {
+        id = 9,
+        name = "Blastoise",
+        types = {"water"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 239,
+        baseFriendship = 70,
+        growthRate = "medium_slow",
+        abilities = {"torrent"},
+        hiddenAbility = "rain_dish",
+        baseStats = {
+            hp = 79,
+            attack = 83,
+            defense = 100,
+            spAttack = 85,
+            spDefense = 105,
+            speed = 78
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "water_gun", "bite"},
+            [36] = {"hydro_pump"},
+            [42] = {"skull_bash"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/blastoise.png",
+            back  = "tiled/sprites/pokemon_back/blastoise.png"
+        }
+    },
+
+    -- Eevee evolutions
+    vaporeon = {
+        id = 134,
+        name = "Vaporeon",
+        types = {"water"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 184,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"water_absorb"},
+        hiddenAbility = "hydration",
+        baseStats = {
+            hp = 130,
+            attack = 65,
+            defense = 60,
+            spAttack = 110,
+            spDefense = 95,
+            speed = 65
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "water_gun"},
+            [20] = {"aurora_beam"},
+            [36] = {"hydro_pump"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/vaporeon.png",
+            back  = "tiled/sprites/pokemon_back/vaporeon.png"
+        }
+    },
+
+    jolteon = {
+        id = 135,
+        name = "Jolteon",
+        types = {"electric"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 184,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"volt_absorb"},
+        hiddenAbility = "quick_feet",
+        baseStats = {
+            hp = 65,
+            attack = 65,
+            defense = 60,
+            spAttack = 110,
+            spDefense = 95,
+            speed = 130
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "thunder_shock"},
+            [20] = {"double_kick"},
+            [36] = {"thunder"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/jolteon.png",
+            back  = "tiled/sprites/pokemon_back/jolteon.png"
+        }
+    },
+
+    flareon = {
+        id = 136,
+        name = "Flareon",
+        types = {"fire"},
+        genderRatio = { male = 87.5, female = 12.5 },
+        catchRate = 45,
+        baseExpYield = 184,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"flash_fire"},
+        hiddenAbility = "guts",
+        baseStats = {
+            hp = 65,
+            attack = 130,
+            defense = 60,
+            spAttack = 95,
+            spDefense = 110,
+            speed = 65
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "ember"},
+            [20] = {"fire_spin"},
+            [36] = {"flamethrower"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/flareon.png",
+            back  = "tiled/sprites/pokemon_back/flareon.png"
+        }
+    },
+
+    --------------------------------------------------
+    -- TEST POKEMON (for debugging)
+    --------------------------------------------------
+
+    exp_dummy = {
+        id = 9999,
+        name = "EXP Dummy",
+        types = {"normal"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 255,
+        baseExpYield = 5000,  -- Gives tons of EXP!
+        baseFriendship = 70,
+        growthRate = "fast",
+        abilities = {"run_away"},
+        hiddenAbility = nil,
+        baseStats = {
+            hp = 1,      -- Dies in one hit
+            attack = 1,
+            defense = 1,
+            spAttack = 1,
+            spDefense = 1,
+            speed = 1
+        },
+        learnset = {
+            [1] = {"splash"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/pokemon_front/exp_dummy.png",
+            back  = "tiled/sprites/pokemon_back/exp_dummy.png"
         }
     }
 }
@@ -334,17 +696,23 @@ end
 function Pokemon:gainExp(amount)
     self.exp = self.exp + amount
     local levelsGained = {}
+    local pendingEvolution = nil
     -- Check for level ups
     while self.level < 100 do
         local expForNext = self:getExpForLevel(self.level + 1)
         if self.exp >= expForNext then
             table.insert(levelsGained, self.level + 1)
             self:levelUp()
+            -- Check if Pokemon can evolve after this level up
+            local canEvolve, evolveInto = self:canEvolveByLevel()
+            if canEvolve then
+                pendingEvolution = evolveInto
+            end
         else
             break
         end
     end
-    return levelsGained
+    return levelsGained, pendingEvolution
 end
 
 -- Calculate total experience needed to reach a specific level based on growth rate
@@ -414,6 +782,66 @@ end
 
 function Pokemon:__tostring()
     return self.nickname or "Pokemon"
+end
+
+-- Check if this Pokemon can evolve by level
+function Pokemon:canEvolveByLevel()
+    local evo = self.species.evolution
+    if not evo then return false end
+    if evo.method == "level" and evo.level and self.level >= evo.level then
+        return true, evo.into
+    end
+    return false
+end
+
+-- Check if this Pokemon can evolve with a specific item
+function Pokemon:canEvolveWithItem(itemId)
+    local evo = self.species.evolution
+    if not evo then return false end
+    
+    if evo.method == "item" and evo.item == itemId then
+        return true, evo.into
+    end
+    
+    -- Handle branching evolutions (like Eevee)
+    if evo.method == "branch" and evo.options then
+        for _, opt in ipairs(evo.options) do
+            if opt.method == "item" and opt.item == itemId then
+                return true, opt.into
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Evolve this Pokemon into a new species
+function Pokemon:evolve(newSpeciesId)
+    local newSpecies = PokemonSpecies[newSpeciesId]
+    if not newSpecies then
+        return false, "Unknown species: " .. tostring(newSpeciesId)
+    end
+    
+    local oldName = self.nickname
+    local oldSpeciesName = self.species.name
+    
+    -- Update species
+    self.speciesId = newSpeciesId
+    self.species = newSpecies
+    self.name = newSpecies.name
+    
+    -- Update nickname if it was the old species name
+    if self.nickname == oldSpeciesName then
+        self.nickname = newSpecies.name
+    end
+    
+    -- Recalculate stats for the new species
+    self.stats = self:calculateStats()
+    
+    -- Learn any new moves from the new species' learnset
+    self:learnMovesForLevel()
+    
+    return true, oldName .. " evolved into " .. newSpecies.name .. "!"
 end
 
 return {

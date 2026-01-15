@@ -16,10 +16,11 @@
         },
         "inside.tmx": {
             "expandedObjectLayers": [
+                4,
                 3
             ],
             "scale": 5.5,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
                 "x": 100,
                 "y": 185.36363636363637
@@ -33,9 +34,9 @@
                 3
             ],
             "scale": 8,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 179.375,
+                "x": 245.125,
                 "y": 69.4375
             }
         },

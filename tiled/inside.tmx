@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="36" tilewidth="8" tileheight="8" infinite="0" nextlayerid="4" nextobjectid="8">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="36" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="10">
  <tileset firstgid="1" name="pokeCenter" tilewidth="8" tileheight="8" tilecount="300" columns="50">
   <image source="sprites/pokeCenter.png" width="404" height="48"/>
  </tileset>
  <tileset firstgid="301" source="collision.tsx"/>
- <tileset firstgid="302" source="pokeCenter.tsx"/>
- <tileset firstgid="602" source="warp.tsx"/>
+ <tileset firstgid="309" source="pokeCenter.tsx"/>
+ <tileset firstgid="609" source="warp.tsx"/>
  <layer id="1" name="ground" width="40" height="36">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -93,6 +93,18 @@
     <property name="target_map" value="tiled/map.tmx"/>
     <property name="target_x" type="int" value="25"/>
     <property name="target_y" type="int" value="11"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="interactable">
+  <object id="8" x="48.5455" y="145.273" width="78" height="13.6364">
+   <properties>
+    <property name="action" value="heal"/>
+   </properties>
+  </object>
+  <object id="9" x="129.273" y="128.727" width="29.8182" height="13.8182">
+   <properties>
+    <property name="action" value="box"/>
    </properties>
   </object>
  </objectgroup>
