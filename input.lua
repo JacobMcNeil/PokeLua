@@ -199,9 +199,10 @@ end
 function M.touchpressed(id, x, y, callbacks)
     if M.controlMode == "handheld" then return end  -- No touch controls in handheld mode
     
-    local sx, sy = screenToPixels(x, y)
+    -- Touch coordinates from Love2D are already in pixels
+    -- Don't convert them
     for dir, b in pairs(M.uiButtons) do
-        if pointInRect(sx, sy, b.x, b.y, b.w, b.h) then
+        if pointInRect(x, y, b.x, b.y, b.w, b.h) then
             M.uiInput[dir] = true
             M.activeTouches[id] = dir
             if callbacks and callbacks[dir] then
