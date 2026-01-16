@@ -1344,7 +1344,7 @@ function M.keypressed(key)
     if not M.active then return end
     -- If we're waiting for the player to press Z to advance the battle log, block other inputs
     if M.waitingForZ then
-        if key == "z" then
+        if key == "z" or key == "return" or key == "enter" then
             -- Execute and remove the deferred action associated with the most recently displayed log
             -- (the end of the `M.battleLog` list).
             local actionCount = 0
