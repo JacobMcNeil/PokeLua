@@ -405,6 +405,8 @@ function love.update(dt)
     -- Update menu and battle
     if menu and menu.update then menu.update(dt) end
     if battle and battle.update then battle.update(dt) end
+    -- Always update input (cooldown timer, etc.) so it decrements while moving or in menus
+    if input.update then input.update(dt) end
     
     -- Skip player updates if menu or battle is active
     if (menu and menu.isOpen and menu.isOpen()) or (battle and battle.isActive and battle.isActive()) then

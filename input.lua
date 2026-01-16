@@ -12,6 +12,10 @@ M.activeTouches = {}  -- map touch id / "mouse" -> dir
 M.uiButtons = {}      -- populated in init() (screen pixels)
 M.touchActiveButtons = {}  -- tracks buttons currently pressed by touch (to block emulated mouse)
 
+-- Global input cooldown (ignore inputs while > 0)
+M.inputCooldown = 0
+M.inputCooldownTime = 0.2  -- seconds to ignore further inputs after one is accepted
+
 -- Control mode: "touchscreen" or "handheld"
 M.controlMode = "touchscreen"
 
@@ -170,22 +174,29 @@ end
 -------------------------------------------------
 
 function M.mousepressed(x, y, button, callbacks)
+    -- delegate to unified handler (mouse button 1 only)
     if button ~= 1 then return end
-    if M.controlMode == "handheld" then return end  -- No touch controls in handheld mode
-    
-    for dir, b in pairs(M.uiButtons) do
-        if pointInRect(x, y, b.x, b.y, b.w, b.h) then
-            -- Skip if touch already activated this button (Windows emulates mouse from touch)
-            if M.touchActiveButtons[dir] then
-                return
-            end
-            M.uiInput[dir] = true
-            M.activeTouches["mouse"] = dir
-            if callbacks and callbacks[dir] then
-                callbacks[dir]()
+    if M.controlMode == "handheld" then return end
+    if M.inputCooldown and M.inputCooldown > 0 then return end
+    local function handlePress(sourceId, px, py, cb, isTouch)
+        for dir, b in pairs(M.uiButtons) do
+            if pointInRect(px, py, b.x, b.y, b.w, b.h) then
+                -- If this is an emulated mouse event and a touch already activated the button, ignore
+                if not isTouch and M.touchActiveButtons[dir] then
+                    return
+                end
+                M.uiInput[dir] = true
+                M.activeTouches[sourceId] = dir
+                if isTouch then
+                    M.touchActiveButtons[dir] = true
+                end
+                -- Start global cooldown to suppress rapid extra inputs
+                M.inputCooldown = M.inputCooldownTime
+                if cb and cb[dir] then cb[dir]() end
             end
         end
     end
+    handlePress("mouse", x, y, callbacks, false)
 end
 
 function M.mousereleased(x, y, button)
@@ -202,18 +213,28 @@ end
 -------------------------------------------------
 
 function M.touchpressed(id, x, y, callbacks)
-    if M.controlMode == "handheld" then return end  -- No touch controls in handheld mode
-    
+    if M.controlMode == "handheld" then return end
+    if M.inputCooldown and M.inputCooldown > 0 then return end
     local sx, sy = screenToPixels(x, y)
-    for dir, b in pairs(M.uiButtons) do
-        if pointInRect(sx, sy, b.x, b.y, b.w, b.h) then
-            M.uiInput[dir] = true
-            M.activeTouches[id] = dir
-            M.touchActiveButtons[dir] = true  -- Mark as touch-activated
-            if callbacks and callbacks[dir] then
-                callbacks[dir]()
+    -- reuse mouse handler logic but mark as touch
+    local function handleTouchPress(tid, px, py, cb)
+        for dir, b in pairs(M.uiButtons) do
+            if pointInRect(px, py, b.x, b.y, b.w, b.h) then
+                M.uiInput[dir] = true
+                M.activeTouches[tid] = dir
+                M.touchActiveButtons[dir] = true
+                if cb and cb[dir] then cb[dir]() end
             end
         end
+    end
+    handleTouchPress(id, sx, sy, callbacks)
+end
+
+-- Update cooldown timer (call from main update loop)
+function M.update(dt)
+    if M.inputCooldown and M.inputCooldown > 0 then
+        M.inputCooldown = M.inputCooldown - dt
+        if M.inputCooldown < 0 then M.inputCooldown = 0 end
     end
 end
 
@@ -222,7 +243,7 @@ function M.touchreleased(id, x, y)
     if dir then
         M.uiInput[dir] = false
         M.activeTouches[id] = nil
-        M.touchActiveButtons[dir] = nil  -- Clear touch-activated flag
+        M.touchActiveButtons[dir] = nil
     end
 end
 

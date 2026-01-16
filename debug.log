@@ -11686,3 +11686,342 @@
 [2026-01-15 18:26:42] battle.update: moving queued log -> visible; queue=	1	 logs=	0
 [2026-01-15 18:26:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
 [2026-01-15 18:26:44] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:34:22] battle.startWildBattle: starting wild battle
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:34:22]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:34:22]   found class: 	table: 0x020e3493f018
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e349f8410
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:34:22]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:34:22]   found class: 	table: 0x020e34964578
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e349dfbb0
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:34:22]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:34:22]   found class: 	table: 0x020e34a00798
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e349e09a8
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:34:22]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:34:22]   found class: 	table: 0x020e32f106f0
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e34a0cab0
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:34:22]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:34:22]   found class: 	table: 0x020e3493f018
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e34a0da00
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:34:22]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:34:22]   found class: 	table: 0x020e34964578
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e34a0e2b8
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:34:22]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:34:22]   found class: 	table: 0x020e34a00798
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e34a0f148
+[2026-01-15 18:34:22] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:34:22]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:34:22]   found class: 	table: 0x020e32f106f0
+[2026-01-15 18:34:22]   attempting to instantiate move class
+[2026-01-15 18:34:22]   instantiation result: suc=	true	 inst=	table: 0x020e34a0cb30
+[2026-01-15 18:34:22] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:34:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:34:23] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:39:01] battle.startWildBattle: starting wild battle
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:39:01]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93d1840
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93e3428
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:39:01]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93e9298
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93e4250
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:39:01]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93e1c48
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93ee7b8
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:39:01]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93c5110
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93ef380
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:39:01]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93d1840
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93eff80
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:39:01]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93e9298
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93f0830
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:39:01]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93e1c48
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93f10f8
+[2026-01-15 18:39:01] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:39:01]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:39:01]   found class: 	table: 0x024da93c5110
+[2026-01-15 18:39:01]   attempting to instantiate move class
+[2026-01-15 18:39:01]   instantiation result: suc=	true	 inst=	table: 0x024da93f19f0
+[2026-01-15 18:39:01] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:39:03] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:39:03] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:41:47] battle.startWildBattle: starting wild battle
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:41:47]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9d6d1228
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9efe6070
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:41:47]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9dba8eb0
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9ca035a8
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:41:47]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9dbad9a0
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9c9f5ee8
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:41:47]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9d693140
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9c9f5970
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:41:47]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9d6d1228
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9d70c480
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:41:47]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9dba8eb0
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9efe92e0
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:41:47]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9dbad9a0
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9db5ba68
+[2026-01-15 18:41:47] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:41:47]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:41:47]   found class: 	table: 0x01fb9d693140
+[2026-01-15 18:41:47]   attempting to instantiate move class
+[2026-01-15 18:41:47]   instantiation result: suc=	true	 inst=	table: 0x01fb9d6daeb0
+[2026-01-15 18:41:47] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:41:50] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:41:50] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:43:39] battle.startWildBattle: starting wild battle
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:43:39]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9f15c8
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020186f31950
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:43:39]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:43:39]   found class: 	table: 0x020186f4e050
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020186fa7930
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:43:39]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9c3838
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020186fa3f38
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:43:39]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9c6580
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020186f93148
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:43:39]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9f15c8
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020186f8c3d8
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:43:39]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:43:39]   found class: 	table: 0x020186f4e050
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x02018707a918
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:43:39]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9c3838
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x020187074650
+[2026-01-15 18:43:39] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:43:39]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:43:39]   found class: 	table: 0x0201fc9c6580
+[2026-01-15 18:43:39]   attempting to instantiate move class
+[2026-01-15 18:43:39]   instantiation result: suc=	true	 inst=	table: 0x0201870725c0
+[2026-01-15 18:43:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:44:22] battle.startWildBattle: starting wild battle
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:44:22]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf97bb78
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf98d750
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:44:22]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf9935c0
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf98e578
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:44:22]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf98bf70
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf998ae0
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:44:22]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf96f3b8
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf9996a8
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:44:22]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf97bb78
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf99a140
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:44:22]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf9935c0
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf99a9f0
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:44:22]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf98bf70
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf99b2b8
+[2026-01-15 18:44:22] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:44:22]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:44:22]   found class: 	table: 0x026dbf96f3b8
+[2026-01-15 18:44:22]   attempting to instantiate move class
+[2026-01-15 18:44:22]   instantiation result: suc=	true	 inst=	table: 0x026dbf99bd20
+[2026-01-15 18:44:22] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:44:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:44:23] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:45:39] battle.startWildBattle: starting wild battle
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:45:39]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bc2c250
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786e01d6e0
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:45:39]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:45:39]   found class: 	table: 0x02786e0120a8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786e01e508
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:45:39]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bbcc4f8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786e01fca0
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:45:39]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bbe76f8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786e020bd0
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:45:39]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bc2c250
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786e020c18
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:45:39]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:45:39]   found class: 	table: 0x02786e0120a8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786bbeac48
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:45:39]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bbcc4f8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786bbeb500
+[2026-01-15 18:45:39] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:45:39]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:45:39]   found class: 	table: 0x02786bbe76f8
+[2026-01-15 18:45:39]   attempting to instantiate move class
+[2026-01-15 18:45:39]   instantiation result: suc=	true	 inst=	table: 0x02786bbfd328
+[2026-01-15 18:45:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:40] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:40] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:45:44] resolveMoveInstance: got table, checking for use/pp
+[2026-01-15 18:45:44]   found use method, returning move instance
+[2026-01-15 18:45:44] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:45:44]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:45:44]   found class: 	table: 0x02786bbcc4f8
+[2026-01-15 18:45:44]   attempting to instantiate move class
+[2026-01-15 18:45:44]   instantiation result: suc=	true	 inst=	table: 0x02786e18b880
+[2026-01-15 18:45:44] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:45:44]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:45:44]   found class: 	table: 0x02786bbcc4f8
+[2026-01-15 18:45:44]   attempting to instantiate move class
+[2026-01-15 18:45:44]   instantiation result: suc=	true	 inst=	table: 0x02786e18c3f8
+[2026-01-15 18:45:44] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:46] resolveMoveInstance: got table, checking for use/pp
+[2026-01-15 18:45:46]   found use method, returning move instance
+[2026-01-15 18:45:46] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-15 18:45:46] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-15 18:45:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-15 18:45:46] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-15 18:45:46] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:47] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:47] battle: move executed successfully: 	Tail Whip
+[2026-01-15 18:45:47]   result.message: 	Pikachu avoided the attack!
+[2026-01-15 18:45:47]   result.damage: 	nil
+[2026-01-15 18:45:47] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-15 18:45:47] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:47] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:47] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:45:51] resolveMoveInstance: got table, checking for use/pp
+[2026-01-15 18:45:51]   found use method, returning move instance
+[2026-01-15 18:45:51] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:45:51]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:45:51]   found class: 	table: 0x02786bbe76f8
+[2026-01-15 18:45:51]   attempting to instantiate move class
+[2026-01-15 18:45:51]   instantiation result: suc=	true	 inst=	table: 0x02786df19f28
+[2026-01-15 18:45:51] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:45:51]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:45:51]   found class: 	table: 0x02786bbe76f8
+[2026-01-15 18:45:51]   attempting to instantiate move class
+[2026-01-15 18:45:51]   instantiation result: suc=	true	 inst=	table: 0x02786df1aaa8
+[2026-01-15 18:45:51] resolveMoveInstance: got table, checking for use/pp
+[2026-01-15 18:45:51]   found use method, returning move instance
+[2026-01-15 18:45:51] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:52] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:52] moves.Move:use: calculating damage
+[2026-01-15 18:45:52]   target object: 	Pikachu
+[2026-01-15 18:45:52]   target.name: 	Pikachu
+[2026-01-15 18:45:52]   target.type: 	nil
+[2026-01-15 18:45:52]   target.types: 	table: 0x02786de8c820
+[2026-01-15 18:45:52]   calling getTypeMultiplier: attackType=	Flying	 targetTypes=	table: 0x02786de8c820
+[2026-01-15 18:45:52]   getTypeMultiplier returned: 	0.5
+[2026-01-15 18:45:52] battle: move executed successfully: 	Fly
+[2026-01-15 18:45:52]   result.message: 	It dealt 9 damage! It's not very effective...
+[2026-01-15 18:45:52]   result.damage: 	9
+[2026-01-15 18:45:52] resolveMoveInstance: got table, checking for use/pp
+[2026-01-15 18:45:52]   found use method, returning move instance
+[2026-01-15 18:45:52] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-15 18:45:52] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-15 18:45:52] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-15 18:45:52] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-15 18:45:52] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:53] moves.Move:use: calculating damage
+[2026-01-15 18:45:53]   target object: 	Pikachu
+[2026-01-15 18:45:53]   target.name: 	Pikachu
+[2026-01-15 18:45:53]   target.type: 	nil
+[2026-01-15 18:45:53]   target.types: 	table: 0x02786de8c820
+[2026-01-15 18:45:53]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x02786de8c820
+[2026-01-15 18:45:53]   getTypeMultiplier returned: 	1
+[2026-01-15 18:45:53] battle: move executed successfully: 	Hyper Beam
+[2026-01-15 18:45:53]   result.message: 	It dealt 9 damage!
+[2026-01-15 18:45:53]   result.damage: 	9
+[2026-01-15 18:45:53] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-15 18:45:53] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:45:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:45:53] battle.keypressed after run: logCount=	0	 queue=	0
