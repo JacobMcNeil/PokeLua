@@ -1086,35 +1086,9 @@ local function initBattleState(playerObj)
     if ok and movesModule then
         if M.p1 then
             movesModule.initStatStages(M.p1)
-            -- Clear all volatile battle status from previous battles
-            M.p1.recharging = nil
-            M.p1.charging = nil
-            M.p1.chargingMove = nil
-            M.p1.lockedMove = nil
-            M.p1.protectCount = nil
-            M.p1.confused = nil
-            M.p1.confusedTurns = nil
-            M.p1.seeded = nil
-            M.p1.infatuated = nil
-            M.p1.trapped = nil
-            M.p1.curse = nil
-            M.p1.nightmare = nil
         end
         if M.p2 then
             movesModule.initStatStages(M.p2)
-            -- Clear all volatile battle status from previous battles
-            M.p2.recharging = nil
-            M.p2.charging = nil
-            M.p2.chargingMove = nil
-            M.p2.lockedMove = nil
-            M.p2.protectCount = nil
-            M.p2.confused = nil
-            M.p2.confusedTurns = nil
-            M.p2.seeded = nil
-            M.p2.infatuated = nil
-            M.p2.trapped = nil
-            M.p2.curse = nil
-            M.p2.nightmare = nil
         end
     end
     
@@ -1344,7 +1318,7 @@ function M.keypressed(key)
     if not M.active then return end
     -- If we're waiting for the player to press Z to advance the battle log, block other inputs
     if M.waitingForZ then
-        if key == "z" or key == "return" or key == "enter" then
+        if key == "z" then
             -- Execute and remove the deferred action associated with the most recently displayed log
             -- (the end of the `M.battleLog` list).
             local actionCount = 0

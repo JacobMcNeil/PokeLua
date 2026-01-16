@@ -11657,3 +11657,32 @@
 [2026-01-15 18:08:53] battle.update: moving queued log -> visible; queue=	1	 logs=	0
 [2026-01-15 18:08:54] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
 [2026-01-15 18:08:54] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-15 18:26:42] battle.startWildBattle: starting wild battle
+[2026-01-15 18:26:42] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-15 18:26:42]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-15 18:26:42]   found class: 	table: 0x01b9e1f5a6a0
+[2026-01-15 18:26:42]   attempting to instantiate move class
+[2026-01-15 18:26:42]   instantiation result: suc=	true	 inst=	table: 0x01b9e1f6c278
+[2026-01-15 18:26:42] resolveMoveInstance: trying to resolve 	protect
+[2026-01-15 18:26:42]   trying keys: 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect	 / 	protect
+[2026-01-15 18:26:42]   found class: 	table: 0x01b9e1f720e8
+[2026-01-15 18:26:42]   attempting to instantiate move class
+[2026-01-15 18:26:42]   instantiation result: suc=	true	 inst=	table: 0x01b9e1f6d0a0
+[2026-01-15 18:26:42] resolveMoveInstance: trying to resolve 	fly
+[2026-01-15 18:26:42]   trying keys: 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly	 / 	fly
+[2026-01-15 18:26:42]   found class: 	table: 0x01b9e1f6aa98
+[2026-01-15 18:26:42]   attempting to instantiate move class
+[2026-01-15 18:26:42]   instantiation result: suc=	true	 inst=	table: 0x01b9e1f77410
+[2026-01-15 18:26:42] resolveMoveInstance: trying to resolve 	hyper_beam
+[2026-01-15 18:26:42]   trying keys: 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam	 / 	hyper_beam	 / 	hyper_beam	 / 	hyperbeam
+[2026-01-15 18:26:42]   found class: 	table: 0x01b9e1b2df38
+[2026-01-15 18:26:42]   attempting to instantiate move class
+[2026-01-15 18:26:42]   instantiation result: suc=	true	 inst=	table: 0x01b9e1f77fd8
+[2026-01-15 18:26:42] resolveMoveInstance: trying to resolve 	splash
+[2026-01-15 18:26:42]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-15 18:26:42]   found class: 	table: 0x01b9e1f736c8
+[2026-01-15 18:26:42]   attempting to instantiate move class
+[2026-01-15 18:26:42]   instantiation result: suc=	true	 inst=	table: 0x01b9e1f78ce8
+[2026-01-15 18:26:42] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-15 18:26:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-15 18:26:44] battle.keypressed after run: logCount=	0	 queue=	0
