@@ -10,6 +10,7 @@ local M = {}
 M.uiInput = {up = false, down = false, left = false, right = false, a = false, b = false, start = false}
 M.activeTouches = {}  -- map touch id / "mouse" -> dir
 M.uiButtons = {}      -- populated in init() (screen pixels)
+M.touchActiveButtons = {}  -- tracks buttons currently pressed by touch (to block emulated mouse)
 
 -- Control mode: "touchscreen" or "handheld"
 M.controlMode = "touchscreen"
@@ -24,10 +25,6 @@ M.blockDir = nil
 M.blockTimer = 0
 M.blockDelay = 0.1  -- seconds to wait while holding after a turn
 
--- Track active touch inputs to prevent mouse emulation from double-triggering
--- On Windows touchscreens, a touch event also generates a mouse event
-M.touchActive = {}  -- map dir -> true when a touch is actively pressing that button
-
 -------------------------------------------------
 -- HELPERS
 -------------------------------------------------
@@ -36,24 +33,11 @@ local function pointInRect(px, py, rx, ry, rw, rh)
     return px >= rx and py >= ry and px <= rx + rw and py <= ry + rh
 end
 
--- Convert touch/mouse coordinates to our game coordinate system
--- Handles both normalized coordinates (0-1 on some platforms) and 
--- high-DPI scaling on touchscreen laptops
-local function toGameCoords(x, y)
+local function screenToPixels(x, y)
     local ww, wh = love.graphics.getWidth(), love.graphics.getHeight()
-    
-    -- Handle normalized coordinates (0-1 range, used on some mobile platforms)
-    if x <= 1 and y <= 1 and x >= 0 and y >= 0 then
+    if x <= 1 and y <= 1 then
         return x * ww, y * wh
     end
-    
-    -- Handle high-DPI scaling: touch coordinates may be in physical pixels
-    -- while our game coordinates are in logical pixels
-    local dpiScale = love.window.getDPIScale and love.window.getDPIScale() or 1
-    if dpiScale ~= 1 then
-        return x / dpiScale, y / dpiScale
-    end
-    
     return x, y
 end
 
@@ -189,14 +173,10 @@ function M.mousepressed(x, y, button, callbacks)
     if button ~= 1 then return end
     if M.controlMode == "handheld" then return end  -- No touch controls in handheld mode
     
-    -- Convert coordinates to game coordinate system
-    local gx, gy = toGameCoords(x, y)
-    
     for dir, b in pairs(M.uiButtons) do
-        if pointInRect(gx, gy, b.x, b.y, b.w, b.h) then
-            -- Skip if this button is already being pressed by touch
-            -- (Windows touchscreens emit both touch AND mouse events)
-            if M.touchActive[dir] then
+        if pointInRect(x, y, b.x, b.y, b.w, b.h) then
+            -- Skip if touch already activated this button (Windows emulates mouse from touch)
+            if M.touchActiveButtons[dir] then
                 return
             end
             M.uiInput[dir] = true
@@ -212,10 +192,7 @@ function M.mousereleased(x, y, button)
     if button ~= 1 then return end
     local dir = M.activeTouches["mouse"]
     if dir then
-        -- Only release if not being held by touch
-        if not M.touchActive[dir] then
-            M.uiInput[dir] = false
-        end
+        M.uiInput[dir] = false
         M.activeTouches["mouse"] = nil
     end
 end
@@ -227,15 +204,12 @@ end
 function M.touchpressed(id, x, y, callbacks)
     if M.controlMode == "handheld" then return end  -- No touch controls in handheld mode
     
-    -- Convert coordinates to game coordinate system
-    local gx, gy = toGameCoords(x, y)
-    
+    local sx, sy = screenToPixels(x, y)
     for dir, b in pairs(M.uiButtons) do
-        if pointInRect(gx, gy, b.x, b.y, b.w, b.h) then
+        if pointInRect(sx, sy, b.x, b.y, b.w, b.h) then
             M.uiInput[dir] = true
             M.activeTouches[id] = dir
-            -- Mark this button as being pressed by touch (to block emulated mouse events)
-            M.touchActive[dir] = true
+            M.touchActiveButtons[dir] = true  -- Mark as touch-activated
             if callbacks and callbacks[dir] then
                 callbacks[dir]()
             end
@@ -248,8 +222,7 @@ function M.touchreleased(id, x, y)
     if dir then
         M.uiInput[dir] = false
         M.activeTouches[id] = nil
-        -- Clear touch active flag for this button
-        M.touchActive[dir] = nil
+        M.touchActiveButtons[dir] = nil  -- Clear touch-activated flag
     end
 end
 
