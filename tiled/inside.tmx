@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="36" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="10">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="36" tilewidth="8" tileheight="8" infinite="0" nextlayerid="5" nextobjectid="12">
  <tileset firstgid="1" name="pokeCenter" tilewidth="8" tileheight="8" tilecount="300" columns="50">
   <image source="sprites/pokeCenter.png" width="404" height="48"/>
  </tileset>
@@ -97,7 +97,7 @@
   </object>
  </objectgroup>
  <objectgroup id="4" name="interactable">
-  <object id="8" x="48.5455" y="145.273" width="78" height="13.6364">
+  <object id="8" x="48.5455" y="145.273" width="62" height="13.6364">
    <properties>
     <property name="action" value="heal"/>
    </properties>
@@ -105,6 +105,12 @@
   <object id="9" x="129.273" y="128.727" width="29.8182" height="13.8182">
    <properties>
     <property name="action" value="box"/>
+   </properties>
+  </object>
+  <object id="11" x="113.636" y="144.727" width="14" height="13.8182">
+   <properties>
+    <property name="action" value="shop"/>
+    <property name="id" value="pokemart"/>
    </properties>
   </object>
  </objectgroup>

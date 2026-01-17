@@ -7,7 +7,9 @@ local camera = require("camera")
 local input = require("input")
 local menu = require("menu")
 local battle = require("battle")
+local shop = require("shop")
 local log = require("log")
+local encounters = require("encounters")
 
 -------------------------------------------------
 -- CONSTANTS
@@ -16,6 +18,14 @@ local log = require("log")
 local RENDER_SCALE = 3
 local POV_W, POV_H = 160, 144
 local PLAYER_STEP = 2  -- tiles per move (16px = 2 * 8px tiles)
+local TARGET_FPS = 60  -- Target frame rate for frame limiting
+local MIN_DT = 1 / TARGET_FPS  -- Minimum time between frames
+
+-------------------------------------------------
+-- FRAME TIMING
+-------------------------------------------------
+
+local frameAccumulator = 0  -- Accumulates time for frame limiting
 
 -------------------------------------------------
 -- UI STATE
@@ -76,28 +86,18 @@ local player = {
     }
 }
 
--- Initialize player's Pokemon party
-do
-    local ok, pmod = pcall(require, "pokemon")
-    if ok and pmod and pmod.Pokemon then
-        table.insert(player.party, pmod.Pokemon:new("pikachu", 5))
-        table.insert(player.party, pmod.Pokemon:new("squirtle", 5))
-    end
-end
+-- Pokemon module reference (loaded later in love.load)
+local pokemonModule = nil
 
 -- Initialize player's inventory (bag)
 do
     local ok, itemModule = pcall(require, "item")
     if ok and itemModule and itemModule.Inventory then
         player.bag = itemModule.Inventory:new()
-        -- Add starting items including evolution stones
-        player.bag:add("potion", 5)
-        player.bag:add("pokeball", 10)
-        player.bag:add("fire_stone", 1)
-        player.bag:add("water_stone", 1)
-        player.bag:add("thunder_stone", 1)
-        player.bag:add("leaf_stone", 1)
-        player.bag:add("moon_stone", 1)
+        -- Add one of each item
+        for itemId, itemData in pairs(itemModule.ItemData) do
+            player.bag:add(itemId, 1)
+        end
     end
 end
 
@@ -144,74 +144,57 @@ end
 
 -------------------------------------------------
 -- HELPER: Check for wild encounter
+-- Uses the routes layer + collision tiles (grass/water) + encounters module
 -------------------------------------------------
 
 local function checkEncounter()
-    local cx = player.x + player.size * 0.5
-    local cy = player.y + player.size * 0.5
-    local encounter = map.getEncounterAt(cx, cy)
-    
-    if not encounter then return end
     if battle.isActive and battle.isActive() then return end
     
+    -- Get player center position for route detection
+    local cx = player.x + player.size * 0.5
+    local cy = player.y + player.size * 0.5
+    
+    -- Check what terrain type we're on (grass or water)
+    local terrainType = map.getEncounterTerrainAt(player.tx, player.ty)
+    if not terrainType then return end  -- Not on grass or water
+    
+    -- Get the route we're in
+    local routeId = map.getRouteAt(cx, cy)
+    if not routeId then return end  -- Not in any route zone
+    
+    -- Check if this route has encounters for this terrain type
+    if not encounters.hasEncounters(routeId, terrainType) then return end
+    
+    -- Roll for encounter (10% chance)
     local roll = math.random(1, 100)
-    if roll > 10 then return end  -- 10% encounter rate
+    if roll > 10 then return end
     
-    -- Parse species list from encounter zone
-    local speciesProp = encounter.properties.species
-    local wildList = nil
-    
-    if speciesProp and speciesProp ~= "" then
-        local ok, pmod = pcall(require, "pokemon")
-        if ok and pmod and pmod.Pokemon and pmod.PokemonSpecies then
-            wildList = {}
-            
-            -- Parse optional min/max level CSVs
-            local minsProp = encounter.properties.minlevel or encounter.properties.minlevels or ""
-            local maxsProp = encounter.properties.maxlevel or encounter.properties.maxlevels or ""
-            
-            local function splitToList(str)
-                local t = {}
-                for part in (str or ""):gmatch("([^,]+)") do
-                    table.insert(t, part:match("^%s*(.-)%s*$"))
-                end
-                return t
-            end
-            
-            local mins = splitToList(minsProp)
-            local maxs = splitToList(maxsProp)
-            
-            local idx = 0
-            for item in speciesProp:gmatch("([^,]+)") do
-                idx = idx + 1
-                local s = item:match("^%s*(.-)%s*$")
-                local dexnum = tonumber(s)
-                if dexnum then
-                    for speciesId, speciesData in pairs(pmod.PokemonSpecies) do
-                        if speciesData.id == dexnum then
-                            local minn = tonumber(mins[idx])
-                            local maxn = tonumber(maxs[idx])
-                            local level = 1
-                            if minn and maxn then
-                                if minn > maxn then minn, maxn = maxn, minn end
-                                level = math.max(1, math.random(minn, maxn))
-                            elseif minn then
-                                level = math.max(1, minn)
-                            elseif maxn then
-                                level = math.max(1, maxn)
-                            end
-                            local inst = pmod.Pokemon:new(speciesId, level)
-                            table.insert(wildList, inst)
-                            break
-                        end
-                    end
-                end
-            end
-            if #wildList == 0 then wildList = nil end
+    -- Check for repel effect
+    if player.repelSteps and player.repelSteps > 0 then
+        local leadPokemon = player.party and player.party[1]
+        local leadLevel = leadPokemon and leadPokemon.level or 1
+        
+        -- Get minimum encounter level for this route/terrain
+        local minEncounterLevel = encounters.getMinEncounterLevel(routeId, terrainType)
+        
+        if minEncounterLevel < leadLevel then
+            -- Repel prevents this encounter
+            return
         end
     end
     
-    battle.start(wildList, player)
+    -- Roll for the specific Pokemon encounter
+    local encounterData = encounters.rollEncounter(routeId, terrainType)
+    if not encounterData then return end
+    
+    -- Create the wild Pokemon
+    local ok, pmod = pcall(require, "pokemon")
+    if not ok or not pmod or not pmod.Pokemon then return end
+    
+    local wildPokemon = pmod.Pokemon:new(encounterData.species, encounterData.level)
+    if wildPokemon then
+        battle.start({wildPokemon}, player)
+    end
 end
 
 -------------------------------------------------
@@ -224,7 +207,48 @@ local function checkWarp()
     local warp = map.getWarpAt(cx, cy)
     
     if warp then
-        loadMapAndSpawn(warp.targetMap, warp.targetX, warp.targetY, warp.targetDir)
+        local needsMapChange = (warp.targetMap ~= player.currentMap)
+        
+        if needsMapChange then
+            -- Load the target map
+            map.load(warp.targetMap)
+            player.currentMap = warp.targetMap
+        end
+        
+        -- Find the destination warp by ID (excluding current warp position)
+        local destTX, destTY, stepDir = map.findWarpById(warp.warpId, warp.currentX, warp.currentY)
+        
+        if destTX and destTY then
+            -- Spawn player at destination warp (don't change direction if stepDir is "none")
+            spawnPlayer(destTX, destTY, stepDir ~= "none" and stepDir or nil)
+            
+            -- Automatically step off the warp in the step direction (unless stepDir is "none")
+            if stepDir ~= "none" then
+                local stepAmount = PLAYER_STEP
+                if stepDir == "up" then
+                    player.ty = player.ty - stepAmount
+                    player.targetY = (player.ty - 1) * map.tileSize
+                elseif stepDir == "down" then
+                    player.ty = player.ty + stepAmount
+                    player.targetY = (player.ty - 1) * map.tileSize
+                elseif stepDir == "left" then
+                    player.tx = player.tx - stepAmount
+                    player.targetX = (player.tx - 1) * map.tileSize
+                elseif stepDir == "right" then
+                    player.tx = player.tx + stepAmount
+                    player.targetX = (player.tx - 1) * map.tileSize
+                end
+                
+                -- Update player position and set moving state
+                player.moving = true
+                player.moveProgress = 0
+                player.startX = player.x
+                player.startY = player.y
+            else
+                -- For "none", ensure standing frame is set for current direction
+                player.animIndex = animation.getStandingFrame(player.dir)
+            end
+        end
     end
 end
 
@@ -235,24 +259,19 @@ end
 local function updateEncounterText()
     local cx = player.x + player.size * 0.5
     local cy = player.y + player.size * 0.5
-    local encounter = map.getEncounterAt(cx, cy)
+    
+    -- Get terrain type and route
+    local terrainType = map.getEncounterTerrainAt(player.tx, player.ty)
+    local routeId = map.getRouteAt(cx, cy)
     
     encounterText = ""
-    if encounter then
-        local sp = ""
-        for pk, pv in pairs(encounter.properties) do
-            if type(pk) == "string" and pk:lower():match("^species") then
-                if pv ~= nil and tostring(pv) ~= "" then
-                    sp = tostring(pv)
-                    break
-                end
-            end
-        end
-        if sp ~= "" then
-            encounterText = "Species: " .. sp
-        else
-            encounterText = "Species: (any)"
-        end
+    
+    if routeId and terrainType then
+        encounterText = "Route: " .. routeId .. " (" .. terrainType .. ")"
+    elseif routeId then
+        encounterText = "Route: " .. routeId
+    elseif terrainType then
+        encounterText = "Terrain: " .. terrainType
     end
 end
 
@@ -262,6 +281,23 @@ end
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
+    
+    -- Clear map cache to ensure fresh loading after code changes
+    map.clearCache()
+    
+    -- Initialize Pokemon species from JSON (must be done after love is initialized)
+    local ok, pmod = pcall(require, "pokemon")
+    if ok and pmod then
+        pokemonModule = pmod
+        if pmod.init then
+            pmod.init()  -- Load species data from pokemon_data.json
+        end
+        -- Initialize player's Pokemon party
+        if pmod.Pokemon then
+            table.insert(player.party, pmod.Pokemon:new("pikachu", 5))
+            table.insert(player.party, pmod.Pokemon:new("squirtle", 5))
+        end
+    end
     
     -- Set camera viewport
     camera.viewportW = POV_W
@@ -291,8 +327,8 @@ function love.load()
     input.init()
     
     -- Default spawn
-    local defaultMapPath = "tiled/inside.tmx"
-    local defaultSpawnTX, defaultSpawnTY, defaultSpawnDir = 9, 25, "right"
+    local defaultMapPath = "tiled/johto.tmx"
+    local defaultSpawnTX, defaultSpawnTY, defaultSpawnDir = 513, 953, "right"
     
     -- Load default map
     loadMapAndSpawn(defaultMapPath, defaultSpawnTX, defaultSpawnTY, defaultSpawnDir)
@@ -402,14 +438,25 @@ end
 -------------------------------------------------
 
 function love.update(dt)
-    -- Update menu and battle
+    -- Frame rate limiting: if vsync isn't working, sleep to reduce CPU usage
+    -- This is a soft limit that helps reduce CPU when the system allows higher than 60fps
+    local sleepTime = MIN_DT - dt
+    if sleepTime > 0.001 then
+        love.timer.sleep(sleepTime * 0.9)  -- Sleep for most of the remaining time
+    end
+    
+    -- Clamp dt to prevent huge jumps if game was paused
+    if dt > 0.1 then dt = 0.1 end
+    
+    -- Update menu, battle, and shop
     if menu and menu.update then menu.update(dt) end
     if battle and battle.update then battle.update(dt) end
+    if shop and shop.update then shop.update(dt) end
     -- Always update input (cooldown timer, etc.) so it decrements while moving or in menus
     if input.update then input.update(dt) end
     
-    -- Skip player updates if menu or battle is active
-    if (menu and menu.isOpen and menu.isOpen()) or (battle and battle.isActive and battle.isActive()) then
+    -- Skip player updates if menu, battle, or shop is active
+    if (menu and menu.isOpen and menu.isOpen()) or (battle and battle.isActive and battle.isActive()) or (shop and shop.isOpen and shop.isOpen()) then
         return
     end
     
@@ -486,6 +533,15 @@ function love.update(dt)
             player.animIndex = animation.getStandingFrame(player.dir)
             animation.onStepComplete(player)
             
+            -- Decrement repel steps
+            if player.repelSteps and player.repelSteps > 0 then
+                player.repelSteps = player.repelSteps - 1
+                if player.repelSteps <= 0 then
+                    player.repelSteps = nil
+                    -- Could show message "Repel's effect wore off!"
+                end
+            end
+            
             -- Check for encounters and warps after completing step
             checkEncounter()
             checkWarp()
@@ -538,6 +594,12 @@ function love.keypressed(key)
         return
     end
     
+    -- Route to shop if open
+    if shop and shop.isOpen and shop.isOpen() then
+        if shop.keypressed then shop.keypressed(key) end
+        return
+    end
+    
     -- Debug speed controls
     if key == "[" then
         player.speed = math.max(10, player.speed - 20)
@@ -570,6 +632,15 @@ function love.keypressed(key)
             -- Start a test trainer battle
             battle.startTrainerBattle("test_trainer", player)
             infoText = "Trainer battle started!"
+        end
+    
+    -- Debug shop toggle (press S to open test shop)
+    elseif key == "s" or key == "S" then
+        if shop and shop.isOpen and shop.isOpen() then
+            -- Don't force close - let shop handle it
+        elseif shop and shop.openShop then
+            shop.openShop("test_shop", player)
+            infoText = "Shop opened!"
         end
     
     -- Interact / talk
@@ -658,6 +729,20 @@ function love.keypressed(key)
                 else
                     infoText = "Invalid trainer ID"
                 end
+                
+            elseif action == "shop" then
+                -- Open a shop
+                local shopId = interactable.id
+                if shopId and shopId ~= "" then
+                    if shop and shop.openShop then
+                        shop.openShop(shopId, player)
+                        infoText = "Welcome to the shop!"
+                    else
+                        infoText = "Shop system not available"
+                    end
+                else
+                    infoText = "Invalid shop ID"
+                end
             else
                 infoText = "Unknown action: " .. tostring(action)
             end
@@ -714,6 +799,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("up") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("up") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("up") end
             end
         end,
         down = function()
@@ -721,6 +808,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("down") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("down") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("down") end
             end
         end,
         left = function()
@@ -728,6 +817,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("left") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("left") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("left") end
             end
         end,
         right = function()
@@ -735,6 +826,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("right") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("right") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("right") end
             end
         end,
         a = function()
@@ -742,6 +835,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("return") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("z") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("return") end
             else
                 love.keypressed("z")
             end
@@ -752,6 +847,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("space") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("space") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("space") end
             else
                 love.keypressed("x")
             end
@@ -761,6 +858,8 @@ local function getInputCallbacks()
                 if menu.keypressed then menu.keypressed("space") end
             elseif battle and battle.isActive and battle.isActive() then
                 if battle.keypressed then battle.keypressed("space") end
+            elseif shop and shop.isOpen and shop.isOpen() then
+                if shop.keypressed then shop.keypressed("space") end
             else
                 love.keypressed("space")
             end
@@ -789,6 +888,9 @@ end
 -------------------------------------------------
 
 function love.draw()
+    -- Set visible area for tile culling before drawing
+    map.setVisibleArea(camera.x, camera.y, camera.viewportW, camera.viewportH)
+    
     -- Draw world (scaled)
     camera.attach(RENDER_SCALE)
     map.draw()
@@ -829,6 +931,9 @@ function love.draw()
     
     -- Draw battle overlay
     if battle and battle.draw then battle.draw() end
+    
+    -- Draw shop overlay
+    if shop and shop.draw then shop.draw() end
     
     -- Draw on-screen buttons
     input.drawButtons()

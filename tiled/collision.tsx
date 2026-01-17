@@ -29,4 +29,9 @@
    <property name="jump" value="left"/>
   </properties>
  </tile>
+ <tile id="6">
+  <properties>
+   <property name="grass" type="bool" value="true"/>
+  </properties>
+ </tile>
 </tileset>

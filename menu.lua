@@ -59,6 +59,12 @@ M.showControlSettings = false
 M.controlSettingsSelected = 1
 M.controlSettingsOptions = {"Touchscreen", "Handheld", "Back"}
 
+-- Key holding state for menu navigation
+M.heldKeys = {}  -- Tracks which keys are being held
+M.holdDelays = {}  -- Tracks how long each key has been held
+M.holdInitialDelay = 0.3  -- Delay before first repeat
+M.holdRepeatDelay = 0.1   -- Delay between repeats
+
 -- Sprite cache for Pokemon images
 local spriteCache = {}
 
@@ -113,14 +119,18 @@ M.currentBagItems = {}
 M.bagItemMenuOpen = false
 M.bagItemMenuSelected = 1
 M.bagItemMenuItemIndex = 1
-M.bagItemMenuOptions = {"Use", "Toss"}
-M.bagCategories = {"medicine", "pokeball", "battle_item", "key_item", "tm", "berry", "misc"}
+M.bagItemMenuOptions = {"Use", "Give", "Toss"}
+M.bagCategories = {"medicine", "pokeball", "battle_item", "held_item", "key_item", "tm", "berry", "misc"}
 M.bagCurrentCategory = 1 -- index into bagCategories
 M.bagUsingItem = false
 M.bagItemToUse = nil
 M.bagUsePokemonSelected = 1
 M.bagItemMessage = nil -- Message to display after item use
-M.bagItemMessage = nil -- Message to display after item use
+M.bagSelectingMove = false -- For PP items that target moves
+M.bagMoveSelected = 1
+M.bagGivingItem = false -- For giving items to Pokemon to hold
+M.bagGivePokemonSelected = 1
+M.pendingEscapeRope = false -- Flag to trigger teleport after message acknowledged
 
 -- Box menu state
 M.showBox = false
@@ -129,10 +139,10 @@ M.boxSide = "party" -- "party" or "box"
 M.boxPartySelected = 1
 M.boxBoxSelected = 1
 
--- Pokemon submenu state (Summary/Move/Cancel)
+-- Pokemon submenu state (Summary/Move/Take/Cancel)
 M.pokemonActionMenuOpen = false  -- Shows the action submenu for selected Pokemon
 M.pokemonActionSelected = 1
-M.pokemonActionOptions = {"Summary", "Move", "Cancel"}
+M.pokemonActionOptions = {"Summary", "Move", "Take", "Cancel"}
 
 -- Pokemon move/swap mode state
 M.pokemonMoveMode = false  -- True when in move/swap mode
@@ -157,6 +167,7 @@ local log = require("log")
 -- Helper function to refresh bag items for the current category
 local function refresh_bag_items()
     M.currentBagItems = {}
+    M.bagScrollOffset = 0
     if M.player and M.player.bag then
         local category = M.bagCategories[M.bagCurrentCategory]
         local items = M.player.bag[category] or {}
@@ -404,7 +415,34 @@ function M.openBoxMenu()
 end
 
 function M.update(dt)
-    -- reserved for future menu animation/logic
+    if not M.open then return end
+    
+    -- Handle held keys for repeating actions
+    local keysToCheck = {"up", "down", "left", "right"}
+    for _, keyName in ipairs(keysToCheck) do
+        if love.keyboard.isDown(keyName) then
+            -- Key is being held down
+            if not M.heldKeys[keyName] then
+                -- Key just started being held
+                M.heldKeys[keyName] = true
+                M.holdDelays[keyName] = 0
+            else
+                -- Key has been held, increment delay
+                M.holdDelays[keyName] = (M.holdDelays[keyName] or 0) + dt
+                -- Check if enough time has passed for repeating
+                if M.holdDelays[keyName] >= M.holdInitialDelay then
+                    -- Time for another repeat
+                    M.holdDelays[keyName] = M.holdDelays[keyName] - M.holdRepeatDelay
+                    -- Trigger the action again
+                    M.keypressed(keyName)
+                end
+            end
+        else
+            -- Key is not being held
+            M.heldKeys[keyName] = nil
+            M.holdDelays[keyName] = nil
+        end
+    end
 end
 
 function M.keypressed(key)
@@ -465,12 +503,99 @@ function M.keypressed(key)
                 M.bagUsingItem = false
                 M.bagItemToUse = nil
                 M.bagItemMenuOpen = false
+                
+                -- Handle escape rope teleport
+                if M.pendingEscapeRope then
+                    M.pendingEscapeRope = false
+                    M.close()
+                    -- Teleport player to last heal location
+                    if M.player and M.player.lastHealLocation then
+                        local loc = M.player.lastHealLocation
+                        -- If on a different map, would need map change logic
+                        -- For now, teleport to the stored position
+                        if loc.x and loc.y then
+                            M.player.x = loc.x
+                            M.player.y = loc.y
+                            M.player.tx = math.floor(loc.x / 16) + 1
+                            M.player.ty = math.floor(loc.y / 16) + 1
+                        end
+                    end
+                end
                 return
             end
             return -- Block other input while showing message
         end
         
         if M.bagUsingItem then
+            -- Check if we're selecting a move (for PP items)
+            if M.bagSelectingMove then
+                local pokemon = M.player.party[M.bagUsePokemonSelected]
+                local moveCount = pokemon and pokemon.moves and #pokemon.moves or 0
+                
+                if key == "up" then
+                    M.bagMoveSelected = M.bagMoveSelected - 1
+                    if M.bagMoveSelected < 1 then
+                        M.bagMoveSelected = moveCount + 1 -- +1 for Cancel
+                    end
+                elseif key == "down" then
+                    M.bagMoveSelected = M.bagMoveSelected + 1
+                    if M.bagMoveSelected > moveCount + 1 then
+                        M.bagMoveSelected = 1
+                    end
+                elseif key == "space" then
+                    -- Go back to Pokemon selection
+                    M.bagSelectingMove = false
+                    M.bagMoveSelected = 1
+                    return
+                elseif key == "return" or key == "z" or key == "Z" then
+                    if M.bagMoveSelected == moveCount + 1 then
+                        -- Cancel - go back to Pokemon selection
+                        M.bagSelectingMove = false
+                        M.bagMoveSelected = 1
+                        return
+                    else
+                        -- Use item on selected move
+                        local item = M.bagItemToUse
+                        local moveIndex = M.bagMoveSelected
+                        
+                        if pokemon and item then
+                            local ok, itemModule = pcall(require, "item")
+                            if ok and itemModule and itemModule.useItem then
+                                local success, message = itemModule.useItem(item, {
+                                    type = "overworld",
+                                    target = pokemon,
+                                    moveIndex = moveIndex,
+                                    flags = {}
+                                })
+                                
+                                if message then
+                                    M.bagItemMessage = message
+                                elseif success then
+                                    M.bagItemMessage = "Used " .. tostring(item.data.name)
+                                else
+                                    M.bagItemMessage = "It won't have any effect"
+                                end
+                                
+                                log.log(M.bagItemMessage)
+                                
+                                if success and item.quantity <= 0 then
+                                    local itemIndex = M.bagItemMenuItemIndex
+                                    table.remove(M.currentBagItems, itemIndex)
+                                    if M.bagSelected > #M.currentBagItems then
+                                        M.bagSelected = math.max(1, #M.currentBagItems)
+                                    end
+                                end
+                                
+                                M.bagSelectingMove = false
+                                M.bagMoveSelected = 1
+                            end
+                        end
+                        return
+                    end
+                end
+                return
+            end
+            
             -- Pokemon selection menu for item use
             if key == "up" then
                 M.bagUsePokemonSelected = M.bagUsePokemonSelected - 1
@@ -495,9 +620,20 @@ function M.keypressed(key)
                     M.bagItemToUse = nil
                     return
                 else
-                    -- Use item on selected Pokemon
                     local pokemon = M.player.party[M.bagUsePokemonSelected]
                     local item = M.bagItemToUse
+                    
+                    -- Check if this is a move-targeting item
+                    local targetType = item and item.data and item.data.targetType or "pokemon"
+                    
+                    if targetType == "move" then
+                        -- Switch to move selection
+                        M.bagSelectingMove = true
+                        M.bagMoveSelected = 1
+                        return
+                    end
+                    
+                    -- Use item on selected Pokemon (standard flow)
                     if pokemon and item then
                         local ok, itemModule = pcall(require, "item")
                         if ok and itemModule and itemModule.useItem then
@@ -536,6 +672,72 @@ function M.keypressed(key)
             end
             return
         end
+        if M.bagGivingItem then
+            -- Pokemon selection for giving held item
+            if key == "up" then
+                M.bagGivePokemonSelected = M.bagGivePokemonSelected - 1
+                if M.bagGivePokemonSelected < 1 then
+                    local count = (M.player and M.player.party) and #M.player.party or 0
+                    M.bagGivePokemonSelected = count + 1
+                end
+            elseif key == "down" then
+                local count = (M.player and M.player.party) and #M.player.party or 0
+                M.bagGivePokemonSelected = M.bagGivePokemonSelected + 1
+                if M.bagGivePokemonSelected > count + 1 then M.bagGivePokemonSelected = 1 end
+            elseif key == "space" then
+                -- cancel giving item
+                M.bagGivingItem = false
+                M.bagItemToUse = nil
+                return
+            elseif key == "return" or key == "z" or key == "Z" then
+                local count = (M.player and M.player.party) and #M.player.party or 0
+                if M.bagGivePokemonSelected == count + 1 then
+                    -- Cancel selected
+                    M.bagGivingItem = false
+                    M.bagItemToUse = nil
+                    return
+                else
+                    -- Give item to selected Pokemon
+                    local pokemon = M.player.party[M.bagGivePokemonSelected]
+                    local item = M.bagItemToUse
+                    
+                    if pokemon and item then
+                        -- Check if Pokemon already has an item
+                        local oldItem = pokemon.heldItem
+                        if oldItem then
+                            -- Swap items - put old item back in bag
+                            if M.player and M.player.bag then
+                                M.player.bag:add(oldItem, 1)
+                            end
+                            M.bagItemMessage = tostring(pokemon.nickname or pokemon.name) .. " was already holding " .. tostring(oldItem) .. ". Swapped with " .. tostring(item.data.name) .. "."
+                        else
+                            M.bagItemMessage = tostring(pokemon.nickname or pokemon.name) .. " is now holding " .. tostring(item.data.name) .. "."
+                        end
+                        
+                        -- Give the new item
+                        pokemon.heldItem = item.data.id
+                        
+                        -- Remove from bag
+                        if M.player and M.player.bag then
+                            M.player.bag:remove(item.id, 1)
+                            if item.quantity <= 0 then
+                                local itemIndex = M.bagItemMenuItemIndex
+                                table.remove(M.currentBagItems, itemIndex)
+                                if M.bagSelected > #M.currentBagItems then
+                                    M.bagSelected = math.max(1, #M.currentBagItems)
+                                end
+                            end
+                        end
+                        
+                        log.log(M.bagItemMessage)
+                        M.bagGivingItem = false
+                        M.bagItemToUse = nil
+                    end
+                    return
+                end
+            end
+            return
+        end
         if M.bagItemMenuOpen then
             -- Item menu navigation
             if key == "up" then
@@ -564,13 +766,63 @@ function M.keypressed(key)
                     if choice == "Use" then
                         -- Check if item can be used in overworld
                         if item:canUse("overworld") then
-                            M.bagUsingItem = true
-                            M.bagItemToUse = item
-                            M.bagUsePokemonSelected = 1
-                            log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                            local targetType = item.data.targetType or "pokemon"
+                            
+                            if targetType == "self" then
+                                -- Use immediately without Pokemon selection (repel, escape rope, etc.)
+                                local ok, itemModule = pcall(require, "item")
+                                if ok and itemModule and itemModule.useItem then
+                                    local success, message, extraData = itemModule.useItem(item, {
+                                        type = "overworld",
+                                        player = M.player,
+                                        flags = M.player.flags or {}
+                                    })
+                                    if message then
+                                        M.bagItemMessage = message
+                                    elseif success then
+                                        M.bagItemMessage = "Used " .. tostring(item.data.name)
+                                    else
+                                        M.bagItemMessage = "It won't have any effect"
+                                    end
+                                    log.log(M.bagItemMessage)
+                                    
+                                    if success and item.quantity <= 0 then
+                                        table.remove(M.currentBagItems, itemIndex)
+                                        if M.bagSelected > #M.currentBagItems then
+                                            M.bagSelected = math.max(1, #M.currentBagItems)
+                                        end
+                                    end
+                                    
+                                    -- Handle escape rope teleport
+                                    if success and extraData and extraData.escapeRope then
+                                        M.pendingEscapeRope = true
+                                    end
+                                end
+                                M.bagItemMenuOpen = false
+                            elseif targetType == "move" then
+                                -- Select Pokemon first, then move (for PP items)
+                                M.bagUsingItem = true
+                                M.bagItemToUse = item
+                                M.bagUsePokemonSelected = 1
+                                M.bagSelectingMove = false -- Will be set true after Pokemon is selected
+                                log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                            else
+                                -- Default: Select Pokemon to use item on
+                                M.bagUsingItem = true
+                                M.bagItemToUse = item
+                                M.bagUsePokemonSelected = 1
+                                log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                            end
                         else
                             log.log("Cannot use " .. tostring(item.data.name) .. " here")
                         end
+                    elseif choice == "Give" then
+                        -- Give item to Pokemon to hold
+                        M.bagGivingItem = true
+                        M.bagItemToUse = item
+                        M.bagGivePokemonSelected = 1
+                        M.bagItemMenuOpen = false
+                        log.log("Select a Pokemon to give " .. tostring(item.data.name) .. " to")
                     elseif choice == "Toss" then
                         -- Remove 1 of the item from the player's bag
                         if M.player and M.player.bag then
@@ -599,13 +851,63 @@ function M.keypressed(key)
                 if choice == "Use" then
                     -- Check if item can be used in overworld
                     if item:canUse("overworld") then
-                        M.bagUsingItem = true
-                        M.bagItemToUse = item
-                        M.bagUsePokemonSelected = 1
-                        log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                        local targetType = item.data.targetType or "pokemon"
+                        
+                        if targetType == "self" then
+                            -- Use immediately without Pokemon selection (repel, escape rope, etc.)
+                            local ok, itemModule = pcall(require, "item")
+                            if ok and itemModule and itemModule.useItem then
+                                local success, message, extraData = itemModule.useItem(item, {
+                                    type = "overworld",
+                                    player = M.player,
+                                    flags = M.player.flags or {}
+                                })
+                                if message then
+                                    M.bagItemMessage = message
+                                elseif success then
+                                    M.bagItemMessage = "Used " .. tostring(item.data.name)
+                                else
+                                    M.bagItemMessage = "It won't have any effect"
+                                end
+                                log.log(M.bagItemMessage)
+                                
+                                if success and item.quantity <= 0 then
+                                    table.remove(M.currentBagItems, itemIndex)
+                                    if M.bagSelected > #M.currentBagItems then
+                                        M.bagSelected = math.max(1, #M.currentBagItems)
+                                    end
+                                end
+                                
+                                -- Handle escape rope teleport
+                                if success and extraData and extraData.escapeRope then
+                                    M.pendingEscapeRope = true
+                                end
+                            end
+                            M.bagItemMenuOpen = false
+                        elseif targetType == "move" then
+                            -- Select Pokemon first, then move (for PP items)
+                            M.bagUsingItem = true
+                            M.bagItemToUse = item
+                            M.bagUsePokemonSelected = 1
+                            M.bagSelectingMove = false
+                            log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                        else
+                            -- Default: Select Pokemon to use item on
+                            M.bagUsingItem = true
+                            M.bagItemToUse = item
+                            M.bagUsePokemonSelected = 1
+                            log.log("Select a Pokemon to use " .. tostring(item.data.name) .. " on")
+                        end
                     else
                         log.log("Cannot use " .. tostring(item.data.name) .. " here")
                     end
+                elseif choice == "Give" then
+                    -- Give item to Pokemon to hold
+                    M.bagGivingItem = true
+                    M.bagItemToUse = item
+                    M.bagGivePokemonSelected = 1
+                    M.bagItemMenuOpen = false
+                    log.log("Select a Pokemon to give " .. tostring(item.data.name) .. " to")
                 elseif choice == "Toss" then
                     -- Remove 1 of the item from the player's bag
                     if M.player and M.player.bag then
@@ -646,9 +948,27 @@ function M.keypressed(key)
             if M.bagSelected < 1 then
                 M.bagSelected = #M.currentBagItems + 1 -- wrap to back option
             end
+            -- Adjust scroll
+            if M.bagSelected <= M.bagScrollOffset then
+                M.bagScrollOffset = math.max(0, M.bagSelected - 1)
+            end
+            -- Handle wrap-around to bottom
+            local maxVisible = 8
+            if M.bagSelected == #M.currentBagItems + 1 and M.bagSelected > maxVisible then
+                M.bagScrollOffset = M.bagSelected - maxVisible
+            end
         elseif key == "down" then
             M.bagSelected = M.bagSelected + 1
             if M.bagSelected > #M.currentBagItems + 1 then M.bagSelected = 1 end
+            -- Adjust scroll
+            local maxVisible = 8
+            if M.bagSelected > M.bagScrollOffset + maxVisible then
+                M.bagScrollOffset = M.bagSelected - maxVisible
+            end
+            -- Handle wrap-around to top
+            if M.bagSelected == 1 then
+                M.bagScrollOffset = 0
+            end
         elseif key == "space" then
             -- close menu from bag
             M.close()
@@ -1067,6 +1387,26 @@ function M.keypressed(key)
                     M.pokemonMoveFirst = M.pokemonSelected
                     M.pokemonActionMenuOpen = false
                     M.pokemonActionSelected = 1
+                elseif choice == "Take" then
+                    -- Take held item from Pokemon
+                    local p = M.player.party[M.pokemonSelected]
+                    if p and p.heldItem then
+                        local itemId = p.heldItem
+                        if M.player and M.player.bag then
+                            M.player.bag:add(itemId, 1)
+                        end
+                        local itemName = tostring(itemId)
+                        local ok, itemModule = pcall(require, "item")
+                        if ok and itemModule and itemModule.ItemData and itemModule.ItemData[itemId] then
+                            itemName = itemModule.ItemData[itemId].name
+                        end
+                        log.log("Took " .. itemName .. " from " .. tostring(p.nickname or p.name))
+                        p.heldItem = nil
+                    else
+                        log.log(tostring(p.nickname or p.name) .. " isn't holding anything")
+                    end
+                    M.pokemonActionMenuOpen = false
+                    M.pokemonActionSelected = 1
                 elseif choice == "Summary" then
                     -- Open summary screen
                     M.showPokemonDetails = true
@@ -1332,14 +1672,35 @@ function M.draw()
             local backY = listStartY + lh
             UI.drawOption("Back", listX, backY, M.bagSelected == 1)
         else
-            for i, item in ipairs(M.currentBagItems) do
-                local y = listStartY + (i-1) * lh
-                local line = string.format("%s x%s", item.data.name, tostring(item.quantity))
-                UI.drawOption(line, listX, y, i == M.bagSelected)
+            -- Show scrollable list (max 8 visible at a time)
+            local maxVisible = 8
+            local startIdx = M.bagScrollOffset + 1
+            local endIdx = math.min(startIdx + maxVisible - 1, itemCount)
+            
+            local drawIdx = 0
+            for i = startIdx, endIdx do
+                local item = M.currentBagItems[i]
+                if item then
+                    local y = listStartY + drawIdx * lh
+                    local line = string.format("%s x%s", item.data.name, tostring(item.quantity))
+                    UI.drawOption(line, listX, y, i == M.bagSelected)
+                    drawIdx = drawIdx + 1
+                end
             end
-            -- Back option
-            local by = listStartY + itemCount * lh
+            
+            -- Back option (always visible)
+            local by = listStartY + drawIdx * lh
             UI.drawOption("Back", listX, by, M.bagSelected == itemCount + 1)
+            
+            -- Show scroll indicators
+            if M.bagScrollOffset > 0 then
+                love.graphics.setColor(unpack(UI.colors.textGray))
+                love.graphics.printf("^ MORE", boxX, listStartY - lh * 0.5, boxW, "center")
+            end
+            if endIdx < itemCount then
+                love.graphics.setColor(unpack(UI.colors.textGray))
+                love.graphics.printf("v MORE", boxX, listStartY + maxVisible * lh, boxW, "center")
+            end
         end
         
         -- Show item menu overlay in bottom right
@@ -1355,7 +1716,92 @@ function M.draw()
         if M.bagUsingItem and M.bagItemToUse then
             UI.drawOverlay(0.4)
             
-            local selectBoxW = ww * 0.6
+            -- Check if we're selecting a move
+            if M.bagSelectingMove then
+                local pokemon = M.player.party[M.bagUsePokemonSelected]
+                local moveCount = pokemon and pokemon.moves and #pokemon.moves or 0
+                
+                local selectBoxW = ww * 0.65
+                local selectBoxH = lh * (moveCount + 3) + 30
+                local selectBoxX = (ww - selectBoxW) / 2
+                local selectBoxY = (hh - selectBoxH) / 2
+                UI.drawBoxWithShadow(selectBoxX, selectBoxY, selectBoxW, selectBoxH)
+                
+                love.graphics.setColor(unpack(UI.colors.textDark))
+                love.graphics.printf("Use on which move?", selectBoxX, selectBoxY + 12, selectBoxW, "center")
+                
+                local listY = selectBoxY + 12 + lh * 1.5
+                local listX = selectBoxX + 30
+                
+                if moveCount == 0 then
+                    love.graphics.setColor(unpack(UI.colors.textGray))
+                    love.graphics.print("No moves", listX, listY)
+                else
+                    for i, moveId in ipairs(pokemon.moves) do
+                        local y = listY + (i-1) * lh
+                        local moveName = tostring(moveId):gsub("_", " "):gsub("(%l)(%w*)", function(a,b) return a:upper()..b end)
+                        
+                        -- Get PP info if available
+                        local ppStr = ""
+                        if pokemon._move_instances and pokemon._move_instances[i] then
+                            local inst = pokemon._move_instances[i]
+                            if type(inst) == "table" and inst.pp and inst.maxPP then
+                                ppStr = string.format(" PP: %d/%d", inst.pp, inst.maxPP)
+                            end
+                        end
+                        
+                        local line = i .. ". " .. moveName .. ppStr
+                        UI.drawOption(line, listX, y, i == M.bagMoveSelected)
+                    end
+                end
+                
+                -- Cancel option
+                local cancelY = listY + moveCount * lh
+                UI.drawOption("Cancel", listX, cancelY, M.bagMoveSelected == moveCount + 1)
+            else
+                -- Standard Pokemon selection
+                local selectBoxW = ww * 0.6
+                local count = (M.player and M.player.party) and #M.player.party or 0
+                local selectBoxH = lh * (count + 2) + 30
+                local selectBoxX = (ww - selectBoxW) / 2
+                local selectBoxY = (hh - selectBoxH) / 2
+                UI.drawBoxWithShadow(selectBoxX, selectBoxY, selectBoxW, selectBoxH)
+                
+                love.graphics.setColor(unpack(UI.colors.textDark))
+                love.graphics.printf("Use on which Pokemon?", selectBoxX, selectBoxY + 12, selectBoxW, "center")
+                
+                local listY = selectBoxY + 12 + lh * 1.5
+                local listX = selectBoxX + 30
+                
+                if count == 0 then
+                    love.graphics.setColor(unpack(UI.colors.textGray))
+                    love.graphics.print("No Pokemon", listX, listY)
+                else
+                    for i, p in ipairs(M.player.party) do
+                        local y = listY + (i-1) * lh
+                        local name = tostring(p.nickname or p.name or "Unknown")
+                        local lvl = tostring(p.level or "?")
+                        local hp = tostring(p.currentHP or 0)
+                        local max = tostring(p.stats and p.stats.hp or "?")
+                        local statusStr = UI.getStatusString(p)
+                        local heldStr = p.heldItem and " @" or ""
+                        local line = string.format("%s  Lv%s  HP:%s/%s%s", name, lvl, hp, max, heldStr)
+                        if statusStr then line = line .. "  [" .. statusStr .. "]" end
+                        UI.drawOption(line, listX, y, i == M.bagUsePokemonSelected)
+                    end
+                end
+                
+                -- Cancel option
+                local cancelY = listY + count * lh
+                UI.drawOption("Cancel", listX, cancelY, M.bagUsePokemonSelected == count + 1)
+            end
+        end
+        
+        -- Show Pokemon selection for giving item
+        if M.bagGivingItem and M.bagItemToUse then
+            UI.drawOverlay(0.4)
+            
+            local selectBoxW = ww * 0.65
             local count = (M.player and M.player.party) and #M.player.party or 0
             local selectBoxH = lh * (count + 2) + 30
             local selectBoxX = (ww - selectBoxW) / 2
@@ -1363,7 +1809,7 @@ function M.draw()
             UI.drawBoxWithShadow(selectBoxX, selectBoxY, selectBoxW, selectBoxH)
             
             love.graphics.setColor(unpack(UI.colors.textDark))
-            love.graphics.printf("Use on which Pokemon?", selectBoxX, selectBoxY + 12, selectBoxW, "center")
+            love.graphics.printf("Give to which Pokemon?", selectBoxX, selectBoxY + 12, selectBoxW, "center")
             
             local listY = selectBoxY + 12 + lh * 1.5
             local listX = selectBoxX + 30
@@ -1376,18 +1822,24 @@ function M.draw()
                     local y = listY + (i-1) * lh
                     local name = tostring(p.nickname or p.name or "Unknown")
                     local lvl = tostring(p.level or "?")
-                    local hp = tostring(p.currentHP or 0)
-                    local max = tostring(p.stats and p.stats.hp or "?")
-                    local statusStr = UI.getStatusString(p)
-                    local line = string.format("%s  Lv%s  HP:%s/%s", name, lvl, hp, max)
-                    if statusStr then line = line .. "  [" .. statusStr .. "]" end
-                    UI.drawOption(line, listX, y, i == M.bagUsePokemonSelected)
+                    -- Show currently held item if any
+                    local heldStr = ""
+                    if p.heldItem then
+                        local ok, itemModule = pcall(require, "item")
+                        if ok and itemModule and itemModule.ItemData and itemModule.ItemData[p.heldItem] then
+                            heldStr = " @" .. itemModule.ItemData[p.heldItem].name
+                        else
+                            heldStr = " @" .. tostring(p.heldItem)
+                        end
+                    end
+                    local line = string.format("%s Lv%s%s", name, lvl, heldStr)
+                    UI.drawOption(line, listX, y, i == M.bagGivePokemonSelected)
                 end
             end
             
             -- Cancel option
             local cancelY = listY + count * lh
-            UI.drawOption("Cancel", listX, cancelY, M.bagUsePokemonSelected == count + 1)
+            UI.drawOption("Cancel", listX, cancelY, M.bagGivePokemonSelected == count + 1)
         end
         
         -- Show message after item use (overlays everything)
@@ -1450,7 +1902,8 @@ function M.draw()
                 local y = listY + (i-1) * lh
                 local name = tostring(p.nickname or p.name or "???")
                 local lvl = tostring(p.level or "?")
-                local line = string.format("%s Lv%s", name, lvl)
+                local heldStr = p.heldItem and " @" or ""
+                local line = string.format("%s Lv%s%s", name, lvl, heldStr)
                 UI.drawOption(line, partyX, y, M.boxSide == "party" and i == M.boxPartySelected)
             end
         end
@@ -1479,7 +1932,8 @@ function M.draw()
                     local y = listY + drawIdx * lh
                     local name = tostring(p.nickname or p.name or "???")
                     local lvl = tostring(p.level or "?")
-                    local line = string.format("%s Lv%s", name, lvl)
+                    local heldStr = p.heldItem and " @" or ""
+                    local line = string.format("%s Lv%s%s", name, lvl, heldStr)
                     UI.drawOption(line, pcBoxX, y, M.boxSide == "box" and i == M.boxBoxSelected)
                     drawIdx = drawIdx + 1
                 end
@@ -1610,6 +2064,18 @@ function M.draw()
                 love.graphics.setColor(unpack(UI.colors.textDark))
                 love.graphics.print(string.format("%d/%d", curHp, maxHp), infoX + 165, infoY)
                 infoY = infoY + lh * 1.3
+
+                -- Held Item
+                if p.heldItem then
+                    local heldItemName = tostring(p.heldItem)
+                    local ok, itemModule = pcall(require, "item")
+                    if ok and itemModule and itemModule.ItemData and itemModule.ItemData[p.heldItem] then
+                        heldItemName = itemModule.ItemData[p.heldItem].name
+                    end
+                    love.graphics.setColor(unpack(UI.colors.textDark))
+                    love.graphics.print("Held: " .. heldItemName, infoX, infoY)
+                    infoY = infoY + lh
+                end
 
                 -- Stats in two columns
                 local function eff(stat)
@@ -1885,7 +2351,8 @@ function M.draw()
                 local hp = tostring(p.currentHP or 0)
                 local max = tostring(p.stats and p.stats.hp or "?")
                 local statusStr = UI.getStatusString(p)
-                local line = string.format("%s  Lv%s  HP:%s/%s", name, lvl, hp, max)
+                local heldStr = p.heldItem and " @" or ""
+                local line = string.format("%s  Lv%s  HP:%s/%s%s", name, lvl, hp, max, heldStr)
                 if statusStr then line = line .. "  [" .. statusStr .. "]" end
                 UI.drawOption(line, listX, y, i == M.pokemonSelected)
             end

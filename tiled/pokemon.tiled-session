@@ -10,6 +10,34 @@
         "": {
             "scaleInDock": 1
         },
+        "Cherrygrove City.tsx": {
+            "scaleInEditor": 1
+        },
+        "Johto.tmx": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                3
+            ],
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 472.5,
+                "y": 330.5
+            }
+        },
+        "Johto.tmx#NewBarkTown": {
+            "scaleInDock": 1
+        },
+        "Johto.tmx#world": {
+            "scaleInDock": 5.5
+        },
+        "Union Cave.tsx": {
+            "scaleInEditor": 1
+        },
+        "Violet City.tsx": {
+            "scaleInEditor": 1
+        },
         "collision.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 8
@@ -22,22 +50,41 @@
             "scale": 5.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 100,
+                "x": 105.54545454545453,
                 "y": 185.36363636363637
             }
         },
         "inside.tmx#pokeCenter": {
             "scaleInDock": 3
         },
-        "map.tmx": {
+        "johto.tmx": {
             "expandedObjectLayers": [
+                6,
+                5,
+                4,
                 3
             ],
-            "scale": 8,
+            "scale": 1.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 2984.333333333333,
+                "y": 7609
+            }
+        },
+        "johto.tmx#NewBarkTown": {
+            "scaleInDock": 1
+        },
+        "map.tmx": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                3
+            ],
+            "scale": 0.25,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 245.125,
-                "y": 69.4375
+                "x": 446,
+                "y": -234
             }
         },
         "map.tmx#collision": {
@@ -48,13 +95,29 @@
             "scaleInDock": 5.5,
             "scaleInEditor": 1
         },
+        "route29.tsx": {
+            "scaleInEditor": 2
+        },
+        "route30.tsx": {
+            "scaleInEditor": 1
+        },
+        "route31.tsx": {
+            "scaleInEditor": 1
+        },
+        "route32.tsx": {
+            "scaleInEditor": 1
+        },
+        "route46.tsx": {
+            "scaleInEditor": 1
+        },
         "world.tsx": {
             "scaleInDock": 4,
             "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "C:/Users/18166/Desktop/LoveTest/tiled",
-    "last.imagePath": "C:/Users/18166/Desktop/LoveTest/tiled/sprites",
+    "last.imagePath": "C:/Users/Jacob/PokeLua/tiled/sprites",
+    "map.fixedSize": false,
     "map.height": 36,
     "map.lastUsedExportFilter": "Lua files (*.lua)",
     "map.lastUsedFormat": "tmx",
@@ -66,15 +129,26 @@
     "project": "pokemon.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "Union Cave.tsx",
+        "route32.tsx",
+        "Violet City.tsx",
+        "route46.tsx",
+        "route31.tsx",
+        "route30.tsx",
+        "Cherrygrove City.tsx",
+        "route29.tsx",
+        "johto.tmx",
+        "Johto.tmx",
         "map.tmx",
-        "collision.tsx",
-        "inside.tmx",
-        "world.tsx"
+        "collision.tsx"
     ],
+    "resizeMap.removeObjects": false,
     "tileset.embedInMap": false,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 8,
         "width": 8
-    }
+    },
+    "tileset.transparentColor": "#ffffff",
+    "tileset.useTransparentColor": false
 }

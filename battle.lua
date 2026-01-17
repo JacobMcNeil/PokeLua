@@ -21,10 +21,17 @@ M.participatingPokemon = {} -- Tracks which Pokémon have participated in the ba
 M.lastUsedMoveSlot = 1 -- Track which move slot was last used for cursor persistence
 M.battleItems = {} -- Available items in battle
 M.itemSelected = nil -- Currently selected item to use
+M.battleItemScrollOffset = 0 -- Scroll offset for battle items
 M.itemSelectMode = false -- Whether we're selecting a target for an item
 M.battleItemCategories = {"medicine", "pokeball", "battle_item", "key_item", "tm", "berry"}
 M.battleCurrentCategory = 1 -- index into battleItemCategories
 M.battleCategoryItems = {} -- Items in current category
+
+-- Key holding state for battle menu navigation
+M.heldKeys = {}  -- Tracks which keys are being held
+M.holdDelays = {}  -- Tracks how long each key has been held
+M.holdInitialDelay = 0.3  -- Delay before first repeat
+M.holdRepeatDelay = 0.1   -- Delay between repeats
 
 -- Trainer battle state
 M.isTrainerBattle = false -- true if fighting a trainer, false if wild Pokemon
@@ -198,6 +205,213 @@ function M.refreshBattleCategoryItems()
     M.selectedOption = 1
 end
 
+--------------------------------------------------
+-- HELD ITEM EFFECTS
+--------------------------------------------------
+
+-- Get the held item effect ID from a Pokemon's heldItem field
+local function getHeldItemEffect(pokemon)
+    if not pokemon or not pokemon.heldItem then return nil end
+    
+    -- heldItem can be a string (item ID) or a table with id/effect
+    if type(pokemon.heldItem) == "string" then
+        -- Look up the item data to get the effect
+        local ok, itemModule = pcall(require, "item")
+        if ok and itemModule and itemModule.ItemData then
+            local data = itemModule.ItemData[pokemon.heldItem]
+            if data and data.heldEffect then
+                return data.heldEffect
+            end
+            -- For berries, use the item ID as effect
+            if data and data.category == "berry" then
+                return pokemon.heldItem
+            end
+        end
+        return pokemon.heldItem -- Return as-is if no special lookup
+    elseif type(pokemon.heldItem) == "table" then
+        return pokemon.heldItem.effect or pokemon.heldItem.id
+    end
+    return nil
+end
+
+-- Consume a held item (remove from Pokemon)
+local function consumeHeldItem(pokemon)
+    if pokemon then
+        pokemon.heldItem = nil
+    end
+end
+
+-- Apply end-of-turn held item effects (Leftovers, Black Sludge, etc.)
+local function applyEndOfTurnHeldItemEffects(pokemon, battle)
+    if not pokemon or (pokemon.currentHP or 0) <= 0 then return nil end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if not effect then return nil end
+    
+    local messages = {}
+    local name = pokemon.nickname or pokemon.name or "Pokemon"
+    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
+    
+    if effect == "leftovers" then
+        -- Restore 1/16 of max HP each turn
+        local healAmount = math.max(1, math.floor(maxHP / 16))
+        local oldHP = pokemon.currentHP
+        pokemon.currentHP = math.min(maxHP, (pokemon.currentHP or 0) + healAmount)
+        local healed = pokemon.currentHP - oldHP
+        if healed > 0 then
+            table.insert(messages, name .. " restored a little HP using its Leftovers!")
+        end
+    elseif effect == "black_sludge" then
+        -- Poison types heal; others take damage
+        local isPoisonType = false
+        local types = pokemon.types or (pokemon.species and pokemon.species.types) or {}
+        if type(types) == "string" then types = {types} end
+        for _, t in ipairs(types) do
+            if string.lower(t) == "poison" then isPoisonType = true; break end
+        end
+        
+        if isPoisonType then
+            local healAmount = math.max(1, math.floor(maxHP / 16))
+            local oldHP = pokemon.currentHP
+            pokemon.currentHP = math.min(maxHP, (pokemon.currentHP or 0) + healAmount)
+            local healed = pokemon.currentHP - oldHP
+            if healed > 0 then
+                table.insert(messages, name .. " restored HP using its Black Sludge!")
+            end
+        else
+            local damage = math.max(1, math.floor(maxHP / 8))
+            pokemon.currentHP = math.max(0, (pokemon.currentHP or 0) - damage)
+            table.insert(messages, name .. " was hurt by its Black Sludge!")
+        end
+    end
+    
+    return #messages > 0 and messages or nil
+end
+
+-- Check and apply berry effects when HP drops (call after taking damage)
+local function checkBerryTrigger(pokemon, battle)
+    if not pokemon or (pokemon.currentHP or 0) <= 0 then return nil end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if not effect then return nil end
+    
+    local messages = {}
+    local name = pokemon.nickname or pokemon.name or "Pokemon"
+    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
+    local currentHP = pokemon.currentHP or 0
+    local hpPercent = currentHP / maxHP
+    
+    -- Oran Berry: Restore 10 HP when below 50%
+    if effect == "oran_berry" and hpPercent <= 0.5 then
+        local healAmount = 10
+        local oldHP = pokemon.currentHP
+        pokemon.currentHP = math.min(maxHP, currentHP + healAmount)
+        local healed = pokemon.currentHP - oldHP
+        if healed > 0 then
+            table.insert(messages, name .. " ate its Oran Berry and restored HP!")
+            consumeHeldItem(pokemon)
+        end
+    -- Sitrus Berry: Restore 25% HP when below 50%
+    elseif effect == "sitrus_berry" and hpPercent <= 0.5 then
+        local healAmount = math.max(1, math.floor(maxHP * 0.25))
+        local oldHP = pokemon.currentHP
+        pokemon.currentHP = math.min(maxHP, currentHP + healAmount)
+        local healed = pokemon.currentHP - oldHP
+        if healed > 0 then
+            table.insert(messages, name .. " ate its Sitrus Berry and restored HP!")
+            consumeHeldItem(pokemon)
+        end
+    -- Lum Berry: Cure status condition when afflicted
+    elseif effect == "lum_berry" and pokemon.status then
+        local oldStatus = pokemon.status
+        pokemon.status = nil
+        table.insert(messages, name .. "'s Lum Berry cured its " .. tostring(oldStatus) .. "!")
+        consumeHeldItem(pokemon)
+    end
+    
+    return #messages > 0 and messages or nil
+end
+
+-- Apply Focus Sash effect (survive fatal hit at 1 HP)
+local function checkFocusSash(pokemon, damageAboutToBeTaken, battle)
+    if not pokemon then return false end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if effect ~= "focus_sash" then return false end
+    
+    local currentHP = pokemon.currentHP or 0
+    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
+    
+    -- Focus Sash only works if at full HP
+    if currentHP >= maxHP and damageAboutToBeTaken >= currentHP then
+        return true -- Will trigger focus sash
+    end
+    return false
+end
+
+local function applyFocusSash(pokemon)
+    if not pokemon then return nil end
+    local name = pokemon.nickname or pokemon.name or "Pokemon"
+    pokemon.currentHP = 1
+    consumeHeldItem(pokemon)
+    return name .. " held on using its Focus Sash!"
+end
+
+-- Get damage modifier from held items (Life Orb, Choice items)
+local function getHeldItemDamageModifier(pokemon, category)
+    if not pokemon then return 1.0 end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if not effect then return 1.0 end
+    
+    if effect == "life_orb" then
+        return 1.3 -- 30% damage boost
+    elseif effect == "choice_band" and (category == "Physical" or category == "physical") then
+        return 1.5 -- 50% boost to physical moves
+    elseif effect == "choice_specs" and (category == "Special" or category == "special") then
+        return 1.5 -- 50% boost to special moves
+    end
+    
+    return 1.0
+end
+
+-- Apply Life Orb recoil after attacking
+local function applyLifeOrbRecoil(pokemon, battle)
+    if not pokemon then return nil end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if effect ~= "life_orb" then return nil end
+    
+    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
+    local recoil = math.max(1, math.floor(maxHP / 10))
+    pokemon.currentHP = math.max(0, (pokemon.currentHP or 0) - recoil)
+    
+    local name = pokemon.nickname or pokemon.name or "Pokemon"
+    return name .. " lost some HP due to Life Orb!"
+end
+
+-- Get speed modifier from held items (Choice Scarf)
+local function getHeldItemSpeedModifier(pokemon)
+    if not pokemon then return 1.0 end
+    
+    local effect = getHeldItemEffect(pokemon)
+    if effect == "choice_scarf" then
+        return 1.5 -- 50% speed boost
+    end
+    
+    return 1.0
+end
+
+-- Export held item functions for use in battle
+M.getHeldItemEffect = getHeldItemEffect
+M.applyEndOfTurnHeldItemEffects = applyEndOfTurnHeldItemEffects
+M.checkBerryTrigger = checkBerryTrigger
+M.checkFocusSash = checkFocusSash
+M.applyFocusSash = applyFocusSash
+M.getHeldItemDamageModifier = getHeldItemDamageModifier
+M.applyLifeOrbRecoil = applyLifeOrbRecoil
+M.getHeldItemSpeedModifier = getHeldItemSpeedModifier
+
 local function queueLog(entry)
     if not entry then return end
     local item
@@ -351,6 +565,22 @@ local function queueMove(attacker, defender, mvname, after_cb)
                         queueLog(effectMsg)
                     end
                 end
+                
+                -- Apply Life Orb recoil if attacker has Life Orb and dealt damage
+                if result.damage and result.damage > 0 then
+                    local lifeOrbMsg = applyLifeOrbRecoil(attacker, M)
+                    if lifeOrbMsg then
+                        queueLog(lifeOrbMsg)
+                    end
+                    
+                    -- Check if defender's berry triggers from damage
+                    local berryMsgs = checkBerryTrigger(defender, M)
+                    if berryMsgs then
+                        for _, msg in ipairs(berryMsgs) do
+                            queueLog(msg)
+                        end
+                    end
+                end
             else
                 log.log("battle: move execution failed. ok=", ok, " result=", result)
             end
@@ -403,8 +633,76 @@ local function queueMove(attacker, defender, mvname, after_cb)
                     if ok and pmod and pmod.Pokemon then
                         -- Calculate base exp yield from the defeated Pokémon
                         local totalExpYield = pmod.Pokemon.calculateExpYield(defender, attacker.level)
-                        -- Split equally among all participating Pokémon
-                        local expShare = math.floor(totalExpYield / #M.participatingPokemon)
+                        
+                        -- Find Pokemon with Exp Share
+                        local expShareHolders = {}
+                        if M.player and M.player.party then
+                            for _, p in ipairs(M.player.party) do
+                                if p.heldItem == "exp_share" and not p:isFainted() then
+                                    table.insert(expShareHolders, p)
+                                end
+                            end
+                        end
+                        
+                        -- Exp Share holders get 50% of total, participants share the other 50%
+                        local expShareAmount = 0
+                        local participantExp = totalExpYield
+                        
+                        if #expShareHolders > 0 then
+                            -- 50% to exp share holders
+                            expShareAmount = math.floor(totalExpYield * 0.5 / #expShareHolders)
+                            -- 50% to participants
+                            participantExp = math.floor(totalExpYield * 0.5 / #M.participatingPokemon)
+                        else
+                            -- No exp share, split equally among participants
+                            participantExp = math.floor(totalExpYield / #M.participatingPokemon)
+                        end
+                        
+                        -- Award exp to Exp Share holders
+                        for _, expSharePoke in ipairs(expShareHolders) do
+                            if expSharePoke and expSharePoke.gainExp and type(expSharePoke.gainExp) == "function" then
+                                -- Capture moves before gaining exp to detect newly learned moves
+                                local movesBefore = {}
+                                if expSharePoke.moves then
+                                    for _, m in ipairs(expSharePoke.moves) do
+                                        movesBefore[m] = true
+                                    end
+                                end
+                                
+                                local levelsGained, pendingEvolution = expSharePoke:gainExp(expShareAmount)
+                                queueLog((expSharePoke.nickname or "Pokémon") .. " gained " .. expShareAmount .. " Exp. Points! (Exp. Share)")
+                                
+                                if levelsGained and #levelsGained > 0 then
+                                    for _, newLevel in ipairs(levelsGained) do
+                                        queueLog((expSharePoke.nickname or "Pokémon") .. " grew to level " .. newLevel .. "!")
+                                    end
+                                    -- Check for newly learned moves
+                                    if expSharePoke.moves then
+                                        for _, move in ipairs(expSharePoke.moves) do
+                                            if not movesBefore[move] then
+                                                -- Format move name (convert "thunder_shock" to "Thunder Shock")
+                                                local moveName = move:gsub("_", " "):gsub("(%l)(%w*)", function(a,b) return a:upper()..b end)
+                                                queueLog((expSharePoke.nickname or "Pokémon") .. " learned " .. moveName .. "!")
+                                            end
+                                        end
+                                    end
+                                    refreshMoveInstances(expSharePoke)
+                                end
+                                
+                                if pendingEvolution then
+                                    local oldName = expSharePoke.nickname
+                                    local success, evoMessage = expSharePoke:evolve(pendingEvolution)
+                                    if success then
+                                        queueLog("What? " .. oldName .. " is evolving!")
+                                        queueLog(evoMessage)
+                                        refreshMoveInstances(expSharePoke)
+                                    end
+                                end
+                            end
+                        end
+                        
+                        -- Award exp to participants
+                        local expShare = participantExp
                         
                         for _, participatingPoke in ipairs(M.participatingPokemon) do
                             if participatingPoke and participatingPoke.gainExp and type(participatingPoke.gainExp) == "function" then
@@ -600,6 +898,15 @@ local function queueMove(attacker, defender, mvname, after_cb)
                                 queueLog(msg)
                             end
                         end
+                        
+                        -- Apply held item end-of-turn effects (Leftovers, Black Sludge)
+                        local heldItemMsgs = applyEndOfTurnHeldItemEffects(attacker, M)
+                        if heldItemMsgs then
+                            for _, msg in ipairs(heldItemMsgs) do
+                                queueLog(msg)
+                            end
+                        end
+                        
                         -- Check if attacker fainted from status damage
                         if attacker.currentHP and attacker.currentHP <= 0 then
                         local faint_text = (attacker.nickname or "Pokemon") .. " fainted!"
@@ -727,6 +1034,15 @@ local function queueMove(attacker, defender, mvname, after_cb)
                             queueLog(msg)
                         end
                     end
+                    
+                    -- Apply held item end-of-turn effects (Leftovers, Black Sludge)
+                    local heldItemMsgs = applyEndOfTurnHeldItemEffects(defender, M)
+                    if heldItemMsgs then
+                        for _, msg in ipairs(heldItemMsgs) do
+                            queueLog(msg)
+                        end
+                    end
+                    
                     -- Check if defender fainted from status damage
                     if defender.currentHP and defender.currentHP <= 0 then
                         local faint_text = (defender.nickname or "Pokemon") .. " fainted!"
@@ -1080,6 +1396,14 @@ local function initBattleState(playerObj)
     M.p1AnimatedHP = (M.p1 and M.p1.currentHP) or 0
     M.p2AnimatedHP = (M.p2 and M.p2.currentHP) or 0
     M.p1AnimatedExp = (M.p1 and M.p1.exp) or 0
+    
+    -- Clear any persistent battle states from previous battles
+    if M.p1 then
+        M.p1.recharging = nil
+    end
+    if M.p2 then
+        M.p2.recharging = nil
+    end
     
     -- Initialize stat stages for both Pokemon (this is the new stat stage system)
     local ok, movesModule = pcall(require, "moves")
@@ -1580,6 +1904,7 @@ function M.keypressed(key)
             end
             M.refreshBattleCategoryItems()
             M.selectedOption = 1
+            M.battleItemScrollOffset = 0
             return
         elseif key == "right" then
             -- Next category
@@ -1589,14 +1914,33 @@ function M.keypressed(key)
             end
             M.refreshBattleCategoryItems()
             M.selectedOption = 1
+            M.battleItemScrollOffset = 0
             return
         elseif key == "up" then
             M.selectedOption = M.selectedOption - 1
             if M.selectedOption < 1 then M.selectedOption = #M.battleCategoryItems + 1 end
+            -- Adjust scroll
+            if M.selectedOption <= M.battleItemScrollOffset then
+                M.battleItemScrollOffset = math.max(0, M.selectedOption - 1)
+            end
+            -- Handle wrap-around to bottom
+            local maxVisible = 6
+            if M.selectedOption == #M.battleCategoryItems + 1 and M.selectedOption > maxVisible then
+                M.battleItemScrollOffset = M.selectedOption - maxVisible
+            end
             return
         elseif key == "down" then
             M.selectedOption = M.selectedOption + 1
             if M.selectedOption > #M.battleCategoryItems + 1 then M.selectedOption = 1 end
+            -- Adjust scroll
+            local maxVisible = 6
+            if M.selectedOption > M.battleItemScrollOffset + maxVisible then
+                M.battleItemScrollOffset = M.selectedOption - maxVisible
+            end
+            -- Handle wrap-around to top
+            if M.selectedOption == 1 then
+                M.battleItemScrollOffset = 0
+            end
             return
         elseif key == "space" then
             -- Cancel items menu
@@ -1834,6 +2178,10 @@ function M.keypressed(key)
                     if M.p1.status == "paralyzed" then p1spd = math.floor(p1spd / 4) end
                     if M.p2.status == "paralyzed" then p2spd = math.floor(p2spd / 4) end
                     
+                    -- Apply held item speed modifiers (Choice Scarf)
+                    p1spd = math.floor(p1spd * getHeldItemSpeedModifier(M.p1))
+                    p2spd = math.floor(p2spd * getHeldItemSpeedModifier(M.p2))
+                    
                     local p1first = p1spd > p2spd or (p1spd == p2spd and math.random(0, 1) == 1)
                     
                     if p1first then
@@ -1928,6 +2276,10 @@ function M.keypressed(key)
                     p2spd = math.floor(p2spd / 4)
                 end
                 
+                -- Apply held item speed modifiers (Choice Scarf)
+                p1spd = math.floor(p1spd * getHeldItemSpeedModifier(M.p1))
+                p2spd = math.floor(p2spd * getHeldItemSpeedModifier(M.p2))
+                
                 -- Check for priority moves
                 local p1priority = 0
                 local p2priority = 0
@@ -2000,6 +2352,33 @@ function M.keypressed(key)
 end
 
 function M.update(dt)
+    -- Handle held keys for repeating actions in battle menus
+    local keysToCheck = {"up", "down", "left", "right"}
+    for _, keyName in ipairs(keysToCheck) do
+        if love.keyboard.isDown(keyName) then
+            -- Key is being held down
+            if not M.heldKeys[keyName] then
+                -- Key just started being held
+                M.heldKeys[keyName] = true
+                M.holdDelays[keyName] = 0
+            else
+                -- Key has been held, increment delay
+                M.holdDelays[keyName] = (M.holdDelays[keyName] or 0) + dt
+                -- Check if enough time has passed for repeating
+                if M.holdDelays[keyName] >= M.holdInitialDelay then
+                    -- Time for another repeat
+                    M.holdDelays[keyName] = M.holdDelays[keyName] - M.holdRepeatDelay
+                    -- Trigger the action again
+                    M.keypressed(keyName)
+                end
+            end
+        else
+            -- Key is not being held
+            M.heldKeys[keyName] = nil
+            M.holdDelays[keyName] = nil
+        end
+    end
+    
     -- If there are queued messages and we're not currently waiting for Z,
     -- move one message from the queue into the visible battleLog and pause.
     if M.active and not M.waitingForZ and #M.logQueue > 0 then
@@ -2317,27 +2696,48 @@ function M.draw()
             local backY = listY + lh
             UI.drawOption("Back", listX, backY, M.selectedOption == 1)
         else
-            for i, item in ipairs(M.battleCategoryItems) do
-                local y = listY + (i-1) * lh
-                -- Show if item can be used in battle
-                local usable = item:canUse("battle")
-                local line = string.format("%s x%s%s", item.data.name, tostring(item.quantity), usable and "" or " (X)")
-                
-                if i == M.selectedOption then
-                    love.graphics.setColor(unpack(UI.colors.textSelected))
-                    love.graphics.print(">", listX - 15, y)
+            -- Show scrollable list (max 6 visible at a time)
+            local maxVisible = 6
+            local startIdx = M.battleItemScrollOffset + 1
+            local endIdx = math.min(startIdx + maxVisible - 1, itemCount)
+            
+            local drawIdx = 0
+            for i = startIdx, endIdx do
+                local item = M.battleCategoryItems[i]
+                if item then
+                    local y = listY + drawIdx * lh
+                    -- Show if item can be used in battle
+                    local usable = item:canUse("battle")
+                    local line = string.format("%s x%s%s", item.data.name, tostring(item.quantity), usable and "" or " (X)")
+                    
+                    if i == M.selectedOption then
+                        love.graphics.setColor(unpack(UI.colors.textSelected))
+                        love.graphics.print(">", listX - 15, y)
+                    end
+                    
+                    if not usable then
+                        love.graphics.setColor(unpack(UI.colors.textGray))
+                    else
+                        love.graphics.setColor(unpack(UI.colors.textDark))
+                    end
+                    love.graphics.print(line, listX, y)
+                    drawIdx = drawIdx + 1
                 end
-                
-                if not usable then
-                    love.graphics.setColor(unpack(UI.colors.textGray))
-                else
-                    love.graphics.setColor(unpack(UI.colors.textDark))
-                end
-                love.graphics.print(line, listX, y)
             end
-            -- Back option
-            local by = listY + itemCount * lh
+            
+            -- Back option (always visible)
+            local by = listY + drawIdx * lh
             UI.drawOption("Back", listX, by, M.selectedOption == itemCount + 1)
+            
+            -- Show scroll indicators
+            if M.battleItemScrollOffset > 0 then
+                love.graphics.setColor(unpack(UI.colors.textGray))
+                love.graphics.printf("^ MORE", boxX, listY - lh * 0.5, boxW, "center")
+            end
+            if endIdx < itemCount then
+                love.graphics.setColor(unpack(UI.colors.textGray))
+                love.graphics.printf("v MORE", boxX, listY + maxVisible * lh, boxW, "center")
+            end
         end
     else
         local opts = (M.mode == "menu") and M.menuOptions or M.moveOptions

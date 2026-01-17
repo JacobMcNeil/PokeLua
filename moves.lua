@@ -472,6 +472,21 @@ function M.applyStatus(pokemon, status, battle)
     -- Automatically add message to effect messages queue
     M.addEffectMessage(message)
     
+    -- Check for Lum Berry to cure status immediately
+    if pokemon.heldItem then
+        local Item = require("item")
+        local heldItemData = Item.getItem(pokemon.heldItem)
+        if heldItemData and heldItemData.effect and heldItemData.effect.type == "cure_status" then
+            -- Lum Berry cures any status
+            pokemon.status = nil
+            pokemon.sleepTurns = nil
+            pokemon.toxicCounter = nil
+            local berryName = heldItemData.name or "Lum Berry"
+            M.addEffectMessage(pokeName .. "'s " .. berryName .. " cured its status!")
+            pokemon.heldItem = nil -- Consume the berry
+        end
+    end
+    
     return true, message
 end
 
@@ -999,11 +1014,36 @@ function Move:use(user, target, battle)
         local other = self.other or 1
         local ZMove = self.zmove or 1
         local TeraShield = self.teraShield or 1
+        
+        -- Held item damage modifiers (Life Orb, Choice Band/Specs)
+        local heldItemMod = 1.0
+        if battle and battle.getHeldItemDamageModifier then
+            heldItemMod = battle.getHeldItemDamageModifier(user, category) or 1.0
+        end
 
         local base = math.floor(((((2 * Level) / 5) + 2) * Power * A / D) / 50) + 2
-        local modifier = Targets * PB * Weather * GlaiveRush * Critical * rand * STAB * Type * Burn * other * ZMove * TeraShield
+        local modifier = Targets * PB * Weather * GlaiveRush * Critical * rand * STAB * Type * Burn * other * ZMove * TeraShield * heldItemMod
         local damage = math.max(1, math.floor(base * modifier))
+        
+        -- Check for Focus Sash - survives at 1 HP if at full HP and would faint
+        local focusSashTriggered = false
+        if battle and battle.checkFocusSash and battle.applyFocusSash then
+            local targetHP = target.currentHP or 0
+            local targetMaxHP = target.stats and target.stats.hp or target.maxHP or targetHP
+            if battle.checkFocusSash(target, damage, battle) and damage >= targetHP and targetHP == targetMaxHP then
+                -- Focus Sash will trigger - cap damage at HP - 1
+                damage = targetHP - 1
+                focusSashTriggered = true
+            end
+        end
+        
         target.currentHP = math.max(0, (target.currentHP or 0) - damage)
+        
+        -- Apply Focus Sash effect message and consume item
+        if focusSashTriggered and battle.applyFocusSash then
+            local sashMsg = battle.applyFocusSash(target)
+            M.addEffectMessage(sashMsg)
+        end
         
         -- Handle draining moves - heal user for percentage of damage dealt
         if self.drainPercent and self.drainPercent > 0 and damage > 0 then
@@ -1261,6 +1301,52 @@ local Swift = Move:extend{
 }
 M.Swift = Swift
 
+-- Growth: Raises user's Attack and Sp. Attack
+local Growth = Move:extend{
+    defaults = {
+        name = "Growth",
+        type = "Normal",
+        category = "Status",
+        power = 0,
+        accuracy = 0, -- Never misses
+        maxPP = 40,
+        effect = function(user, target, battle)
+            M.modifyStatStage(user, "spAttack", 1, battle)
+            M.modifyStatStage(user, "attack", 1, battle)
+        end,
+    }
+}
+M.Growth = Growth
+
+-- Scary Face: Harshly lowers target's Speed
+local ScaryFace = Move:extend{
+    defaults = {
+        name = "Scary Face",
+        type = "Normal",
+        category = "Status",
+        power = 0,
+        accuracy = 100,
+        maxPP = 10,
+        effect = function(user, target, battle)
+            M.modifyStatStage(target, "speed", -2, battle)
+        end,
+    }
+}
+M.ScaryFace = ScaryFace
+
+-- Peck: Flying type physical move
+local Peck = Move:extend{
+    defaults = {
+        name = "Peck",
+        type = "Flying",
+        category = "Physical",
+        power = 35,
+        accuracy = 100,
+        maxPP = 35,
+    }
+}
+M.Peck = Peck
+
 local Bite = Move:extend{
     defaults = {
         name = "Bite",
@@ -1360,6 +1446,77 @@ local SwordsDance = Move:extend{
     }
 }
 M.SwordsDance = SwordsDance
+
+-- Focus Energy: Raises user's crit ratio
+local FocusEnergy = Move:extend{
+    defaults = {
+        name = "Focus Energy",
+        type = "Normal",
+        category = "Status",
+        power = 0,
+        accuracy = 0, -- Never misses
+        maxPP = 30,
+        effect = function(user, target, battle)
+            user.focusEnergy = true
+            local pokeName = user.nickname or user.name or "Pokemon"
+            M.addEffectMessage(pokeName .. " is focusing!")
+        end,
+    }
+}
+M.FocusEnergy = FocusEnergy
+
+-- Whirlwind: Forces opponent to switch
+local Whirlwind = Move:extend{
+    defaults = {
+        name = "Whirlwind",
+        type = "Normal",
+        category = "Status",
+        power = 0,
+        accuracy = 0, -- Never misses
+        maxPP = 20,
+        priority = -6, -- Goes last
+        effect = function(user, target, battle)
+            -- Force switch mechanic would need battle system support
+            M.addEffectMessage("A whirlwind blew the foe away!")
+        end,
+    }
+}
+M.Whirlwind = Whirlwind
+
+-- Super Fang: Always deals 50% of target's current HP
+local SuperFang = Move:extend{
+    defaults = {
+        name = "Super Fang",
+        type = "Normal",
+        category = "Physical",
+        power = 0, -- Fixed 50% damage
+        accuracy = 90,
+        maxPP = 10,
+        effect = function(user, target, battle)
+            -- Super Fang deals exactly 50% of target's current HP
+            local damageDealt = math.floor((target.currentHP or 0) * 0.5)
+            target.currentHP = math.max(0, (target.currentHP or 0) - damageDealt)
+        end,
+    }
+}
+M.SuperFang = SuperFang
+
+-- Mirror Move: Copies opponent's last move
+local MirrorMove = Move:extend{
+    defaults = {
+        name = "Mirror Move",
+        type = "Flying",
+        category = "Status",
+        power = 0,
+        accuracy = 0, -- Never misses
+        maxPP = 20,
+        effect = function(user, target, battle)
+            -- Mirror Move would copy the last move used by opponent
+            M.addEffectMessage("But it failed!")
+        end,
+    }
+}
+M.MirrorMove = MirrorMove
 
 -- Agility: Sharply raises user's Speed by 2 stages
 local Agility = Move:extend{
@@ -2601,6 +2758,50 @@ local StringShot = Move:extend{
 }
 M.StringShot = StringShot
 
+-- Fury Attack: Multi-hit physical attack
+local FuryAttack = Move:extend{
+    defaults = {
+        name = "Fury Attack",
+        type = "Normal",
+        category = "Physical",
+        power = 15, -- Hits 2-5 times
+        accuracy = 85,
+        maxPP = 20,
+    }
+}
+M.FuryAttack = FuryAttack
+
+-- Twineedle: Bug move that hits twice
+local Twineedle = Move:extend{
+    defaults = {
+        name = "Twineedle",
+        type = "Bug",
+        category = "Physical",
+        power = 25, -- Hits twice = 50 total
+        accuracy = 100,
+        maxPP = 20,
+        effect = function(user, target, battle)
+            if math.random() < 0.2 then
+                M.applyStatus(target, "poisoned", battle)
+            end
+        end,
+    }
+}
+M.Twineedle = Twineedle
+
+-- Pin Missile: Bug move with projectiles
+local PinMissile = Move:extend{
+    defaults = {
+        name = "Pin Missile",
+        type = "Bug",
+        category = "Physical",
+        power = 25, -- Hits 2-5 times
+        accuracy = 95,
+        maxPP = 20,
+    }
+}
+M.PinMissile = PinMissile
+
 -- ============ ROCK TYPE MOVES ============
 
 local RockThrow = Move:extend{
@@ -3115,6 +3316,88 @@ local RapidSpin = Move:extend{
 }
 M.RapidSpin = RapidSpin
 
+-- Horn Attack: Normal-type move that may cause flinching
+local HornAttack = Move:extend{
+    defaults = {
+        name = "Horn Attack",
+        type = "Normal",
+        category = "Physical",
+        power = 65,
+        accuracy = 100,
+        maxPP = 25,
+    }
+}
+M.HornAttack = HornAttack
+
+-- Wrap: Normal-type move that traps the target
+local Wrap = Move:extend{
+    defaults = {
+        name = "Wrap",
+        type = "Normal",
+        category = "Physical",
+        power = 15,
+        accuracy = 90,
+        maxPP = 20,
+        effect = function(user, target, battle)
+            if not target.trappedBy then
+                target.trappedBy = user
+                M.addEffectMessage(target.name .. " is trapped by " .. user.name .. "'s wrap!")
+            end
+        end,
+    }
+}
+M.Wrap = Wrap
+
+-- Double Slap: Normal-type move that hits 2-5 times
+local DoubleSlap = Move:extend{
+    defaults = {
+        name = "Double Slap",
+        type = "Normal",
+        category = "Physical",
+        power = 15,
+        accuracy = 85,
+        maxPP = 10,
+        hitCount = function()
+            local rolls = math.random()
+            if rolls < 0.375 then return 2
+            elseif rolls < 0.625 then return 3
+            elseif rolls < 0.875 then return 4
+            else return 5 end
+        end,
+    }
+}
+M.DoubleSlap = DoubleSlap
+
+-- Drill Peck: Flying-type move with high crit ratio
+local DrillPeck = Move:extend{
+    defaults = {
+        name = "Drill Peck",
+        type = "Flying",
+        category = "Physical",
+        power = 80,
+        accuracy = 100,
+        maxPP = 20,
+        critRatio = 2, -- High crit rate
+    }
+}
+M.DrillPeck = DrillPeck
+
+-- Glare: Normal-type status move that paralyzes
+local Glare = Move:extend{
+    defaults = {
+        name = "Glare",
+        type = "Normal",
+        category = "Status",
+        power = 0,
+        accuracy = 100,
+        maxPP = 30,
+        effect = function(user, target, battle)
+            M.applyVolatileStatus(target, "paralyzed", battle)
+        end,
+    }
+}
+M.Glare = Glare
+
 local SkullBash = Move:extend{
     defaults = {
         name = "Skull Bash",
@@ -3144,12 +3427,19 @@ M.body_slam = BodySlam
 M.slash = Slash
 M.hyper_beam = HyperBeam
 M.swift = Swift
+M.growth = Growth
+M.scary_face = ScaryFace
+M.peck = Peck
 M.bite = Bite
 M.growl = Growl
 M.tail_whip = TailWhip
 M.leer = Leer
 M.screech = Screech
 M.swords_dance = SwordsDance
+M.focus_energy = FocusEnergy
+M.whirlwind = Whirlwind
+M.super_fang = SuperFang
+M.mirror_move = MirrorMove
 M.agility = Agility
 M.nasty_plot = NastyPlot
 M.iron_defense = IronDefense
@@ -3222,6 +3512,9 @@ M.psybeam = Psybeam
 M.bug_bite = BugBite
 M.x_scissor = XScissor
 M.string_shot = StringShot
+M.fury_attack = FuryAttack
+M.twineedle = Twineedle
+M.pin_missile = PinMissile
 M.rock_throw = RockThrow
 M.rock_slide = RockSlide
 M.stone_edge = StoneEdge
@@ -3253,6 +3546,11 @@ M.synthesis = Synthesis
 M.splash = Splash
 M.rapid_spin = RapidSpin
 M.skull_bash = SkullBash
+M.horn_attack = HornAttack
+M.wrap = Wrap
+M.double_slap = DoubleSlap
+M.drill_peck = DrillPeck
+M.glare = Glare
 M.absorb = Absorb
 M.mega_drain = MegaDrain
 M.giga_impact = GigaImpact
