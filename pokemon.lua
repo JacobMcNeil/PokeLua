@@ -132,6 +132,198 @@ local fallbackPokemon = {
             front = "tiled/sprites/pokemon_front/exp_dummy.png",
             back  = "tiled/sprites/pokemon_back/exp_dummy.png"
         }
+    },
+
+    -- Custom grass-squirrel evolution line (three stages)
+    grass_squirrel = {
+        id = 10001,
+        name = "Grass Squirrel",
+        types = {"grass"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 190,
+        baseExpYield = 64,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"leaf_guard"},
+        hiddenAbility = "pickup",
+        baseStats = {
+            hp = 40,
+            attack = 45,
+            defense = 40,
+            spAttack = 35,
+            spDefense = 40,
+            speed = 50
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip"},
+            [5] = {"growth"},
+            [9] = {"razor_leaf"},
+            [13] = {"quick_attack"}
+        },
+        evolution = { method = "level", level = 16, into = "grass_squirrel_mid" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/4.png",
+            back  = "tiled/sprites/newpokemon/4.png"
+        }
+    },
+
+    grass_squirrel_mid = {
+        id = 10002,
+        name = "Bushrod",
+        types = {"grass"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 120,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"overgrow"},
+        hiddenAbility = "pickup",
+        baseStats = {
+            hp = 60,
+            attack = 70,
+            defense = 60,
+            spAttack = 55,
+            spDefense = 60,
+            speed = 65
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "growth"},
+            [16] = {"leaf_blade"},
+            [22] = {"synthesis"},
+            [28] = {"seed_bomb"}
+        },
+        evolution = { method = "level", level = 36, into = "grass_squirrel_final" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/5.png",
+            back  = "tiled/sprites/newpokemon/5.png"
+        }
+    },
+
+    grass_squirrel_final = {
+        id = 10003,
+        name = "Oakquill",
+        types = {"grass"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 45,
+        baseExpYield = 236,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"chlorophyll"},
+        hiddenAbility = "leaf_guard",
+        baseStats = {
+            hp = 85,
+            attack = 100,
+            defense = 85,
+            spAttack = 75,
+            spDefense = 85,
+            speed = 90
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "leaf_blade", "synthesis"},
+            [36] = {"wood_hammer"},
+            [44] = {"leaf_storm"},
+            [52] = {"horn_leech"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/newpokemon/6.png",
+            back  = "tiled/sprites/newpokemon/6.png"
+        }
+    }
+,
+    -- Custom fire-bird evolution line (three stages) based on "cardinel"
+    cardinel = {
+        id = 10011,
+        name = "Cardinel",
+        types = {"fire", "flying"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 45,
+        baseExpYield = 64,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"gale_wings"},
+        hiddenAbility = "flame_body",
+        baseStats = {
+            hp = 45,
+            attack = 60,
+            defense = 35,
+            spAttack = 50,
+            spDefense = 35,
+            speed = 65
+        },
+        learnset = {
+            [1] = {"peck", "ember"},
+            [7] = {"wing_attack"},
+            [12] = {"flame_charge"}
+        },
+        evolution = { method = "level", level = 18, into = "cardinel_mid" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/1.png",
+            back  = "tiled/sprites/newpokemon/1.png"
+        }
+    },
+
+    cardinel_mid = {
+        id = 10012,
+        name = "Cardifire",
+        types = {"fire", "flying"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 30,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"gale_wings"},
+        hiddenAbility = "flame_body",
+        baseStats = {
+            hp = 65,
+            attack = 85,
+            defense = 55,
+            spAttack = 85,
+            spDefense = 55,
+            speed = 95
+        },
+        learnset = {
+            [1] = {"peck", "ember", "wing_attack", "flame_charge"},
+            [18] = {"air_slash"},
+            [28] = {"flamethrower"}
+        },
+        evolution = { method = "level", level = 38, into = "cardinel_final" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/2.png",
+            back  = "tiled/sprites/newpokemon/2.png"
+        }
+    },
+
+    cardinel_final = {
+        id = 10013,
+        name = "Cardignis",
+        types = {"fire", "flying"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 20,
+        baseExpYield = 240,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"gale_wings"},
+        hiddenAbility = "flame_body",
+        baseStats = {
+            hp = 90,
+            attack = 120,
+            defense = 80,
+            spAttack = 115,
+            spDefense = 80,
+            speed = 110
+        },
+        learnset = {
+            [1] = {"peck", "ember", "air_slash", "flamethrower"},
+            [36] = {"flare_blitz"},
+            [44] = {"heat_wave"},
+            [52] = {"brave_bird"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/newpokemon/3.png",
+            back  = "tiled/sprites/newpokemon/3.png"
+        }
     }
 }
 

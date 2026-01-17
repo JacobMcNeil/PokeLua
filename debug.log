@@ -23745,3 +23745,2076 @@
 [2026-01-17 08:28:23] battle.update: moving queued log -> visible; queue=	1	 logs=	0
 [2026-01-17 08:28:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
 [2026-01-17 08:28:23] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:23] battle.startWildBattle: starting wild battle
+[2026-01-17 08:44:23] resolveMoveInstance: trying to resolve 	growl
+[2026-01-17 08:44:23]   trying keys: 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl
+[2026-01-17 08:44:23]   found class: 	table: 0x029845632070
+[2026-01-17 08:44:23]   attempting to instantiate move class
+[2026-01-17 08:44:23]   instantiation result: suc=	true	 inst=	table: 0x029845a313f0
+[2026-01-17 08:44:23] resolveMoveInstance: trying to resolve 	thunder_shock
+[2026-01-17 08:44:23]   trying keys: 	thunder_shock	 / 	thunder_shock	 / 	thundershock	 / 	thunder_shock	 / 	thunder_shock	 / 	thundershock
+[2026-01-17 08:44:23]   found class: 	table: 0x029845a19d08
+[2026-01-17 08:44:23]   attempting to instantiate move class
+[2026-01-17 08:44:23]   instantiation result: suc=	true	 inst=	table: 0x029845a321c8
+[2026-01-17 08:44:23] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 08:44:23]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 08:44:23]   found class: 	table: 0x02984562ec40
+[2026-01-17 08:44:23]   attempting to instantiate move class
+[2026-01-17 08:44:23]   instantiation result: suc=	true	 inst=	table: 0x029845689328
+[2026-01-17 08:44:23] resolveMoveInstance: trying to resolve 	growl
+[2026-01-17 08:44:23]   trying keys: 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl
+[2026-01-17 08:44:23]   found class: 	table: 0x029845632070
+[2026-01-17 08:44:23]   attempting to instantiate move class
+[2026-01-17 08:44:23]   instantiation result: suc=	true	 inst=	table: 0x029845687d88
+[2026-01-17 08:44:23] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:25] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:25] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:26] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:26]   found use method, returning move instance
+[2026-01-17 08:44:26] resolveMoveInstance: trying to resolve 	growl
+[2026-01-17 08:44:26]   trying keys: 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl
+[2026-01-17 08:44:26]   found class: 	table: 0x029845632070
+[2026-01-17 08:44:26]   attempting to instantiate move class
+[2026-01-17 08:44:26]   instantiation result: suc=	true	 inst=	table: 0x0298455cdba0
+[2026-01-17 08:44:26] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:26]   found use method, returning move instance
+[2026-01-17 08:44:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:26] moves.Move:use: calculating damage
+[2026-01-17 08:44:26]   target object: 	Hoothoot
+[2026-01-17 08:44:26]   target.name: 	Hoothoot
+[2026-01-17 08:44:26]   target.type: 	nil
+[2026-01-17 08:44:26]   target.types: 	table: 0x0298402304c8
+[2026-01-17 08:44:26]   calling getTypeMultiplier: attackType=	Electric	 targetTypes=	table: 0x0298402304c8
+[2026-01-17 08:44:26]   getTypeMultiplier returned: 	2
+[2026-01-17 08:44:26] battle: move executed successfully: 	Thunder Shock
+[2026-01-17 08:44:26]   result.message: 	It dealt 19 damage! It was super effective!
+[2026-01-17 08:44:26]   result.damage: 	19
+[2026-01-17 08:44:26] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 08:44:26] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 08:44:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 08:44:26] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:27] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:27] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:27] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:27] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:27] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:29] battle.startWildBattle: starting wild battle
+[2026-01-17 08:44:29] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 08:44:29]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 08:44:29]   found class: 	table: 0x02984562ec40
+[2026-01-17 08:44:29]   attempting to instantiate move class
+[2026-01-17 08:44:29]   instantiation result: suc=	true	 inst=	table: 0x029845518898
+[2026-01-17 08:44:29] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:30] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:31] battle.startWildBattle: starting wild battle
+[2026-01-17 08:44:31] resolveMoveInstance: trying to resolve 	gust
+[2026-01-17 08:44:31]   trying keys: 	gust	 / 	gust	 / 	gust	 / 	gust	 / 	gust	 / 	gust
+[2026-01-17 08:44:31]   found class: 	table: 0x029845a222e8
+[2026-01-17 08:44:31]   attempting to instantiate move class
+[2026-01-17 08:44:31]   instantiation result: suc=	true	 inst=	table: 0x02984565bf18
+[2026-01-17 08:44:31] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 08:44:31]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 08:44:31]   found class: 	table: 0x02984562ec40
+[2026-01-17 08:44:31]   attempting to instantiate move class
+[2026-01-17 08:44:31]   instantiation result: suc=	true	 inst=	table: 0x02984565cca8
+[2026-01-17 08:44:31] resolveMoveInstance: trying to resolve 	sand_attack
+[2026-01-17 08:44:31]   trying keys: 	sand_attack	 / 	sand_attack	 / 	sandattack	 / 	sand_attack	 / 	sand_attack	 / 	sandattack
+[2026-01-17 08:44:31]   found class: 	table: 0x029845621060
+[2026-01-17 08:44:31]   attempting to instantiate move class
+[2026-01-17 08:44:31]   instantiation result: suc=	true	 inst=	table: 0x02984565dbf0
+[2026-01-17 08:44:31] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:32] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:33]   found use method, returning move instance
+[2026-01-17 08:44:33] resolveMoveInstance: trying to resolve 	sand_attack
+[2026-01-17 08:44:33]   trying keys: 	sand_attack	 / 	sand_attack	 / 	sandattack	 / 	sand_attack	 / 	sand_attack	 / 	sandattack
+[2026-01-17 08:44:33]   found class: 	table: 0x029845621060
+[2026-01-17 08:44:33]   attempting to instantiate move class
+[2026-01-17 08:44:33]   instantiation result: suc=	true	 inst=	table: 0x029845856c88
+[2026-01-17 08:44:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:33]   found use method, returning move instance
+[2026-01-17 08:44:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:34] moves.Move:use: calculating damage
+[2026-01-17 08:44:34]   target object: 	Pidgey
+[2026-01-17 08:44:34]   target.name: 	Pidgey
+[2026-01-17 08:44:34]   target.type: 	nil
+[2026-01-17 08:44:34]   target.types: 	table: 0x0298402c9088
+[2026-01-17 08:44:34]   calling getTypeMultiplier: attackType=	Electric	 targetTypes=	table: 0x0298402c9088
+[2026-01-17 08:44:34]   getTypeMultiplier returned: 	2
+[2026-01-17 08:44:34] battle: move executed successfully: 	Thunder Shock
+[2026-01-17 08:44:34]   result.message: 	It dealt 13 damage! It was super effective!
+[2026-01-17 08:44:34]   result.damage: 	13
+[2026-01-17 08:44:34] resolveMoveInstance: trying to resolve 	sand_attack
+[2026-01-17 08:44:34]   trying keys: 	sand_attack	 / 	sand_attack	 / 	sandattack	 / 	sand_attack	 / 	sand_attack	 / 	sandattack
+[2026-01-17 08:44:34]   found class: 	table: 0x029845621060
+[2026-01-17 08:44:34]   attempting to instantiate move class
+[2026-01-17 08:44:34]   instantiation result: suc=	true	 inst=	table: 0x02984585f358
+[2026-01-17 08:44:34] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 08:44:34] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 08:44:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 08:44:34] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:34] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:35] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:35] battle: move executed successfully: 	Sand Attack
+[2026-01-17 08:44:35]   result.message: 	nil
+[2026-01-17 08:44:35]   result.damage: 	0
+[2026-01-17 08:44:35] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:35] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:35] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:35] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 08:44:36] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:36]   found use method, returning move instance
+[2026-01-17 08:44:36] resolveMoveInstance: trying to resolve 	gust
+[2026-01-17 08:44:36]   trying keys: 	gust	 / 	gust	 / 	gust	 / 	gust	 / 	gust	 / 	gust
+[2026-01-17 08:44:36]   found class: 	table: 0x029845a222e8
+[2026-01-17 08:44:36]   attempting to instantiate move class
+[2026-01-17 08:44:36]   instantiation result: suc=	true	 inst=	table: 0x029843c42488
+[2026-01-17 08:44:36] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 08:44:36]   found use method, returning move instance
+[2026-01-17 08:44:36] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:36] moves.Move:use: calculating damage
+[2026-01-17 08:44:36]   target object: 	Pidgey
+[2026-01-17 08:44:36]   target.name: 	Pidgey
+[2026-01-17 08:44:36]   target.type: 	nil
+[2026-01-17 08:44:36]   target.types: 	table: 0x0298402c9088
+[2026-01-17 08:44:36]   calling getTypeMultiplier: attackType=	Electric	 targetTypes=	table: 0x0298402c9088
+[2026-01-17 08:44:36]   getTypeMultiplier returned: 	2
+[2026-01-17 08:44:36] battle: move executed successfully: 	Thunder Shock
+[2026-01-17 08:44:36]   result.message: 	It dealt 12 damage! It was super effective!
+[2026-01-17 08:44:36]   result.damage: 	12
+[2026-01-17 08:44:36] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 08:44:36] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 08:44:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 08:44:37] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:37] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:37] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 08:44:37] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 08:44:38] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 08:44:38] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:16:39] battle.startWildBattle: starting wild battle
+[2026-01-17 12:16:39] resolveMoveInstance: trying to resolve 	growl
+[2026-01-17 12:16:39]   trying keys: 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl	 / 	growl
+[2026-01-17 12:16:39]   found class: 	table: 0x019d01c680e0
+[2026-01-17 12:16:39]   attempting to instantiate move class
+[2026-01-17 12:16:39]   instantiation result: suc=	true	 inst=	table: 0x019d014c5a40
+[2026-01-17 12:16:39] resolveMoveInstance: trying to resolve 	thunder_shock
+[2026-01-17 12:16:39]   trying keys: 	thunder_shock	 / 	thunder_shock	 / 	thundershock	 / 	thunder_shock	 / 	thunder_shock	 / 	thundershock
+[2026-01-17 12:16:39]   found class: 	table: 0x019d013e8e80
+[2026-01-17 12:16:39]   attempting to instantiate move class
+[2026-01-17 12:16:39]   instantiation result: suc=	true	 inst=	table: 0x019d0168bd50
+[2026-01-17 12:16:39] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:16:39]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:16:39]   found class: 	table: 0x019d014c3b68
+[2026-01-17 12:16:39]   attempting to instantiate move class
+[2026-01-17 12:16:39]   instantiation result: suc=	true	 inst=	table: 0x019d01cd9a28
+[2026-01-17 12:16:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:16:40] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:16:40] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:19:47] Viewing summary for: Grass Squirrel
+[2026-01-17 12:20:01] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:01] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:01]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:01]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:01]   attempting to instantiate move class
+[2026-01-17 12:20:01]   instantiation result: suc=	true	 inst=	table: 0x01f85081dac0
+[2026-01-17 12:20:01] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:01]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:01]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:01]   attempting to instantiate move class
+[2026-01-17 12:20:01]   instantiation result: suc=	true	 inst=	table: 0x01f85081e4b8
+[2026-01-17 12:20:01] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:01]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:01]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:01]   attempting to instantiate move class
+[2026-01-17 12:20:01]   instantiation result: suc=	true	 inst=	table: 0x01f85081eed0
+[2026-01-17 12:20:01] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:01]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:01]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:01]   attempting to instantiate move class
+[2026-01-17 12:20:01]   instantiation result: suc=	true	 inst=	table: 0x01f85081f8e8
+[2026-01-17 12:20:01] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:01] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:01] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:02] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:02]   found use method, returning move instance
+[2026-01-17 12:20:02] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:02]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:02]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:02]   attempting to instantiate move class
+[2026-01-17 12:20:02]   instantiation result: suc=	true	 inst=	table: 0x01f85132a858
+[2026-01-17 12:20:03] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:03]   found use method, returning move instance
+[2026-01-17 12:20:03] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:03] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:03] moves.Move:use: calculating damage
+[2026-01-17 12:20:03]   target object: 	EXP Dummy
+[2026-01-17 12:20:03]   target.name: 	EXP Dummy
+[2026-01-17 12:20:03]   target.type: 	nil
+[2026-01-17 12:20:03]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:03]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:03]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:03] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:03]   result.message: 	It dealt 6 damage!
+[2026-01-17 12:20:03]   result.damage: 	6
+[2026-01-17 12:20:03] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:03]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:03]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:03]   attempting to instantiate move class
+[2026-01-17 12:20:03]   instantiation result: suc=	true	 inst=	table: 0x01f8507f8cc0
+[2026-01-17 12:20:03] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:03] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:03] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:03] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:03] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:03] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:03] battle: move executed successfully: 	Splash
+[2026-01-17 12:20:03]   result.message: 	nil
+[2026-01-17 12:20:03]   result.damage: 	0
+[2026-01-17 12:20:03] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:04]   found use method, returning move instance
+[2026-01-17 12:20:04] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:04]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:04]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:04]   attempting to instantiate move class
+[2026-01-17 12:20:04]   instantiation result: suc=	true	 inst=	table: 0x01f85080bac0
+[2026-01-17 12:20:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:04]   found use method, returning move instance
+[2026-01-17 12:20:04] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:04] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:04] moves.Move:use: calculating damage
+[2026-01-17 12:20:04]   target object: 	EXP Dummy
+[2026-01-17 12:20:04]   target.name: 	EXP Dummy
+[2026-01-17 12:20:04]   target.type: 	nil
+[2026-01-17 12:20:04]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:04]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:04]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:04] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:04]   result.message: 	It dealt 6 damage!
+[2026-01-17 12:20:04]   result.damage: 	6
+[2026-01-17 12:20:04] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:04]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:04]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:04]   attempting to instantiate move class
+[2026-01-17 12:20:04]   instantiation result: suc=	true	 inst=	table: 0x01f850da3850
+[2026-01-17 12:20:04] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:04] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:04] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:04] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:04] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:04] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:04] battle: move executed successfully: 	Splash
+[2026-01-17 12:20:04]   result.message: 	nil
+[2026-01-17 12:20:04]   result.damage: 	0
+[2026-01-17 12:20:04] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:04]   found use method, returning move instance
+[2026-01-17 12:20:04] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:04]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:04]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:04]   attempting to instantiate move class
+[2026-01-17 12:20:04]   instantiation result: suc=	true	 inst=	table: 0x01f850db12c0
+[2026-01-17 12:20:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:04]   found use method, returning move instance
+[2026-01-17 12:20:04] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:05] moves.Move:use: calculating damage
+[2026-01-17 12:20:05]   target object: 	EXP Dummy
+[2026-01-17 12:20:05]   target.name: 	EXP Dummy
+[2026-01-17 12:20:05]   target.type: 	nil
+[2026-01-17 12:20:05]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:05]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:05]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:05] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:05]   result.message: 	It dealt 6 damage!
+[2026-01-17 12:20:05]   result.damage: 	6
+[2026-01-17 12:20:05] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:05] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:05] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:05] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:05] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:05]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:05]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:05]   attempting to instantiate move class
+[2026-01-17 12:20:05]   instantiation result: suc=	true	 inst=	table: 0x01f8508d4480
+[2026-01-17 12:20:05] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:05]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:05]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:05]   attempting to instantiate move class
+[2026-01-17 12:20:05]   instantiation result: suc=	true	 inst=	table: 0x01f8508d51f0
+[2026-01-17 12:20:05] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:05]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:05]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:05]   attempting to instantiate move class
+[2026-01-17 12:20:05]   instantiation result: suc=	true	 inst=	table: 0x01f8508d5fc0
+[2026-01-17 12:20:05] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:05]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:05]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:05]   attempting to instantiate move class
+[2026-01-17 12:20:05]   instantiation result: suc=	true	 inst=	table: 0x01f8508d6e90
+[2026-01-17 12:20:05] battle.keypressed after run: logCount=	0	 queue=	12
+[2026-01-17 12:20:05] battle.update: moving queued log -> visible; queue=	12	 logs=	0
+[2026-01-17 12:20:06] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	11
+[2026-01-17 12:20:06] battle.keypressed after run: logCount=	0	 queue=	11
+[2026-01-17 12:20:06] battle.update: moving queued log -> visible; queue=	11	 logs=	0
+[2026-01-17 12:20:07] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	10
+[2026-01-17 12:20:07] battle.keypressed after run: logCount=	0	 queue=	10
+[2026-01-17 12:20:07] battle.update: moving queued log -> visible; queue=	10	 logs=	0
+[2026-01-17 12:20:07] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	9
+[2026-01-17 12:20:07] battle.keypressed after run: logCount=	0	 queue=	9
+[2026-01-17 12:20:07] battle.update: moving queued log -> visible; queue=	9	 logs=	0
+[2026-01-17 12:20:08] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	8
+[2026-01-17 12:20:08] battle.keypressed after run: logCount=	0	 queue=	8
+[2026-01-17 12:20:08] battle.update: moving queued log -> visible; queue=	8	 logs=	0
+[2026-01-17 12:20:08] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	7
+[2026-01-17 12:20:08] battle.keypressed after run: logCount=	0	 queue=	7
+[2026-01-17 12:20:08] battle.update: moving queued log -> visible; queue=	7	 logs=	0
+[2026-01-17 12:20:09] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	6
+[2026-01-17 12:20:09] battle.keypressed after run: logCount=	0	 queue=	6
+[2026-01-17 12:20:09] battle.update: moving queued log -> visible; queue=	6	 logs=	0
+[2026-01-17 12:20:09] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	5
+[2026-01-17 12:20:09] battle.keypressed after run: logCount=	0	 queue=	5
+[2026-01-17 12:20:09] battle.update: moving queued log -> visible; queue=	5	 logs=	0
+[2026-01-17 12:20:10] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	4
+[2026-01-17 12:20:10] battle.keypressed after run: logCount=	0	 queue=	4
+[2026-01-17 12:20:10] battle.update: moving queued log -> visible; queue=	4	 logs=	0
+[2026-01-17 12:20:11] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	3
+[2026-01-17 12:20:11] battle.keypressed after run: logCount=	0	 queue=	3
+[2026-01-17 12:20:11] battle.update: moving queued log -> visible; queue=	3	 logs=	0
+[2026-01-17 12:20:11] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	2
+[2026-01-17 12:20:11] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:11] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:11] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:11] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:11] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:12] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:12] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:15] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:15] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:15]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:15]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:15]   attempting to instantiate move class
+[2026-01-17 12:20:15]   instantiation result: suc=	true	 inst=	table: 0x01f850a192f0
+[2026-01-17 12:20:15] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:15] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:15] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:17] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:17]   found use method, returning move instance
+[2026-01-17 12:20:17] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:17]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:17]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:17]   attempting to instantiate move class
+[2026-01-17 12:20:17]   instantiation result: suc=	true	 inst=	table: 0x01f850198238
+[2026-01-17 12:20:17] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:17]   found use method, returning move instance
+[2026-01-17 12:20:17] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:18] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:18] moves.Move:use: calculating damage
+[2026-01-17 12:20:18]   Critical hit!
+[2026-01-17 12:20:18]   target object: 	EXP Dummy
+[2026-01-17 12:20:18]   target.name: 	EXP Dummy
+[2026-01-17 12:20:18]   target.type: 	nil
+[2026-01-17 12:20:18]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:18]   calling getTypeMultiplier: attackType=	Grass	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:18]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:18] battle: move executed successfully: 	Razor Leaf
+[2026-01-17 12:20:18]   result.message: 	It dealt 66 damage! A critical hit!
+[2026-01-17 12:20:18]   result.damage: 	66
+[2026-01-17 12:20:18] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:18] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:19] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:19] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:19] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:19] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:19]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:19]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85086ac30
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:19]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:19]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f850698538
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:19]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:19]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f850699308
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:19]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:19]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85069a358
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:19]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:19]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85069b5c0
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:19]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:19]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85069c260
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:19]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:19]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85069cee0
+[2026-01-17 12:20:19] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:19]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:19]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:19]   attempting to instantiate move class
+[2026-01-17 12:20:19]   instantiation result: suc=	true	 inst=	table: 0x01f85069db50
+[2026-01-17 12:20:19] battle.keypressed after run: logCount=	0	 queue=	6
+[2026-01-17 12:20:19] battle.update: moving queued log -> visible; queue=	6	 logs=	0
+[2026-01-17 12:20:21] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	5
+[2026-01-17 12:20:21] battle.keypressed after run: logCount=	0	 queue=	5
+[2026-01-17 12:20:21] battle.update: moving queued log -> visible; queue=	5	 logs=	0
+[2026-01-17 12:20:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	4
+[2026-01-17 12:20:22] battle.keypressed after run: logCount=	0	 queue=	4
+[2026-01-17 12:20:22] battle.update: moving queued log -> visible; queue=	4	 logs=	0
+[2026-01-17 12:20:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	3
+[2026-01-17 12:20:22] battle.keypressed after run: logCount=	0	 queue=	3
+[2026-01-17 12:20:22] battle.update: moving queued log -> visible; queue=	3	 logs=	0
+[2026-01-17 12:20:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	2
+[2026-01-17 12:20:22] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:22] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:23] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:23] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:24] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:24] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:26] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:26] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:26]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:26]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:26]   attempting to instantiate move class
+[2026-01-17 12:20:26]   instantiation result: suc=	true	 inst=	table: 0x01f8505f4358
+[2026-01-17 12:20:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:26] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:26] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:26]   found use method, returning move instance
+[2026-01-17 12:20:26] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:26]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:26]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:26]   attempting to instantiate move class
+[2026-01-17 12:20:26]   instantiation result: suc=	true	 inst=	table: 0x01f85088da60
+[2026-01-17 12:20:26] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:26]   found use method, returning move instance
+[2026-01-17 12:20:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:26] moves.Move:use: calculating damage
+[2026-01-17 12:20:26]   Critical hit!
+[2026-01-17 12:20:26]   target object: 	EXP Dummy
+[2026-01-17 12:20:26]   target.name: 	EXP Dummy
+[2026-01-17 12:20:26]   target.type: 	nil
+[2026-01-17 12:20:26]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:26]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:26]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:26] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:26]   result.message: 	It dealt 76 damage! A critical hit!
+[2026-01-17 12:20:26]   result.damage: 	76
+[2026-01-17 12:20:26] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:26] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:26] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:27] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:27] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:27]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:27]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:27]   attempting to instantiate move class
+[2026-01-17 12:20:27]   instantiation result: suc=	true	 inst=	table: 0x01f850898588
+[2026-01-17 12:20:27] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:27]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:27]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:27]   attempting to instantiate move class
+[2026-01-17 12:20:27]   instantiation result: suc=	true	 inst=	table: 0x01f8508992f8
+[2026-01-17 12:20:27] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:27]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:27]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:27]   attempting to instantiate move class
+[2026-01-17 12:20:27]   instantiation result: suc=	true	 inst=	table: 0x01f85089a090
+[2026-01-17 12:20:27] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:27]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:27]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:27]   attempting to instantiate move class
+[2026-01-17 12:20:27]   instantiation result: suc=	true	 inst=	table: 0x01f85089add0
+[2026-01-17 12:20:27] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:27] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:28] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:28] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:28] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:28] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:28] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:29] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:29] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:29]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:29]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:29]   attempting to instantiate move class
+[2026-01-17 12:20:29]   instantiation result: suc=	true	 inst=	table: 0x01f850f9c220
+[2026-01-17 12:20:29] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:29] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:29] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:29] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:29]   found use method, returning move instance
+[2026-01-17 12:20:29] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:29]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:29]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:29]   attempting to instantiate move class
+[2026-01-17 12:20:29]   instantiation result: suc=	true	 inst=	table: 0x01f850fa4150
+[2026-01-17 12:20:29] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:29]   found use method, returning move instance
+[2026-01-17 12:20:29] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:29] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:29] moves.Move:use: calculating damage
+[2026-01-17 12:20:29]   target object: 	EXP Dummy
+[2026-01-17 12:20:29]   target.name: 	EXP Dummy
+[2026-01-17 12:20:29]   target.type: 	nil
+[2026-01-17 12:20:29]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:29]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:29]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:29] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:29]   result.message: 	It dealt 45 damage!
+[2026-01-17 12:20:29]   result.damage: 	45
+[2026-01-17 12:20:29] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:29] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:30] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:30] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:30] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:30]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:30]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:30]   attempting to instantiate move class
+[2026-01-17 12:20:30]   instantiation result: suc=	true	 inst=	table: 0x01f850fadc50
+[2026-01-17 12:20:30] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:30]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:30]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:30]   attempting to instantiate move class
+[2026-01-17 12:20:30]   instantiation result: suc=	true	 inst=	table: 0x01f850fae548
+[2026-01-17 12:20:30] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:30]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:30]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:30]   attempting to instantiate move class
+[2026-01-17 12:20:30]   instantiation result: suc=	true	 inst=	table: 0x01f850faeea0
+[2026-01-17 12:20:30] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:30]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:30]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:30]   attempting to instantiate move class
+[2026-01-17 12:20:30]   instantiation result: suc=	true	 inst=	table: 0x01f850faf768
+[2026-01-17 12:20:30] battle.keypressed after run: logCount=	0	 queue=	3
+[2026-01-17 12:20:30] battle.update: moving queued log -> visible; queue=	3	 logs=	0
+[2026-01-17 12:20:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	2
+[2026-01-17 12:20:30] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:30] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:30] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:30] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:30] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:31] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:31] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:31]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:31]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:31]   attempting to instantiate move class
+[2026-01-17 12:20:31]   instantiation result: suc=	true	 inst=	table: 0x01f850ecebe8
+[2026-01-17 12:20:31] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:31] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:31] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:31] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:31]   found use method, returning move instance
+[2026-01-17 12:20:31] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:31]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:31]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:31]   attempting to instantiate move class
+[2026-01-17 12:20:31]   instantiation result: suc=	true	 inst=	table: 0x01f850ed6fd0
+[2026-01-17 12:20:31] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:31]   found use method, returning move instance
+[2026-01-17 12:20:31] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:31] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:31] moves.Move:use: calculating damage
+[2026-01-17 12:20:31]   target object: 	EXP Dummy
+[2026-01-17 12:20:31]   target.name: 	EXP Dummy
+[2026-01-17 12:20:31]   target.type: 	nil
+[2026-01-17 12:20:31]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:31]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:31]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:31] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:31]   result.message: 	It dealt 50 damage!
+[2026-01-17 12:20:31]   result.damage: 	50
+[2026-01-17 12:20:31] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:31] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:32] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:32] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:32] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:32]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:32]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:32]   attempting to instantiate move class
+[2026-01-17 12:20:32]   instantiation result: suc=	true	 inst=	table: 0x01f850d4d498
+[2026-01-17 12:20:32] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:32]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:32]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:32]   attempting to instantiate move class
+[2026-01-17 12:20:32]   instantiation result: suc=	true	 inst=	table: 0x01f850d4e208
+[2026-01-17 12:20:32] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:32]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:32]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:32]   attempting to instantiate move class
+[2026-01-17 12:20:32]   instantiation result: suc=	true	 inst=	table: 0x01f850d4efd8
+[2026-01-17 12:20:32] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:32]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:32]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:32]   attempting to instantiate move class
+[2026-01-17 12:20:32]   instantiation result: suc=	true	 inst=	table: 0x01f850d4fd18
+[2026-01-17 12:20:32] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:32] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:32] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:32] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:32] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:33] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:33] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:33]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:33]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:33]   attempting to instantiate move class
+[2026-01-17 12:20:33]   instantiation result: suc=	true	 inst=	table: 0x01f850d66720
+[2026-01-17 12:20:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:33] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:33] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:33]   found use method, returning move instance
+[2026-01-17 12:20:33] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:33]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:33]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:33]   attempting to instantiate move class
+[2026-01-17 12:20:33]   instantiation result: suc=	true	 inst=	table: 0x01f850d6ee38
+[2026-01-17 12:20:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:33]   found use method, returning move instance
+[2026-01-17 12:20:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:33] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:33] moves.Move:use: calculating damage
+[2026-01-17 12:20:33]   target object: 	EXP Dummy
+[2026-01-17 12:20:33]   target.name: 	EXP Dummy
+[2026-01-17 12:20:33]   target.type: 	nil
+[2026-01-17 12:20:33]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:33]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:33]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:33] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:33]   result.message: 	It dealt 71 damage!
+[2026-01-17 12:20:33]   result.damage: 	71
+[2026-01-17 12:20:33] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:33] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:33] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:33] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:34] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:34]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:34]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:34]   attempting to instantiate move class
+[2026-01-17 12:20:34]   instantiation result: suc=	true	 inst=	table: 0x01f8508ae5c8
+[2026-01-17 12:20:34] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:34]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:34]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:34]   attempting to instantiate move class
+[2026-01-17 12:20:34]   instantiation result: suc=	true	 inst=	table: 0x01f8508af338
+[2026-01-17 12:20:34] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:34]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:34]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:34]   attempting to instantiate move class
+[2026-01-17 12:20:34]   instantiation result: suc=	true	 inst=	table: 0x01f8508b0108
+[2026-01-17 12:20:34] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:34]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:34]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:34]   attempting to instantiate move class
+[2026-01-17 12:20:34]   instantiation result: suc=	true	 inst=	table: 0x01f8508b0e48
+[2026-01-17 12:20:34] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:34] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:34] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:34] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:34] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:35] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:35] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:35]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:35]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:35]   attempting to instantiate move class
+[2026-01-17 12:20:35]   instantiation result: suc=	true	 inst=	table: 0x01f850e97938
+[2026-01-17 12:20:35] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:35] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:35] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:35] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:35]   found use method, returning move instance
+[2026-01-17 12:20:35] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:35]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:35]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:35]   attempting to instantiate move class
+[2026-01-17 12:20:35]   instantiation result: suc=	true	 inst=	table: 0x01f850ea0910
+[2026-01-17 12:20:35] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:35]   found use method, returning move instance
+[2026-01-17 12:20:35] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:36] moves.Move:use: calculating damage
+[2026-01-17 12:20:36]   target object: 	EXP Dummy
+[2026-01-17 12:20:36]   target.name: 	EXP Dummy
+[2026-01-17 12:20:36]   target.type: 	nil
+[2026-01-17 12:20:36]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:36]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:36]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:36] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:36]   result.message: 	It dealt 66 damage!
+[2026-01-17 12:20:36]   result.damage: 	66
+[2026-01-17 12:20:36] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:36] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:36] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:36] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:36] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:36]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:36]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:36]   attempting to instantiate move class
+[2026-01-17 12:20:36]   instantiation result: suc=	true	 inst=	table: 0x01f850eb2658
+[2026-01-17 12:20:36] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:36]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:36]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:36]   attempting to instantiate move class
+[2026-01-17 12:20:36]   instantiation result: suc=	true	 inst=	table: 0x01f850eb33c8
+[2026-01-17 12:20:36] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:36]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:36]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:36]   attempting to instantiate move class
+[2026-01-17 12:20:36]   instantiation result: suc=	true	 inst=	table: 0x01f850eb4198
+[2026-01-17 12:20:36] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:36]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:36]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:36]   attempting to instantiate move class
+[2026-01-17 12:20:36]   instantiation result: suc=	true	 inst=	table: 0x01f850eb4ed8
+[2026-01-17 12:20:36] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:36] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:37] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:37] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:37] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:38] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:38] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:38]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:38]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:38]   attempting to instantiate move class
+[2026-01-17 12:20:38]   instantiation result: suc=	true	 inst=	table: 0x01f850d91900
+[2026-01-17 12:20:38] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:38] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:38] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:38] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:38]   found use method, returning move instance
+[2026-01-17 12:20:38] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:38]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:38]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:38]   attempting to instantiate move class
+[2026-01-17 12:20:38]   instantiation result: suc=	true	 inst=	table: 0x01f850d9a848
+[2026-01-17 12:20:38] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:38]   found use method, returning move instance
+[2026-01-17 12:20:38] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:38] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:38] moves.Move:use: calculating damage
+[2026-01-17 12:20:38]   target object: 	EXP Dummy
+[2026-01-17 12:20:38]   target.name: 	EXP Dummy
+[2026-01-17 12:20:38]   target.type: 	nil
+[2026-01-17 12:20:38]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:38]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:38]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:38] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:38]   result.message: 	It dealt 70 damage!
+[2026-01-17 12:20:38]   result.damage: 	70
+[2026-01-17 12:20:38] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:38] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:38] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:38] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:38] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:39] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:39]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:39]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:39]   attempting to instantiate move class
+[2026-01-17 12:20:39]   instantiation result: suc=	true	 inst=	table: 0x01f851288b80
+[2026-01-17 12:20:39] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:39]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:39]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:39]   attempting to instantiate move class
+[2026-01-17 12:20:39]   instantiation result: suc=	true	 inst=	table: 0x01f8512898f0
+[2026-01-17 12:20:39] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:39]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:39]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:39]   attempting to instantiate move class
+[2026-01-17 12:20:39]   instantiation result: suc=	true	 inst=	table: 0x01f85128a6c0
+[2026-01-17 12:20:39] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:39]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:39]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:39]   attempting to instantiate move class
+[2026-01-17 12:20:39]   instantiation result: suc=	true	 inst=	table: 0x01f85128b400
+[2026-01-17 12:20:39] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:39] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:39] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:39] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:40] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:40] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:40]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:40]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:40]   attempting to instantiate move class
+[2026-01-17 12:20:40]   instantiation result: suc=	true	 inst=	table: 0x01f8512a5cf8
+[2026-01-17 12:20:40] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:40] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:40] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:40] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:40]   found use method, returning move instance
+[2026-01-17 12:20:40] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:40]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:40]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:40]   attempting to instantiate move class
+[2026-01-17 12:20:40]   instantiation result: suc=	true	 inst=	table: 0x01f8512aecd8
+[2026-01-17 12:20:40] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:40]   found use method, returning move instance
+[2026-01-17 12:20:40] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:40] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:40] moves.Move:use: calculating damage
+[2026-01-17 12:20:40]   target object: 	EXP Dummy
+[2026-01-17 12:20:40]   target.name: 	EXP Dummy
+[2026-01-17 12:20:40]   target.type: 	nil
+[2026-01-17 12:20:40]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:40]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:40]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:40] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:40]   result.message: 	It dealt 77 damage!
+[2026-01-17 12:20:40]   result.damage: 	77
+[2026-01-17 12:20:40] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:40] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:41] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:41] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:41] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:41]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:41]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:41]   attempting to instantiate move class
+[2026-01-17 12:20:41]   instantiation result: suc=	true	 inst=	table: 0x01f850a83748
+[2026-01-17 12:20:41] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:41]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:41]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:41]   attempting to instantiate move class
+[2026-01-17 12:20:41]   instantiation result: suc=	true	 inst=	table: 0x01f850a844b8
+[2026-01-17 12:20:41] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:41]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:41]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:41]   attempting to instantiate move class
+[2026-01-17 12:20:41]   instantiation result: suc=	true	 inst=	table: 0x01f850a85288
+[2026-01-17 12:20:41] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:41]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:41]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:41]   attempting to instantiate move class
+[2026-01-17 12:20:41]   instantiation result: suc=	true	 inst=	table: 0x01f850a85fc8
+[2026-01-17 12:20:41] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:41] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:41] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:41] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:42] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:42] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:42] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:42] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:42]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:42]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:42]   attempting to instantiate move class
+[2026-01-17 12:20:42]   instantiation result: suc=	true	 inst=	table: 0x01f850b2cea8
+[2026-01-17 12:20:42] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:43] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:43] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:43] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:43]   found use method, returning move instance
+[2026-01-17 12:20:43] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:43]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:43]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:43]   attempting to instantiate move class
+[2026-01-17 12:20:43]   instantiation result: suc=	true	 inst=	table: 0x01f850b364e8
+[2026-01-17 12:20:43] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:43]   found use method, returning move instance
+[2026-01-17 12:20:43] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:43] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:43] moves.Move:use: calculating damage
+[2026-01-17 12:20:43]   Critical hit!
+[2026-01-17 12:20:43]   target object: 	EXP Dummy
+[2026-01-17 12:20:43]   target.name: 	EXP Dummy
+[2026-01-17 12:20:43]   target.type: 	nil
+[2026-01-17 12:20:43]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:43]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:43]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:43] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:43]   result.message: 	It dealt 132 damage! A critical hit!
+[2026-01-17 12:20:43]   result.damage: 	132
+[2026-01-17 12:20:43] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:43] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:43] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:43] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:43] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:44] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:44] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:44] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:45] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:45] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:45]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:45]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:45]   attempting to instantiate move class
+[2026-01-17 12:20:45]   instantiation result: suc=	true	 inst=	table: 0x01f85102e938
+[2026-01-17 12:20:45] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:45] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:45] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:45] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:45]   found use method, returning move instance
+[2026-01-17 12:20:45] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:45]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:45]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:45]   attempting to instantiate move class
+[2026-01-17 12:20:45]   instantiation result: suc=	true	 inst=	table: 0x01f8510374a0
+[2026-01-17 12:20:45] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:45]   found use method, returning move instance
+[2026-01-17 12:20:45] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:46] moves.Move:use: calculating damage
+[2026-01-17 12:20:46]   target object: 	EXP Dummy
+[2026-01-17 12:20:46]   target.name: 	EXP Dummy
+[2026-01-17 12:20:46]   target.type: 	nil
+[2026-01-17 12:20:46]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:46]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:46]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:46] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:46]   result.message: 	It dealt 72 damage!
+[2026-01-17 12:20:46]   result.damage: 	72
+[2026-01-17 12:20:46] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:46] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:46] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:46] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:46] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:46]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:46]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:46]   attempting to instantiate move class
+[2026-01-17 12:20:46]   instantiation result: suc=	true	 inst=	table: 0x01f851043d08
+[2026-01-17 12:20:46] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:46]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:46]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:46]   attempting to instantiate move class
+[2026-01-17 12:20:46]   instantiation result: suc=	true	 inst=	table: 0x01f851044a78
+[2026-01-17 12:20:46] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:46]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:46]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:46]   attempting to instantiate move class
+[2026-01-17 12:20:46]   instantiation result: suc=	true	 inst=	table: 0x01f851045848
+[2026-01-17 12:20:46] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:46]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:46]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:46]   attempting to instantiate move class
+[2026-01-17 12:20:46]   instantiation result: suc=	true	 inst=	table: 0x01f851046588
+[2026-01-17 12:20:46] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:46] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:46] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:46] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:47] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:47] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:48] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:48] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:48]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:48]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:48]   attempting to instantiate move class
+[2026-01-17 12:20:48]   instantiation result: suc=	true	 inst=	table: 0x01f850c6b148
+[2026-01-17 12:20:48] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:48] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:48] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:48] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:48]   found use method, returning move instance
+[2026-01-17 12:20:48] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:48]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:48]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:48]   attempting to instantiate move class
+[2026-01-17 12:20:48]   instantiation result: suc=	true	 inst=	table: 0x01f850c73838
+[2026-01-17 12:20:48] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:48]   found use method, returning move instance
+[2026-01-17 12:20:48] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:48] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:48] moves.Move:use: calculating damage
+[2026-01-17 12:20:48]   target object: 	EXP Dummy
+[2026-01-17 12:20:48]   target.name: 	EXP Dummy
+[2026-01-17 12:20:48]   target.type: 	nil
+[2026-01-17 12:20:48]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:48]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:48]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:48] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:48]   result.message: 	It dealt 94 damage!
+[2026-01-17 12:20:48]   result.damage: 	94
+[2026-01-17 12:20:48] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:48] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:48] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:48] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:48] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:49] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:49] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:49]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:49]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:49]   attempting to instantiate move class
+[2026-01-17 12:20:49]   instantiation result: suc=	true	 inst=	table: 0x01f850c83170
+[2026-01-17 12:20:49] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:49]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:49]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:49]   attempting to instantiate move class
+[2026-01-17 12:20:49]   instantiation result: suc=	true	 inst=	table: 0x01f850c83ee0
+[2026-01-17 12:20:49] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:49]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:49]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:49]   attempting to instantiate move class
+[2026-01-17 12:20:49]   instantiation result: suc=	true	 inst=	table: 0x01f850c84cb0
+[2026-01-17 12:20:49] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:49]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:49]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:49]   attempting to instantiate move class
+[2026-01-17 12:20:49]   instantiation result: suc=	true	 inst=	table: 0x01f850c859f0
+[2026-01-17 12:20:49] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:49] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:49] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:49] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:49] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:49] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:49] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:50] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:50] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:50]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:50]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:50]   attempting to instantiate move class
+[2026-01-17 12:20:50]   instantiation result: suc=	true	 inst=	table: 0x01f84ff60aa0
+[2026-01-17 12:20:50] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:50] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:50] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:50] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:50]   found use method, returning move instance
+[2026-01-17 12:20:50] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:50]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:50]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:50]   attempting to instantiate move class
+[2026-01-17 12:20:50]   instantiation result: suc=	true	 inst=	table: 0x01f84ff69c38
+[2026-01-17 12:20:50] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:50]   found use method, returning move instance
+[2026-01-17 12:20:50] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:50] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:50] moves.Move:use: calculating damage
+[2026-01-17 12:20:50]   target object: 	EXP Dummy
+[2026-01-17 12:20:50]   target.name: 	EXP Dummy
+[2026-01-17 12:20:50]   target.type: 	nil
+[2026-01-17 12:20:50]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:50]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:50]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:50] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:50]   result.message: 	It dealt 97 damage!
+[2026-01-17 12:20:50]   result.damage: 	97
+[2026-01-17 12:20:50] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:50] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:51] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:51] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:51] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:51] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:51] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:51] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:51] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:51] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:52] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:52] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:52]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:52]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:52]   attempting to instantiate move class
+[2026-01-17 12:20:52]   instantiation result: suc=	true	 inst=	table: 0x01f850c2e9a0
+[2026-01-17 12:20:52] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:52] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:52] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:52] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:52]   found use method, returning move instance
+[2026-01-17 12:20:52] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:52]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:52]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:52]   attempting to instantiate move class
+[2026-01-17 12:20:52]   instantiation result: suc=	true	 inst=	table: 0x01f850c373e8
+[2026-01-17 12:20:52] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:52]   found use method, returning move instance
+[2026-01-17 12:20:52] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:53] moves.Move:use: calculating damage
+[2026-01-17 12:20:53]   target object: 	EXP Dummy
+[2026-01-17 12:20:53]   target.name: 	EXP Dummy
+[2026-01-17 12:20:53]   target.type: 	nil
+[2026-01-17 12:20:53]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:53]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:53]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:53] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:53]   result.message: 	It dealt 100 damage!
+[2026-01-17 12:20:53]   result.damage: 	100
+[2026-01-17 12:20:53] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:53] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:53] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:53] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:53] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:53]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:53]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:53]   attempting to instantiate move class
+[2026-01-17 12:20:53]   instantiation result: suc=	true	 inst=	table: 0x01f850c476c8
+[2026-01-17 12:20:53] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:53]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:53]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:53]   attempting to instantiate move class
+[2026-01-17 12:20:53]   instantiation result: suc=	true	 inst=	table: 0x01f850c48438
+[2026-01-17 12:20:53] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:53]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:53]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:53]   attempting to instantiate move class
+[2026-01-17 12:20:53]   instantiation result: suc=	true	 inst=	table: 0x01f850c49208
+[2026-01-17 12:20:53] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:53]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:53]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:53]   attempting to instantiate move class
+[2026-01-17 12:20:53]   instantiation result: suc=	true	 inst=	table: 0x01f850c49f48
+[2026-01-17 12:20:53] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:53] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:53] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:53] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:53] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:54] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:54] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:55] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:55] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:55]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:55]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:55]   attempting to instantiate move class
+[2026-01-17 12:20:55]   instantiation result: suc=	true	 inst=	table: 0x01f8512c4eb8
+[2026-01-17 12:20:55] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:55] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:55] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:55] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:55]   found use method, returning move instance
+[2026-01-17 12:20:55] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:55]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:55]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:55]   attempting to instantiate move class
+[2026-01-17 12:20:55]   instantiation result: suc=	true	 inst=	table: 0x01f8512cd5a8
+[2026-01-17 12:20:55] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:55]   found use method, returning move instance
+[2026-01-17 12:20:55] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:55] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:55] moves.Move:use: calculating damage
+[2026-01-17 12:20:55]   Critical hit!
+[2026-01-17 12:20:55]   target object: 	EXP Dummy
+[2026-01-17 12:20:55]   target.name: 	EXP Dummy
+[2026-01-17 12:20:55]   target.type: 	nil
+[2026-01-17 12:20:55]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:55]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:55]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:55] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:55]   result.message: 	It dealt 172 damage! A critical hit!
+[2026-01-17 12:20:55]   result.damage: 	172
+[2026-01-17 12:20:55] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:55] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:55] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:55] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:55] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:56] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:56] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:56] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:56] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:56] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:57] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:57] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:57]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:57]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:57]   attempting to instantiate move class
+[2026-01-17 12:20:57]   instantiation result: suc=	true	 inst=	table: 0x01f8509d12f8
+[2026-01-17 12:20:57] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:57] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:57] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:57] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:57]   found use method, returning move instance
+[2026-01-17 12:20:57] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:57]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:57]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:57]   attempting to instantiate move class
+[2026-01-17 12:20:57]   instantiation result: suc=	true	 inst=	table: 0x01f8509da488
+[2026-01-17 12:20:57] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:20:57]   found use method, returning move instance
+[2026-01-17 12:20:57] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:57] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:57] moves.Move:use: calculating damage
+[2026-01-17 12:20:57]   target object: 	EXP Dummy
+[2026-01-17 12:20:57]   target.name: 	EXP Dummy
+[2026-01-17 12:20:57]   target.type: 	nil
+[2026-01-17 12:20:57]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:20:57]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:20:57]   getTypeMultiplier returned: 	1
+[2026-01-17 12:20:57] battle: move executed successfully: 	Tackle
+[2026-01-17 12:20:57]   result.message: 	It dealt 110 damage!
+[2026-01-17 12:20:57]   result.damage: 	110
+[2026-01-17 12:20:57] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:57] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:58] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:58] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:58] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:58] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:58] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:20:58]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:20:58]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:20:58]   attempting to instantiate move class
+[2026-01-17 12:20:58]   instantiation result: suc=	true	 inst=	table: 0x01f8509eab40
+[2026-01-17 12:20:58] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:20:58]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:20:58]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:20:58]   attempting to instantiate move class
+[2026-01-17 12:20:58]   instantiation result: suc=	true	 inst=	table: 0x01f8509eb8b0
+[2026-01-17 12:20:58] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:20:58]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:20:58]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:20:58]   attempting to instantiate move class
+[2026-01-17 12:20:58]   instantiation result: suc=	true	 inst=	table: 0x01f8509ec680
+[2026-01-17 12:20:58] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:20:58]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:20:58]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:20:58]   attempting to instantiate move class
+[2026-01-17 12:20:58]   instantiation result: suc=	true	 inst=	table: 0x01f8509ed3c0
+[2026-01-17 12:20:58] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:20:58] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:20:58] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:20:58] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:20:58] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:20:59] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:20:59] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:20:59] battle.startWildBattle: starting wild battle
+[2026-01-17 12:20:59] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:20:59]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:20:59]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:20:59]   attempting to instantiate move class
+[2026-01-17 12:20:59]   instantiation result: suc=	true	 inst=	table: 0x01f8507c9208
+[2026-01-17 12:20:59] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:00] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:00] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:00] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:00]   found use method, returning move instance
+[2026-01-17 12:21:00] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:00]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:00]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:00]   attempting to instantiate move class
+[2026-01-17 12:21:00]   instantiation result: suc=	true	 inst=	table: 0x01f8507d1300
+[2026-01-17 12:21:00] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:00]   found use method, returning move instance
+[2026-01-17 12:21:00] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:00] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:00] moves.Move:use: calculating damage
+[2026-01-17 12:21:00]   target object: 	EXP Dummy
+[2026-01-17 12:21:00]   target.name: 	EXP Dummy
+[2026-01-17 12:21:00]   target.type: 	nil
+[2026-01-17 12:21:00]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:00]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:00]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:00] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:00]   result.message: 	It dealt 89 damage!
+[2026-01-17 12:21:00]   result.damage: 	89
+[2026-01-17 12:21:00] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:00] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:00] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:00] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:00] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:01] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:01] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:01] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:01] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:01] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:02] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:02] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:02]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:02]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:02]   attempting to instantiate move class
+[2026-01-17 12:21:02]   instantiation result: suc=	true	 inst=	table: 0x01f850140598
+[2026-01-17 12:21:02] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:03] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:03] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:04]   found use method, returning move instance
+[2026-01-17 12:21:04] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:04]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:04]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:04]   attempting to instantiate move class
+[2026-01-17 12:21:04]   instantiation result: suc=	true	 inst=	table: 0x01f850161190
+[2026-01-17 12:21:04] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:04]   found use method, returning move instance
+[2026-01-17 12:21:04] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:04] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:04] moves.Move:use: calculating damage
+[2026-01-17 12:21:04]   target object: 	EXP Dummy
+[2026-01-17 12:21:04]   target.name: 	EXP Dummy
+[2026-01-17 12:21:04]   target.type: 	nil
+[2026-01-17 12:21:04]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:04]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:04]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:04] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:04]   result.message: 	It dealt 87 damage!
+[2026-01-17 12:21:04]   result.damage: 	87
+[2026-01-17 12:21:04] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:04] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:05] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:05] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:05] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:05]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:05]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:05]   attempting to instantiate move class
+[2026-01-17 12:21:05]   instantiation result: suc=	true	 inst=	table: 0x01f850045e58
+[2026-01-17 12:21:05] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:05]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:05]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:05]   attempting to instantiate move class
+[2026-01-17 12:21:05]   instantiation result: suc=	true	 inst=	table: 0x01f850046bc8
+[2026-01-17 12:21:05] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:05]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:05]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:05]   attempting to instantiate move class
+[2026-01-17 12:21:05]   instantiation result: suc=	true	 inst=	table: 0x01f850047998
+[2026-01-17 12:21:05] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:05]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:05]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:05]   attempting to instantiate move class
+[2026-01-17 12:21:05]   instantiation result: suc=	true	 inst=	table: 0x01f8500486d8
+[2026-01-17 12:21:05] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:05] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:05] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:05] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:05] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:05] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:06] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:06] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:06]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:06]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:06]   attempting to instantiate move class
+[2026-01-17 12:21:06]   instantiation result: suc=	true	 inst=	table: 0x01f8500664f8
+[2026-01-17 12:21:06] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:06] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:06] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:07] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:07]   found use method, returning move instance
+[2026-01-17 12:21:07] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:07]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:07]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:07]   attempting to instantiate move class
+[2026-01-17 12:21:07]   instantiation result: suc=	true	 inst=	table: 0x01f8500715f8
+[2026-01-17 12:21:07] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:07]   found use method, returning move instance
+[2026-01-17 12:21:07] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:07] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:07] moves.Move:use: calculating damage
+[2026-01-17 12:21:07]   target object: 	EXP Dummy
+[2026-01-17 12:21:07]   target.name: 	EXP Dummy
+[2026-01-17 12:21:07]   target.type: 	nil
+[2026-01-17 12:21:07]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:07]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:07]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:07] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:07]   result.message: 	It dealt 101 damage!
+[2026-01-17 12:21:07]   result.damage: 	101
+[2026-01-17 12:21:07] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:07] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:07] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:07] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:07] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:08] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:08] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:08] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:08] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:08] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:09] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:09] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:09]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:09]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:09]   attempting to instantiate move class
+[2026-01-17 12:21:09]   instantiation result: suc=	true	 inst=	table: 0x01f850206408
+[2026-01-17 12:21:09] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:09] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:09] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:10] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:10]   found use method, returning move instance
+[2026-01-17 12:21:10] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:10]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:10]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:10]   attempting to instantiate move class
+[2026-01-17 12:21:10]   instantiation result: suc=	true	 inst=	table: 0x01f85020fac8
+[2026-01-17 12:21:10] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:10]   found use method, returning move instance
+[2026-01-17 12:21:10] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:10] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:10] moves.Move:use: calculating damage
+[2026-01-17 12:21:10]   target object: 	EXP Dummy
+[2026-01-17 12:21:10]   target.name: 	EXP Dummy
+[2026-01-17 12:21:10]   target.type: 	nil
+[2026-01-17 12:21:10]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:10]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:10]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:10] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:10]   result.message: 	It dealt 119 damage!
+[2026-01-17 12:21:10]   result.damage: 	119
+[2026-01-17 12:21:10] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:10] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:10] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:10] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:10] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:11] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:11] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:11]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:11]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:11]   attempting to instantiate move class
+[2026-01-17 12:21:11]   instantiation result: suc=	true	 inst=	table: 0x01f85020fb70
+[2026-01-17 12:21:11] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:11]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:11]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:11]   attempting to instantiate move class
+[2026-01-17 12:21:11]   instantiation result: suc=	true	 inst=	table: 0x01f85064e6d8
+[2026-01-17 12:21:11] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:11]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:11]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:11]   attempting to instantiate move class
+[2026-01-17 12:21:11]   instantiation result: suc=	true	 inst=	table: 0x01f85064f2a0
+[2026-01-17 12:21:11] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:11]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:11]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:11]   attempting to instantiate move class
+[2026-01-17 12:21:11]   instantiation result: suc=	true	 inst=	table: 0x01f85064fe98
+[2026-01-17 12:21:11] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:11] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:11] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:11] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:11] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:12] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:12] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:12] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:12] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:12]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:12]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:12]   attempting to instantiate move class
+[2026-01-17 12:21:12]   instantiation result: suc=	true	 inst=	table: 0x01f850671ad0
+[2026-01-17 12:21:12] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:12] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:12] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:13] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:13]   found use method, returning move instance
+[2026-01-17 12:21:13] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:13]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:13]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:13]   attempting to instantiate move class
+[2026-01-17 12:21:13]   instantiation result: suc=	true	 inst=	table: 0x01f85067ac30
+[2026-01-17 12:21:13] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:13]   found use method, returning move instance
+[2026-01-17 12:21:13] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:13] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:13] moves.Move:use: calculating damage
+[2026-01-17 12:21:13]   target object: 	EXP Dummy
+[2026-01-17 12:21:13]   target.name: 	EXP Dummy
+[2026-01-17 12:21:13]   target.type: 	nil
+[2026-01-17 12:21:13]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:13]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:13]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:13] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:13]   result.message: 	It dealt 114 damage!
+[2026-01-17 12:21:13]   result.damage: 	114
+[2026-01-17 12:21:13] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:13] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:14] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:14] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:14] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:14] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:14] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:14] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:15] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:15] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:17] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:17] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:17]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:17]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:17]   attempting to instantiate move class
+[2026-01-17 12:21:17]   instantiation result: suc=	true	 inst=	table: 0x01f850c02660
+[2026-01-17 12:21:17] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:17] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:17] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:17] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:17]   found use method, returning move instance
+[2026-01-17 12:21:17] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:17]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:17]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:17]   attempting to instantiate move class
+[2026-01-17 12:21:17]   instantiation result: suc=	true	 inst=	table: 0x01f850c0acd0
+[2026-01-17 12:21:17] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:17]   found use method, returning move instance
+[2026-01-17 12:21:17] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:17] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:17] moves.Move:use: calculating damage
+[2026-01-17 12:21:17]   target object: 	EXP Dummy
+[2026-01-17 12:21:17]   target.name: 	EXP Dummy
+[2026-01-17 12:21:17]   target.type: 	nil
+[2026-01-17 12:21:17]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:17]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:17]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:17] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:17]   result.message: 	It dealt 99 damage!
+[2026-01-17 12:21:17]   result.damage: 	99
+[2026-01-17 12:21:17] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:17] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:17] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:17] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:17] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:18] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:18] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:18] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:18] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:18] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:19] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:19] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:19]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:19]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:19]   attempting to instantiate move class
+[2026-01-17 12:21:19]   instantiation result: suc=	true	 inst=	table: 0x01f850783d08
+[2026-01-17 12:21:19] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:19] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:19] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:20] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:20]   found use method, returning move instance
+[2026-01-17 12:21:20] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:20]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:20]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:20]   attempting to instantiate move class
+[2026-01-17 12:21:20]   instantiation result: suc=	true	 inst=	table: 0x01f85078cf50
+[2026-01-17 12:21:20] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:20]   found use method, returning move instance
+[2026-01-17 12:21:20] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:20] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:20] moves.Move:use: calculating damage
+[2026-01-17 12:21:20]   target object: 	EXP Dummy
+[2026-01-17 12:21:20]   target.name: 	EXP Dummy
+[2026-01-17 12:21:20]   target.type: 	nil
+[2026-01-17 12:21:20]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:20]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:20]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:20] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:20]   result.message: 	It dealt 136 damage!
+[2026-01-17 12:21:20]   result.damage: 	136
+[2026-01-17 12:21:20] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:20] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:20] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:20] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:20] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:20] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:20] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:20]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:20]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:20]   attempting to instantiate move class
+[2026-01-17 12:21:20]   instantiation result: suc=	true	 inst=	table: 0x01f85079c1b8
+[2026-01-17 12:21:20] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:20]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:20]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:20]   attempting to instantiate move class
+[2026-01-17 12:21:20]   instantiation result: suc=	true	 inst=	table: 0x01f85079cf28
+[2026-01-17 12:21:20] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:20]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:20]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:20]   attempting to instantiate move class
+[2026-01-17 12:21:20]   instantiation result: suc=	true	 inst=	table: 0x01f85079e328
+[2026-01-17 12:21:20] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:20]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:20]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:20]   attempting to instantiate move class
+[2026-01-17 12:21:20]   instantiation result: suc=	true	 inst=	table: 0x01f85079f3a8
+[2026-01-17 12:21:20] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:20] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:21] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:21] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:21] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:21] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:21] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:22] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:22] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:22]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:22]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:22]   attempting to instantiate move class
+[2026-01-17 12:21:22]   instantiation result: suc=	true	 inst=	table: 0x01f850fd2df0
+[2026-01-17 12:21:22] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:22] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:22] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:22]   found use method, returning move instance
+[2026-01-17 12:21:22] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:22]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:22]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:22]   attempting to instantiate move class
+[2026-01-17 12:21:22]   instantiation result: suc=	true	 inst=	table: 0x01f850fdb140
+[2026-01-17 12:21:22] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:22]   found use method, returning move instance
+[2026-01-17 12:21:22] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:22] moves.Move:use: calculating damage
+[2026-01-17 12:21:22]   target object: 	EXP Dummy
+[2026-01-17 12:21:22]   target.name: 	EXP Dummy
+[2026-01-17 12:21:22]   target.type: 	nil
+[2026-01-17 12:21:22]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:22]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:22]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:22] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:22]   result.message: 	It dealt 145 damage!
+[2026-01-17 12:21:22]   result.damage: 	145
+[2026-01-17 12:21:22] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:22] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:22] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:22] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:22] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:23] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:23] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:23] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:23] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:24] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:24] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:24]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:24]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:24]   attempting to instantiate move class
+[2026-01-17 12:21:24]   instantiation result: suc=	true	 inst=	table: 0x01f851011ea8
+[2026-01-17 12:21:24] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:25] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:25] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:25] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:25]   found use method, returning move instance
+[2026-01-17 12:21:25] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:25]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:25]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:25]   attempting to instantiate move class
+[2026-01-17 12:21:25]   instantiation result: suc=	true	 inst=	table: 0x01f85101b180
+[2026-01-17 12:21:25] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:25]   found use method, returning move instance
+[2026-01-17 12:21:25] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:25] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:25] moves.Move:use: calculating damage
+[2026-01-17 12:21:25]   target object: 	EXP Dummy
+[2026-01-17 12:21:25]   target.name: 	EXP Dummy
+[2026-01-17 12:21:25]   target.type: 	nil
+[2026-01-17 12:21:25]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:25]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:25]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:25] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:25]   result.message: 	It dealt 123 damage!
+[2026-01-17 12:21:25]   result.damage: 	123
+[2026-01-17 12:21:25] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:25] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:26] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:26] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:26]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:26]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:26]   attempting to instantiate move class
+[2026-01-17 12:21:26]   instantiation result: suc=	true	 inst=	table: 0x01f850f3c730
+[2026-01-17 12:21:26] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:26]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:26]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:26]   attempting to instantiate move class
+[2026-01-17 12:21:26]   instantiation result: suc=	true	 inst=	table: 0x01f850f3d4a0
+[2026-01-17 12:21:26] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:26]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:26]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:26]   attempting to instantiate move class
+[2026-01-17 12:21:26]   instantiation result: suc=	true	 inst=	table: 0x01f850f3e270
+[2026-01-17 12:21:26] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:26]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:26]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:26]   attempting to instantiate move class
+[2026-01-17 12:21:26]   instantiation result: suc=	true	 inst=	table: 0x01f850f3efb0
+[2026-01-17 12:21:26] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:26] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:26] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:26] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:26] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:27] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:27] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:27] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:27] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:27]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:27]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:27]   attempting to instantiate move class
+[2026-01-17 12:21:27]   instantiation result: suc=	true	 inst=	table: 0x01f850f600e0
+[2026-01-17 12:21:27] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:28] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:28] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:28] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:28]   found use method, returning move instance
+[2026-01-17 12:21:28] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:28]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:28]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:28]   attempting to instantiate move class
+[2026-01-17 12:21:28]   instantiation result: suc=	true	 inst=	table: 0x01f850f6a528
+[2026-01-17 12:21:28] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:28]   found use method, returning move instance
+[2026-01-17 12:21:28] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:28] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:28] moves.Move:use: calculating damage
+[2026-01-17 12:21:28]   target object: 	EXP Dummy
+[2026-01-17 12:21:28]   target.name: 	EXP Dummy
+[2026-01-17 12:21:28]   target.type: 	nil
+[2026-01-17 12:21:28]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:28]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:28]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:28] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:28]   result.message: 	It dealt 120 damage!
+[2026-01-17 12:21:28]   result.damage: 	120
+[2026-01-17 12:21:28] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:28] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:29] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:29] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:29] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:29] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:29] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:29] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:30] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:30] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:30] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:30]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:30]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:30]   attempting to instantiate move class
+[2026-01-17 12:21:30]   instantiation result: suc=	true	 inst=	table: 0x01f8500d9a50
+[2026-01-17 12:21:30] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:30] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:30] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:31] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:31]   found use method, returning move instance
+[2026-01-17 12:21:31] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:31]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:31]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:31]   attempting to instantiate move class
+[2026-01-17 12:21:31]   instantiation result: suc=	true	 inst=	table: 0x01f8500e1fa8
+[2026-01-17 12:21:31] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:31]   found use method, returning move instance
+[2026-01-17 12:21:31] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:31] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:31] moves.Move:use: calculating damage
+[2026-01-17 12:21:31]   target object: 	EXP Dummy
+[2026-01-17 12:21:31]   target.name: 	EXP Dummy
+[2026-01-17 12:21:31]   target.type: 	nil
+[2026-01-17 12:21:31]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:31]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:31]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:31] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:31]   result.message: 	It dealt 123 damage!
+[2026-01-17 12:21:31]   result.damage: 	123
+[2026-01-17 12:21:31] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:31] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:31] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:31] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:31] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:32] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:32] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:32] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:32] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:33] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:33] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:33]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:33]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:33]   attempting to instantiate move class
+[2026-01-17 12:21:33]   instantiation result: suc=	true	 inst=	table: 0x01f8501111f0
+[2026-01-17 12:21:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:33] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:33] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:33]   found use method, returning move instance
+[2026-01-17 12:21:33] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:33]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:33]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:33]   attempting to instantiate move class
+[2026-01-17 12:21:33]   instantiation result: suc=	true	 inst=	table: 0x01f85011a0f8
+[2026-01-17 12:21:33] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:33]   found use method, returning move instance
+[2026-01-17 12:21:33] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:34] moves.Move:use: calculating damage
+[2026-01-17 12:21:34]   target object: 	EXP Dummy
+[2026-01-17 12:21:34]   target.name: 	EXP Dummy
+[2026-01-17 12:21:34]   target.type: 	nil
+[2026-01-17 12:21:34]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:34]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:34]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:34] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:34]   result.message: 	It dealt 113 damage!
+[2026-01-17 12:21:34]   result.damage: 	113
+[2026-01-17 12:21:34] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:34] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:34] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:34] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:34] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:34]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:34]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:34]   attempting to instantiate move class
+[2026-01-17 12:21:34]   instantiation result: suc=	true	 inst=	table: 0x01f8501293d0
+[2026-01-17 12:21:34] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:34]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:34]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:34]   attempting to instantiate move class
+[2026-01-17 12:21:34]   instantiation result: suc=	true	 inst=	table: 0x01f85012a140
+[2026-01-17 12:21:34] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:34]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:34]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:34]   attempting to instantiate move class
+[2026-01-17 12:21:34]   instantiation result: suc=	true	 inst=	table: 0x01f85012af10
+[2026-01-17 12:21:34] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:34]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:34]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:34]   attempting to instantiate move class
+[2026-01-17 12:21:34]   instantiation result: suc=	true	 inst=	table: 0x01f85012bc50
+[2026-01-17 12:21:34] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:34] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:34] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:34] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:34] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:35] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:35] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:36] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:36] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:36]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:36]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:36]   attempting to instantiate move class
+[2026-01-17 12:21:36]   instantiation result: suc=	true	 inst=	table: 0x01f8506f2728
+[2026-01-17 12:21:36] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:36] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:36] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:36]   found use method, returning move instance
+[2026-01-17 12:21:36] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:36]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:36]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:36]   attempting to instantiate move class
+[2026-01-17 12:21:36]   instantiation result: suc=	true	 inst=	table: 0x01f8506faf28
+[2026-01-17 12:21:36] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:36]   found use method, returning move instance
+[2026-01-17 12:21:36] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:36] moves.Move:use: calculating damage
+[2026-01-17 12:21:36]   target object: 	EXP Dummy
+[2026-01-17 12:21:36]   target.name: 	EXP Dummy
+[2026-01-17 12:21:36]   target.type: 	nil
+[2026-01-17 12:21:36]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:36]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:36]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:36] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:36]   result.message: 	It dealt 156 damage!
+[2026-01-17 12:21:36]   result.damage: 	156
+[2026-01-17 12:21:36] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:36] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:36] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:36] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:36] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:37] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:37] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:37] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:37] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:38] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:38] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:38]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:38]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:38]   attempting to instantiate move class
+[2026-01-17 12:21:38]   instantiation result: suc=	true	 inst=	table: 0x01f850728b50
+[2026-01-17 12:21:38] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:38] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:38] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:39] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:39]   found use method, returning move instance
+[2026-01-17 12:21:39] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:39]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:39]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:39]   attempting to instantiate move class
+[2026-01-17 12:21:39]   instantiation result: suc=	true	 inst=	table: 0x01f850731f38
+[2026-01-17 12:21:39] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:39]   found use method, returning move instance
+[2026-01-17 12:21:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:39] moves.Move:use: calculating damage
+[2026-01-17 12:21:39]   target object: 	EXP Dummy
+[2026-01-17 12:21:39]   target.name: 	EXP Dummy
+[2026-01-17 12:21:39]   target.type: 	nil
+[2026-01-17 12:21:39]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:39]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:39]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:39] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:39]   result.message: 	It dealt 134 damage!
+[2026-01-17 12:21:39]   result.damage: 	134
+[2026-01-17 12:21:39] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:39] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:39] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:39] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:39] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:39] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:40] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:40] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:41] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:41] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:41]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:41]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:41]   attempting to instantiate move class
+[2026-01-17 12:21:41]   instantiation result: suc=	true	 inst=	table: 0x01f8504ba028
+[2026-01-17 12:21:41] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:41] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:41] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:41]   found use method, returning move instance
+[2026-01-17 12:21:41] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:41]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:41]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:41]   attempting to instantiate move class
+[2026-01-17 12:21:41]   instantiation result: suc=	true	 inst=	table: 0x01f8504c3088
+[2026-01-17 12:21:41] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:41]   found use method, returning move instance
+[2026-01-17 12:21:41] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:41] moves.Move:use: calculating damage
+[2026-01-17 12:21:41]   target object: 	EXP Dummy
+[2026-01-17 12:21:41]   target.name: 	EXP Dummy
+[2026-01-17 12:21:41]   target.type: 	nil
+[2026-01-17 12:21:41]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:41]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:41]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:41] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:41]   result.message: 	It dealt 116 damage!
+[2026-01-17 12:21:41]   result.damage: 	116
+[2026-01-17 12:21:41] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:41] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:41] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:41] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:41] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:42] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:42] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:42] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:42] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:42] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:43] battle.startWildBattle: starting wild battle
+[2026-01-17 12:21:43] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:43]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:43]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:43]   attempting to instantiate move class
+[2026-01-17 12:21:43]   instantiation result: suc=	true	 inst=	table: 0x01f8504ece38
+[2026-01-17 12:21:43] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:43] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:43] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:21:44] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:44]   found use method, returning move instance
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	splash
+[2026-01-17 12:21:44]   trying keys: 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash	 / 	splash
+[2026-01-17 12:21:44]   found class: 	table: 0x01f850818bc8
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f8504f61a0
+[2026-01-17 12:21:44] resolveMoveInstance: got table, checking for use/pp
+[2026-01-17 12:21:44]   found use method, returning move instance
+[2026-01-17 12:21:44] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:44] moves.Move:use: calculating damage
+[2026-01-17 12:21:44]   target object: 	EXP Dummy
+[2026-01-17 12:21:44]   target.name: 	EXP Dummy
+[2026-01-17 12:21:44]   target.type: 	nil
+[2026-01-17 12:21:44]   target.types: 	table: 0x01f840df1a40
+[2026-01-17 12:21:44]   calling getTypeMultiplier: attackType=	Normal	 targetTypes=	table: 0x01f840df1a40
+[2026-01-17 12:21:44]   getTypeMultiplier returned: 	1
+[2026-01-17 12:21:44] battle: move executed successfully: 	Tackle
+[2026-01-17 12:21:44]   result.message: 	It dealt 137 damage!
+[2026-01-17 12:21:44]   result.damage: 	137
+[2026-01-17 12:21:44] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:44] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:44] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:44] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:44] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:44]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:44]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f850506170
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:44]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:44]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f850506ee0
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:44]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:44]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f850507cb0
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:44]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:44]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f8505089f0
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	tackle
+[2026-01-17 12:21:44]   trying keys: 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle	 / 	tackle
+[2026-01-17 12:21:44]   found class: 	table: 0x01f85106cb08
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f850509a90
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	tail_whip
+[2026-01-17 12:21:44]   trying keys: 	tail_whip	 / 	tail_whip	 / 	tailwhip	 / 	tail_whip	 / 	tail_whip	 / 	tailwhip
+[2026-01-17 12:21:44]   found class: 	table: 0x01f851068f30
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f85050a518
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	growth
+[2026-01-17 12:21:44]   trying keys: 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth	 / 	growth
+[2026-01-17 12:21:44]   found class: 	table: 0x01f851067d10
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f85050aec8
+[2026-01-17 12:21:44] resolveMoveInstance: trying to resolve 	razor_leaf
+[2026-01-17 12:21:44]   trying keys: 	razor_leaf	 / 	razor_leaf	 / 	razorleaf	 / 	razor_leaf	 / 	razor_leaf	 / 	razorleaf
+[2026-01-17 12:21:44]   found class: 	table: 0x01f850562df8
+[2026-01-17 12:21:44]   attempting to instantiate move class
+[2026-01-17 12:21:44]   instantiation result: suc=	true	 inst=	table: 0x01f85050b868
+[2026-01-17 12:21:44] battle.keypressed after run: logCount=	0	 queue=	4
+[2026-01-17 12:21:44] battle.update: moving queued log -> visible; queue=	4	 logs=	0
+[2026-01-17 12:21:45] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	3
+[2026-01-17 12:21:45] battle.keypressed after run: logCount=	0	 queue=	3
+[2026-01-17 12:21:45] battle.update: moving queued log -> visible; queue=	3	 logs=	0
+[2026-01-17 12:21:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	2
+[2026-01-17 12:21:46] battle.keypressed after run: logCount=	0	 queue=	2
+[2026-01-17 12:21:46] battle.update: moving queued log -> visible; queue=	2	 logs=	0
+[2026-01-17 12:21:46] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	1
+[2026-01-17 12:21:46] battle.keypressed after run: logCount=	0	 queue=	1
+[2026-01-17 12:21:46] battle.update: moving queued log -> visible; queue=	1	 logs=	0
+[2026-01-17 12:21:48] battle.keypressed Z: logCount=	1	 actionCount=	1	 queue=	0
+[2026-01-17 12:21:48] battle.keypressed after run: logCount=	0	 queue=	0
+[2026-01-17 12:36:09] Viewing summary for: Cardinel

@@ -294,8 +294,8 @@ function love.load()
         end
         -- Initialize player's Pokemon party
         if pmod.Pokemon then
-            table.insert(player.party, pmod.Pokemon:new("pikachu", 5))
-            table.insert(player.party, pmod.Pokemon:new("squirtle", 5))
+            table.insert(player.party, pmod.Pokemon:new("grass_squirrel", 5))
+            table.insert(player.party, pmod.Pokemon:new("cardinel", 5))
         end
     end
     
