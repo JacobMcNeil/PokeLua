@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Pikachu",
+    "level": 5,
+    "hp": 35,
+    "attack": 55,
+    "defense": 40,
+    "sp_attack": 50,
+    "sp_defense": 40,
+    "moves": ["Thunder Shock", "Quick Attack"]
+  },
+  {
+    "name": "Bulbasaur",
+    "level": 5,
+    "hp": 45,
+    "attack": 49,
+    "defense": 49,
+    "sp_attack": 49,
+    "sp_defense": 49,
+    "moves": ["Tackle", "Vine Whip"]
+  },
+  {
+    "name": "Squirtle",
+    "level": 5,
+    "hp": 44,
+    "attack": 48,
+    "defense": 65,
+    "sp_attack": 50,
+    "sp_defense": 64,
+    "moves": ["Tackle", "Water Gun"]
+  },
+  {
+    "name": "Charmander",
+    "level": 5,
+    "hp": 39,
+    "attack": 52,
+    "defense": 43,
+    "sp_attack": 60,
+    "sp_defense": 50,
+    "moves": ["Scratch", "Ember"]
+  }
+]

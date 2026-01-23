@@ -136,7 +136,7 @@ local fallbackPokemon = {
 
     -- Custom grass-squirrel evolution line (three stages)
     grass_squirrel = {
-        id = 10001,
+        id = 304,
         name = "Grass Squirrel",
         types = {"grass"},
         genderRatio = { male = 50, female = 50 },
@@ -162,13 +162,13 @@ local fallbackPokemon = {
         },
         evolution = { method = "level", level = 16, into = "grass_squirrel_mid" },
         sprite = {
-            front = "tiled/sprites/newpokemon/4.png",
-            back  = "tiled/sprites/newpokemon/4.png"
+            front = "tiled/sprites/newpokemon/front/4.png",
+            back  = "tiled/sprites/newpokemon/back/4.png"
         }
     },
 
     grass_squirrel_mid = {
-        id = 10002,
+        id = 305,
         name = "Bushrod",
         types = {"grass"},
         genderRatio = { male = 50, female = 50 },
@@ -194,13 +194,13 @@ local fallbackPokemon = {
         },
         evolution = { method = "level", level = 36, into = "grass_squirrel_final" },
         sprite = {
-            front = "tiled/sprites/newpokemon/5.png",
-            back  = "tiled/sprites/newpokemon/5.png"
+            front = "tiled/sprites/newpokemon/front/5.png",
+            back  = "tiled/sprites/newpokemon/back/5.png"
         }
     },
 
     grass_squirrel_final = {
-        id = 10003,
+        id = 306,
         name = "Oakquill",
         types = {"grass"},
         genderRatio = { male = 50, female = 50 },
@@ -226,14 +226,14 @@ local fallbackPokemon = {
         },
         evolution = nil,
         sprite = {
-            front = "tiled/sprites/newpokemon/6.png",
-            back  = "tiled/sprites/newpokemon/6.png"
+            front = "tiled/sprites/newpokemon/front/6.png",
+            back  = "tiled/sprites/newpokemon/back/6.png"
         }
     }
 ,
     -- Custom fire-bird evolution line (three stages) based on "cardinel"
     cardinel = {
-        id = 10011,
+        id = 301,
         name = "Cardinel",
         types = {"fire", "flying"},
         genderRatio = { male = 50, female = 50 },
@@ -258,13 +258,13 @@ local fallbackPokemon = {
         },
         evolution = { method = "level", level = 18, into = "cardinel_mid" },
         sprite = {
-            front = "tiled/sprites/newpokemon/1.png",
-            back  = "tiled/sprites/newpokemon/1.png"
+            front = "tiled/sprites/newpokemon/front/1.png",
+            back  = "tiled/sprites/newpokemon/back/1.png"
         }
     },
 
     cardinel_mid = {
-        id = 10012,
+        id = 302,
         name = "Cardifire",
         types = {"fire", "flying"},
         genderRatio = { male = 50, female = 50 },
@@ -289,13 +289,13 @@ local fallbackPokemon = {
         },
         evolution = { method = "level", level = 38, into = "cardinel_final" },
         sprite = {
-            front = "tiled/sprites/newpokemon/2.png",
-            back  = "tiled/sprites/newpokemon/2.png"
+            front = "tiled/sprites/newpokemon/front/2.png",
+            back  = "tiled/sprites/newpokemon/back/2.png"
         }
     },
 
     cardinel_final = {
-        id = 10013,
+        id = 303,
         name = "Cardignis",
         types = {"fire", "flying"},
         genderRatio = { male = 50, female = 50 },
@@ -321,8 +321,103 @@ local fallbackPokemon = {
         },
         evolution = nil,
         sprite = {
-            front = "tiled/sprites/newpokemon/3.png",
-            back  = "tiled/sprites/newpokemon/3.png"
+            front = "tiled/sprites/newpokemon/front/3.png",
+            back  = "tiled/sprites/newpokemon/back/3.png"
+        }
+    }
+    ,
+    -- Custom water-beaver evolution line (three stages)
+    water_beaver = {
+        id = 307,
+        name = "water_beaver",
+        types = {"water"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 190,
+        baseExpYield = 64,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"torrent"},
+        hiddenAbility = "swift_swim",
+        baseStats = {
+            hp = 42,
+            attack = 52,
+            defense = 48,
+            spAttack = 38,
+            spDefense = 44,
+            speed = 40
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip"},
+            [6] = {"water_gun"},
+            [12] = {"water_sport"}
+        },
+        evolution = { method = "level", level = 16, into = "water_beaver_mid" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/front/7.png",
+            back  = "tiled/sprites/newpokemon/back/7.png"
+        }
+    },
+
+    water_beaver_mid = {
+        id = 308,
+        name = "Dambuilder",
+        types = {"water"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 120,
+        baseExpYield = 142,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"torrent"},
+        hiddenAbility = "swift_swim",
+        baseStats = {
+            hp = 60,
+            attack = 72,
+            defense = 68,
+            spAttack = 58,
+            spDefense = 64,
+            speed = 55
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "water_gun"},
+            [16] = {"aqua_tail"},
+            [24] = {"protect"}
+        },
+        evolution = { method = "level", level = 36, into = "water_beaver_final" },
+        sprite = {
+            front = "tiled/sprites/newpokemon/front/8.png",
+            back  = "tiled/sprites/newpokemon/back/8.png"
+        }
+    },
+
+    water_beaver_final = {
+        id = 309,
+        name = "Hydrobeaver",
+        types = {"water"},
+        genderRatio = { male = 50, female = 50 },
+        catchRate = 45,
+        baseExpYield = 236,
+        baseFriendship = 70,
+        growthRate = "medium_fast",
+        abilities = {"torrent"},
+        hiddenAbility = "swift_swim",
+        baseStats = {
+            hp = 90,
+            attack = 110,
+            defense = 95,
+            spAttack = 85,
+            spDefense = 90,
+            speed = 75
+        },
+        learnset = {
+            [1] = {"tackle", "tail_whip", "aqua_tail", "protect"},
+            [36] = {"liquidation"},
+            [44] = {"surf"},
+            [52] = {"hydro_pump"}
+        },
+        evolution = nil,
+        sprite = {
+            front = "tiled/sprites/newpokemon/front/9.png",
+            back  = "tiled/sprites/newpokemon/back/9.png"
         }
     }
 }

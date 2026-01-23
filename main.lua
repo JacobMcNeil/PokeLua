@@ -296,6 +296,7 @@ function love.load()
         if pmod.Pokemon then
             table.insert(player.party, pmod.Pokemon:new("grass_squirrel", 5))
             table.insert(player.party, pmod.Pokemon:new("cardinel", 5))
+            table.insert(player.party, pmod.Pokemon:new("water_beaver", 5))
         end
     end
     
