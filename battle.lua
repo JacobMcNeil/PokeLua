@@ -1740,62 +1740,56 @@ local function getActiveSkillForAction(pokemon, battle)
                     end
                 end
                 
-                -- If no targets pass filter, skill doesn't activate
-                if #filtered == 0 then
-                    goto continue
-                end
-                
-                -- Default sort: prefer across (same slot), then front row first
-                -- This is the base ordering before condition sorts are applied
-                table.sort(filtered, function(a, b)
-                    -- Same slot (across) has highest priority
-                    local aAcross = (a.slot == userSlot) and 0 or 1
-                    local bAcross = (b.slot == userSlot) and 0 or 1
-                    if aAcross ~= bAcross then
-                        return aAcross < bAcross
-                    end
-                    -- Then front row (1-3) before back row (4-6)
-                    local aFront = (a.slot <= 3) and 0 or 1
-                    local bFront = (b.slot <= 3) and 0 or 1
-                    return aFront < bFront
-                end)
-                
-                -- Apply condition1 sort if it has one (overrides default)
-                if cond1.sort and cond1.id ~= "none" then
+                -- If no targets pass filter, skill doesn't activate - continue to next slot
+                if #filtered > 0 then
+                    -- Default sort: prefer across (same slot), then front row first
+                    -- This is the base ordering before condition sorts are applied
                     table.sort(filtered, function(a, b)
-                        return cond1.sort(a.pokemon, b.pokemon)
+                        -- Same slot (across) has highest priority
+                        local aAcross = (a.slot == userSlot) and 0 or 1
+                        local bAcross = (b.slot == userSlot) and 0 or 1
+                        if aAcross ~= bAcross then
+                            return aAcross < bAcross
+                        end
+                        -- Then front row (1-3) before back row (4-6)
+                        local aFront = (a.slot <= 3) and 0 or 1
+                        local bFront = (b.slot <= 3) and 0 or 1
+                        return aFront < bFront
                     end)
-                end
-                
-                -- Apply condition2 filter (further filtering)
-                local filtered2 = {}
-                for _, targetInfo in ipairs(filtered) do
-                    if cond2.filter(pokemon, targetInfo.pokemon, battle) then
-                        table.insert(filtered2, targetInfo)
+                    
+                    -- Apply condition1 sort if it has one (overrides default)
+                    if cond1.sort and cond1.id ~= "none" then
+                        table.sort(filtered, function(a, b)
+                            return cond1.sort(a.pokemon, b.pokemon)
+                        end)
+                    end
+                    
+                    -- Apply condition2 filter (further filtering)
+                    local filtered2 = {}
+                    for _, targetInfo in ipairs(filtered) do
+                        if cond2.filter(pokemon, targetInfo.pokemon, battle) then
+                            table.insert(filtered2, targetInfo)
+                        end
+                    end
+                    
+                    -- If condition2 has a filter (not "none") and no targets pass, skill doesn't activate
+                    if not (cond2.id ~= "none" and #filtered2 == 0) then
+                        -- Use filtered2 if condition2 was applied, otherwise use filtered
+                        local finalPool = #filtered2 > 0 and filtered2 or filtered
+                        
+                        -- Apply condition2 sort if it has one
+                        if cond2.sort and cond2.id ~= "none" then
+                            table.sort(finalPool, function(a, b)
+                                return cond2.sort(a.pokemon, b.pokemon)
+                            end)
+                        end
+                        
+                        -- Return first valid target
+                        if #finalPool > 0 then
+                            return skill, finalPool[1].pokemon
+                        end
                     end
                 end
-                
-                -- If condition2 has a filter (not "none") and no targets pass, skill doesn't activate
-                if cond2.id ~= "none" and #filtered2 == 0 then
-                    goto continue
-                end
-                
-                -- Use filtered2 if condition2 was applied, otherwise use filtered
-                local finalPool = #filtered2 > 0 and filtered2 or filtered
-                
-                -- Apply condition2 sort if it has one
-                if cond2.sort and cond2.id ~= "none" then
-                    table.sort(finalPool, function(a, b)
-                        return cond2.sort(a.pokemon, b.pokemon)
-                    end)
-                end
-                
-                -- Return first valid target
-                if #finalPool > 0 then
-                    return skill, finalPool[1].pokemon
-                end
-                
-                ::continue::
             end
         end
     end
@@ -1929,37 +1923,37 @@ function M.triggerPassives(triggerType, target, source, damage)
     if #passiveInfos == 0 then return end
     
     for _, info in ipairs(passiveInfos) do
-        local passive = info.passive
-        local slot = info.slot
-        
-        -- Check conditions (self = target, condition target = source)
-        local cond1 = getConditionById(slot.condition1 or "none")
-        local cond2 = getConditionById(slot.condition2 or "none")
-        
-        if not cond1.filter(target, source, M) then goto continue end
-        if not cond2.filter(target, source, M) then goto continue end
-        
-        -- Check if target has PP remaining
-        if (target.battlePP or 0) > 0 then
-            -- Consume PP
-            target.battlePP = target.battlePP - 1
+        repeat -- Use repeat-until-true pattern for early continue
+            local passive = info.passive
+            local slot = info.slot
             
-            -- Execute passive
-            local result, message = passive:execute(target, source, damage, M)
-            if message then
-                -- Collect HP changes for synced display
-                local hpChanges = {}
-                if target then
-                    table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+            -- Check conditions (self = target, condition target = source)
+            local cond1 = getConditionById(slot.condition1 or "none")
+            local cond2 = getConditionById(slot.condition2 or "none")
+            
+            if not cond1.filter(target, source, M) then break end
+            if not cond2.filter(target, source, M) then break end
+            
+            -- Check if target has PP remaining
+            if (target.battlePP or 0) > 0 then
+                -- Consume PP
+                target.battlePP = target.battlePP - 1
+                
+                -- Execute passive
+                local result, message = passive:execute(target, source, damage, M)
+                if message then
+                    -- Collect HP changes for synced display
+                    local hpChanges = {}
+                    if target then
+                        table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                    end
+                    if source then
+                        table.insert(hpChanges, {pokemon = source, newHP = source.currentHP})
+                    end
+                    M.queueMessage(message, hpChanges)
                 end
-                if source then
-                    table.insert(hpChanges, {pokemon = source, newHP = source.currentHP})
-                end
-                M.queueMessage(message, hpChanges)
             end
-        end
-        
-        ::continue::
+        until true
     end
 end
 
@@ -2020,51 +2014,51 @@ function M.triggerAllyPassives(triggerType, triggerPokemon, otherPokemon, damage
         if ally and ally ~= triggerPokemon and ally.currentHP and ally.currentHP > 0 then
             local passiveInfos = getAllPassivesForTrigger(ally, triggerType)
             for _, info in ipairs(passiveInfos) do
-                local passive = info.passive
-                local slot = info.slot
-                
-                -- Skip isSelfTrigger passives for allies (they only trigger on the owner)
-                if passive.isSelfTrigger then
-                    goto continue
-                end
-                
-                -- Check conditions (self = ally/passive owner, target = triggerPokemon)
-                local cond1 = getConditionById(slot.condition1 or "none")
-                local cond2 = getConditionById(slot.condition2 or "none")
-                
-                if cond1.filter(ally, triggerPokemon, M) and cond2.filter(ally, triggerPokemon, M) then
-                    if (ally.battlePP or 0) > 0 then
-                        -- Check ranged targeting for enemy-targeting passives
-                        local validTarget = true
-                        if passive.targetType == "enemy" and not passive.ranged then
-                            local enemyFormation = M.getEnemyFormation(ally)
-                            if hasFrontRowAlive(enemyFormation) then
-                                local target = otherPokemon or M.lastTarget
-                                if target then
-                                    local targetSlot = nil
-                                    for j = 1, 6 do
-                                        if enemyFormation[j] == target then targetSlot = j break end
-                                    end
-                                    if targetSlot and targetSlot >= 4 then
-                                        validTarget = false  -- Can't reach back row with non-ranged
+                repeat -- Use repeat-until-true pattern for early continue
+                    local passive = info.passive
+                    local slot = info.slot
+                    
+                    -- Skip isSelfTrigger passives for allies (they only trigger on the owner)
+                    if passive.isSelfTrigger then
+                        break
+                    end
+                    
+                    -- Check conditions (self = ally/passive owner, target = triggerPokemon)
+                    local cond1 = getConditionById(slot.condition1 or "none")
+                    local cond2 = getConditionById(slot.condition2 or "none")
+                    
+                    if cond1.filter(ally, triggerPokemon, M) and cond2.filter(ally, triggerPokemon, M) then
+                        if (ally.battlePP or 0) > 0 then
+                            -- Check ranged targeting for enemy-targeting passives
+                            local validTarget = true
+                            if passive.targetType == "enemy" and not passive.ranged then
+                                local enemyFormation = M.getEnemyFormation(ally)
+                                if hasFrontRowAlive(enemyFormation) then
+                                    local target = otherPokemon or M.lastTarget
+                                    if target then
+                                        local targetSlot = nil
+                                        for j = 1, 6 do
+                                            if enemyFormation[j] == target then targetSlot = j break end
+                                        end
+                                        if targetSlot and targetSlot >= 4 then
+                                            validTarget = false  -- Can't reach back row with non-ranged
+                                        end
                                     end
                                 end
                             end
-                        end
-                        
-                        if validTarget then
-                            table.insert(candidates, {
-                                ally = ally,
-                                passive = passive,
-                                slot = slot,
-                                priority = passive.passivePriority or 0,
-                                limited = passive.limited or false
-                            })
+                            
+                            if validTarget then
+                                table.insert(candidates, {
+                                    ally = ally,
+                                    passive = passive,
+                                    slot = slot,
+                                    priority = passive.passivePriority or 0,
+                                    limited = passive.limited or false
+                                })
+                            end
                         end
                     end
-                end
-                
-                ::continue::
+                until true
             end
         end
     end
@@ -2080,50 +2074,46 @@ function M.triggerAllyPassives(triggerType, triggerPokemon, otherPokemon, damage
     -- Execute passives respecting limited constraint
     for _, cand in ipairs(candidates) do
         -- Skip limited passives if one already triggered
-        if cand.limited and limitedTriggered then
-            goto continue
+        if not (cand.limited and limitedTriggered) then
+            -- Consume PP and execute
+            cand.ally.battlePP = cand.ally.battlePP - 1
+            -- For isSelfTrigger passives, pass otherPokemon (the attacker) as second param
+            -- For canTriggerOnSelf passives, use targetOverride if present
+            -- For other passives, pass triggerPokemon (the ally that was hit/attacked)
+            local executeTarget
+            if cand.targetOverride then
+                executeTarget = cand.targetOverride
+            elseif cand.passive.isSelfTrigger then
+                executeTarget = otherPokemon
+            else
+                executeTarget = triggerPokemon
+            end
+            local result, message = cand.passive:execute(cand.ally, executeTarget, damage, M)
+            
+            -- Mark limited as triggered
+            if cand.limited then
+                limitedTriggered = true
+            end
+            
+            -- Collect HP changes for synced display
+            local hpChanges = {}
+            if cand.ally then
+                table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
+            end
+            if triggerPokemon then
+                table.insert(hpChanges, {pokemon = triggerPokemon, newHP = triggerPokemon.currentHP})
+            end
+            if otherPokemon and otherPokemon ~= triggerPokemon then
+                table.insert(hpChanges, {pokemon = otherPokemon, newHP = otherPokemon.currentHP})
+            end
+            
+            -- Queue animation if passive has one
+            if message and cand.passive.animationType then
+                M.queuePassiveAnimation(cand.passive.animationType, cand.ally, executeTarget or triggerPokemon, message, hpChanges)
+            elseif message then
+                M.queueMessage(message, hpChanges)
+            end
         end
-        
-        -- Consume PP and execute
-        cand.ally.battlePP = cand.ally.battlePP - 1
-        -- For isSelfTrigger passives, pass otherPokemon (the attacker) as second param
-        -- For canTriggerOnSelf passives, use targetOverride if present
-        -- For other passives, pass triggerPokemon (the ally that was hit/attacked)
-        local executeTarget
-        if cand.targetOverride then
-            executeTarget = cand.targetOverride
-        elseif cand.passive.isSelfTrigger then
-            executeTarget = otherPokemon
-        else
-            executeTarget = triggerPokemon
-        end
-        local result, message = cand.passive:execute(cand.ally, executeTarget, damage, M)
-        
-        -- Mark limited as triggered
-        if cand.limited then
-            limitedTriggered = true
-        end
-        
-        -- Collect HP changes for synced display
-        local hpChanges = {}
-        if cand.ally then
-            table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
-        end
-        if triggerPokemon then
-            table.insert(hpChanges, {pokemon = triggerPokemon, newHP = triggerPokemon.currentHP})
-        end
-        if otherPokemon and otherPokemon ~= triggerPokemon then
-            table.insert(hpChanges, {pokemon = otherPokemon, newHP = otherPokemon.currentHP})
-        end
-        
-        -- Queue animation if passive has one
-        if message and cand.passive.animationType then
-            M.queuePassiveAnimation(cand.passive.animationType, cand.ally, executeTarget or triggerPokemon, message, hpChanges)
-        elseif message then
-            M.queueMessage(message, hpChanges)
-        end
-        
-        ::continue::
     end
 end
 
@@ -2140,28 +2130,28 @@ function M.triggerEnemyPassives(triggerType, attacker, target, damage)
         if defender and defender.currentHP and defender.currentHP > 0 then
             local passiveInfos = getAllPassivesForTrigger(defender, triggerType)
             for _, info in ipairs(passiveInfos) do
-                local passive = info.passive
-                local slot = info.slot
-                
-                -- Check conditions (self = defender, target = attacker)
-                local cond1 = getConditionById(slot.condition1 or "none")
-                local cond2 = getConditionById(slot.condition2 or "none")
-                
-                if not cond1.filter(defender, attacker, M) then goto continue end
-                if not cond2.filter(defender, attacker, M) then goto continue end
-                
-                if (defender.battlePP or 0) > 0 then
-                    defender.battlePP = defender.battlePP - 1
-                    local _, message = passive:execute(defender, attacker, damage, M)
-                    if message then
-                        local hpChanges = {}
-                        table.insert(hpChanges, {pokemon = defender, newHP = defender.currentHP})
-                        table.insert(hpChanges, {pokemon = attacker, newHP = attacker.currentHP})
-                        M.queueMessage(message, hpChanges)
+                repeat -- Use repeat-until-true pattern for early continue
+                    local passive = info.passive
+                    local slot = info.slot
+                    
+                    -- Check conditions (self = defender, target = attacker)
+                    local cond1 = getConditionById(slot.condition1 or "none")
+                    local cond2 = getConditionById(slot.condition2 or "none")
+                    
+                    if not cond1.filter(defender, attacker, M) then break end
+                    if not cond2.filter(defender, attacker, M) then break end
+                    
+                    if (defender.battlePP or 0) > 0 then
+                        defender.battlePP = defender.battlePP - 1
+                        local _, message = passive:execute(defender, attacker, damage, M)
+                        if message then
+                            local hpChanges = {}
+                            table.insert(hpChanges, {pokemon = defender, newHP = defender.currentHP})
+                            table.insert(hpChanges, {pokemon = attacker, newHP = attacker.currentHP})
+                            M.queueMessage(message, hpChanges)
+                        end
                     end
-                end
-                
-                ::continue::
+                until true
             end
         end
     end
@@ -2196,27 +2186,25 @@ function M.triggerBeforeAllyAttacked(target, attacker)
                 local slot = info.slot
                 
                 -- Skip if this is ally-only targeting and ally is the target
-                if ally == target and passive.targetType ~= "ally_or_self" then
-                    goto skip_passive
-                end
+                local shouldSkip = ally == target and passive.targetType ~= "ally_or_self"
                 
-                -- Check conditions (self = ally/passive owner, target = ally being attacked)
-                local cond1 = getConditionById(slot.condition1 or "none")
-                local cond2 = getConditionById(slot.condition2 or "none")
-                
-                if cond1.filter(ally, target, M) and cond2.filter(ally, target, M) then
-                    if (ally.battlePP or 0) > 0 then
-                        table.insert(candidates, {
-                            ally = ally,
-                            passive = passive,
-                            slot = slot,
-                            priority = passive.passivePriority or 0,
-                            limited = passive.limited or false
-                        })
+                if not shouldSkip then
+                    -- Check conditions (self = ally/passive owner, target = ally being attacked)
+                    local cond1 = getConditionById(slot.condition1 or "none")
+                    local cond2 = getConditionById(slot.condition2 or "none")
+                    
+                    if cond1.filter(ally, target, M) and cond2.filter(ally, target, M) then
+                        if (ally.battlePP or 0) > 0 then
+                            table.insert(candidates, {
+                                ally = ally,
+                                passive = passive,
+                                slot = slot,
+                                priority = passive.passivePriority or 0,
+                                limited = passive.limited or false
+                            })
+                        end
                     end
                 end
-                
-                ::skip_passive::
             end
         end
     end
@@ -2232,36 +2220,32 @@ function M.triggerBeforeAllyAttacked(target, attacker)
     -- Execute passives respecting limited constraint
     for _, cand in ipairs(candidates) do
         -- Skip limited passives if one already triggered
-        if cand.limited and limitedTriggered then
-            goto continue
+        if not (cand.limited and limitedTriggered) then
+            -- Consume PP and execute
+            cand.ally.battlePP = cand.ally.battlePP - 1
+            local result, message = cand.passive:execute(cand.ally, target, 0, M)
+            
+            -- Mark limited as triggered
+            if cand.limited then
+                limitedTriggered = true
+            end
+            
+            -- Collect HP changes for synced display
+            local hpChanges = {}
+            if cand.ally then
+                table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
+            end
+            if target then
+                table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+            end
+            
+            -- Queue animation if passive has one
+            if message and cand.passive.animationType then
+                M.queuePassiveAnimation(cand.passive.animationType, cand.ally, target, message, hpChanges)
+            elseif message then
+                M.queueMessage(message, hpChanges)
+            end
         end
-        
-        -- Consume PP and execute
-        cand.ally.battlePP = cand.ally.battlePP - 1
-        local result, message = cand.passive:execute(cand.ally, target, 0, M)
-        
-        -- Mark limited as triggered
-        if cand.limited then
-            limitedTriggered = true
-        end
-        
-        -- Collect HP changes for synced display
-        local hpChanges = {}
-        if cand.ally then
-            table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
-        end
-        if target then
-            table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
-        end
-        
-        -- Queue animation if passive has one
-        if message and cand.passive.animationType then
-            M.queuePassiveAnimation(cand.passive.animationType, cand.ally, target, message, hpChanges)
-        elseif message then
-            M.queueMessage(message, hpChanges)
-        end
-        
-        ::continue::
     end
 end
 
@@ -2271,27 +2255,27 @@ function M.triggerBeforeSelfHit(target, attacker)
     
     local passiveInfos = getAllPassivesForTrigger(target, "before_self_hit")
     for _, info in ipairs(passiveInfos) do
-        local passive = info.passive
-        local slot = info.slot
-        
-        -- Check conditions (self = target, target = attacker)
-        local cond1 = getConditionById(slot.condition1 or "none")
-        local cond2 = getConditionById(slot.condition2 or "none")
-        
-        if not cond1.filter(target, attacker, M) then goto continue end
-        if not cond2.filter(target, attacker, M) then goto continue end
-        
-        if (target.battlePP or 0) > 0 then
-            target.battlePP = target.battlePP - 1
-            local _, message = passive:execute(target, attacker, 0, M)
-            if message then
-                local hpChanges = {}
-                table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
-                M.queueMessage(message, hpChanges)
+        repeat -- Use repeat-until-true pattern for early continue
+            local passive = info.passive
+            local slot = info.slot
+            
+            -- Check conditions (self = target, target = attacker)
+            local cond1 = getConditionById(slot.condition1 or "none")
+            local cond2 = getConditionById(slot.condition2 or "none")
+            
+            if not cond1.filter(target, attacker, M) then break end
+            if not cond2.filter(target, attacker, M) then break end
+            
+            if (target.battlePP or 0) > 0 then
+                target.battlePP = target.battlePP - 1
+                local _, message = passive:execute(target, attacker, 0, M)
+                if message then
+                    local hpChanges = {}
+                    table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                    M.queueMessage(message, hpChanges)
+                end
             end
-        end
-        
-        ::continue::
+        until true
     end
 end
 
@@ -2315,103 +2299,103 @@ function M.triggerRoundStartPassives()
     for _, pokemon in ipairs(allPokemon) do
         local passiveInfos = getAllPassivesForTrigger(pokemon, "on_round_start")
         for _, info in ipairs(passiveInfos) do
-            local passive = info.passive
-            local slot = info.slot
-            
-            -- Get conditions
-            local cond1 = getConditionById(slot.condition1 or "none")
-            local cond2 = getConditionById(slot.condition2 or "none")
-            
-            -- For self-targeting passives, check conditions against self
-            -- For enemy/ally targeting passives, find appropriate target
-            local target = nil
-            if passive.targetType == "enemy" then
-                local enemyFormation = M.getEnemyFormation(pokemon)
-                local validTargets = {}
-                if enemyFormation then
-                    for j = 1, 6 do
-                        local enemy = enemyFormation[j]
-                        if enemy and enemy.currentHP and enemy.currentHP > 0 then
-                            if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
-                                table.insert(validTargets, enemy)
+            repeat -- Use repeat-until-true pattern for early continue
+                local passive = info.passive
+                local slot = info.slot
+                
+                -- Get conditions
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                -- For self-targeting passives, check conditions against self
+                -- For enemy/ally targeting passives, find appropriate target
+                local target = nil
+                if passive.targetType == "enemy" then
+                    local enemyFormation = M.getEnemyFormation(pokemon)
+                    local validTargets = {}
+                    if enemyFormation then
+                        for j = 1, 6 do
+                            local enemy = enemyFormation[j]
+                            if enemy and enemy.currentHP and enemy.currentHP > 0 then
+                                if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
+                                    table.insert(validTargets, enemy)
+                                end
                             end
                         end
                     end
+                    -- Sort targets based on conditions and pick best
+                    if #validTargets > 0 then
+                        table.sort(validTargets, function(a, b)
+                            if cond2.sort then return cond2.sort(a, b) end
+                            if cond1.sort then return cond1.sort(a, b) end
+                            return false
+                        end)
+                        target = validTargets[1]
+                    end
+                elseif passive.targetType == "self" then
+                    -- Self-targeting passives check conditions against self
+                    if not cond1.filter(pokemon, pokemon, M) then break end
+                    if not cond2.filter(pokemon, pokemon, M) then break end
+                    target = pokemon
                 end
-                -- Sort targets based on conditions and pick best
-                if #validTargets > 0 then
-                    table.sort(validTargets, function(a, b)
-                        if cond2.sort then return cond2.sort(a, b) end
-                        if cond1.sort then return cond1.sort(a, b) end
-                        return false
-                    end)
-                    target = validTargets[1]
-                end
-            elseif passive.targetType == "self" then
-                -- Self-targeting passives check conditions against self
-                if not cond1.filter(pokemon, pokemon, M) then goto continue end
-                if not cond2.filter(pokemon, pokemon, M) then goto continue end
-                target = pokemon
-            end
-            
-            if (pokemon.battlePP or 0) > 0 and target then
-                pokemon.battlePP = pokemon.battlePP - 1
                 
-                -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
-                if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
-                    M.currentAction = {
-                        user = pokemon,
-                        target = target,
-                        skill = {
-                            name = passive.name,
-                            category = "physical",  -- Attack passives are physical
-                            moveType = passive.moveType or "normal",
+                if (pokemon.battlePP or 0) > 0 and target then
+                    pokemon.battlePP = pokemon.battlePP - 1
+                    
+                    -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
+                    if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
+                        M.currentAction = {
+                            user = pokemon,
+                            target = target,
+                            skill = {
+                                name = passive.name,
+                                category = "physical",  -- Attack passives are physical
+                                moveType = passive.moveType or "normal",
+                            }
                         }
-                    }
+                        
+                        -- Trigger before_ally_attacked for target (this is where Protect triggers)
+                        M.triggerBeforeAllyAttacked(target, pokemon)
+                        
+                        -- Check if target is protected (Protect triggered)
+                        if target.isProtected then
+                            target.isProtected = nil
+                            target.protectedBy = nil
+                            M.currentAction = nil
+                            -- Still show the attack animation with a "blocked" message
+                            local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                            local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                            M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
+                            break
+                        end
+                    end
                     
-                    -- Trigger before_ally_attacked for target (this is where Protect triggers)
-                    M.triggerBeforeAllyAttacked(target, pokemon)
+                    local damageDealt, message = passive:execute(pokemon, target, 0, M)
                     
-                    -- Check if target is protected (Protect triggered)
-                    if target.isProtected then
-                        target.isProtected = nil
-                        target.protectedBy = nil
-                        M.currentAction = nil
-                        -- Still show the attack animation with a "blocked" message
-                        local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                    -- For attack passives that dealt damage, trigger after_ally_hit events
+                    if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
+                        -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
+                        M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
+                    end
+                    
+                    -- Clear current action
+                    M.currentAction = nil
+                    
+                    if message then
                         local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
-                        M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
-                        goto continue
+                        -- Also track target HP changes for damage-dealing passives
+                        if target and target ~= pokemon then
+                            table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                        end
+                        -- Use passive animation for attack-type passives
+                        if passive.animationType then
+                            M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
+                        else
+                            M.queueMessage(message, hpChanges)
+                        end
                     end
                 end
-                
-                local damageDealt, message = passive:execute(pokemon, target, 0, M)
-                
-                -- For attack passives that dealt damage, trigger after_ally_hit events
-                if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
-                    -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
-                    M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
-                end
-                
-                -- Clear current action
-                M.currentAction = nil
-                
-                if message then
-                    local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
-                    -- Also track target HP changes for damage-dealing passives
-                    if target and target ~= pokemon then
-                        table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
-                    end
-                    -- Use passive animation for attack-type passives
-                    if passive.animationType then
-                        M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
-                    else
-                        M.queueMessage(message, hpChanges)
-                    end
-                end
-            end
-            
-            ::continue::
+            until true
         end
     end
 end
@@ -2436,103 +2420,103 @@ function M.triggerRoundEndPassives()
     for _, pokemon in ipairs(allPokemon) do
         local passiveInfos = getAllPassivesForTrigger(pokemon, "on_round_end")
         for _, info in ipairs(passiveInfos) do
-            local passive = info.passive
-            local slot = info.slot
-            
-            -- Get conditions
-            local cond1 = getConditionById(slot.condition1 or "none")
-            local cond2 = getConditionById(slot.condition2 or "none")
-            
-            -- For self-targeting passives, check conditions against self
-            -- For enemy/ally targeting passives, find appropriate target
-            local target = nil
-            if passive.targetType == "enemy" then
-                local enemyFormation = M.getEnemyFormation(pokemon)
-                local validTargets = {}
-                if enemyFormation then
-                    for j = 1, 6 do
-                        local enemy = enemyFormation[j]
-                        if enemy and enemy.currentHP and enemy.currentHP > 0 then
-                            if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
-                                table.insert(validTargets, enemy)
+            repeat -- Use repeat-until-true pattern for early continue
+                local passive = info.passive
+                local slot = info.slot
+                
+                -- Get conditions
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                -- For self-targeting passives, check conditions against self
+                -- For enemy/ally targeting passives, find appropriate target
+                local target = nil
+                if passive.targetType == "enemy" then
+                    local enemyFormation = M.getEnemyFormation(pokemon)
+                    local validTargets = {}
+                    if enemyFormation then
+                        for j = 1, 6 do
+                            local enemy = enemyFormation[j]
+                            if enemy and enemy.currentHP and enemy.currentHP > 0 then
+                                if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
+                                    table.insert(validTargets, enemy)
+                                end
                             end
                         end
                     end
+                    -- Sort targets based on conditions and pick best
+                    if #validTargets > 0 then
+                        table.sort(validTargets, function(a, b)
+                            if cond2.sort then return cond2.sort(a, b) end
+                            if cond1.sort then return cond1.sort(a, b) end
+                            return false
+                        end)
+                        target = validTargets[1]
+                    end
+                elseif passive.targetType == "self" then
+                    -- Self-targeting passives check conditions against self
+                    if not cond1.filter(pokemon, pokemon, M) then break end
+                    if not cond2.filter(pokemon, pokemon, M) then break end
+                    target = pokemon
                 end
-                -- Sort targets based on conditions and pick best
-                if #validTargets > 0 then
-                    table.sort(validTargets, function(a, b)
-                        if cond2.sort then return cond2.sort(a, b) end
-                        if cond1.sort then return cond1.sort(a, b) end
-                        return false
-                    end)
-                    target = validTargets[1]
-                end
-            elseif passive.targetType == "self" then
-                -- Self-targeting passives check conditions against self
-                if not cond1.filter(pokemon, pokemon, M) then goto continue end
-                if not cond2.filter(pokemon, pokemon, M) then goto continue end
-                target = pokemon
-            end
-            
-            if (pokemon.battlePP or 0) > 0 and target then
-                pokemon.battlePP = pokemon.battlePP - 1
                 
-                -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
-                if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
-                    M.currentAction = {
-                        user = pokemon,
-                        target = target,
-                        skill = {
-                            name = passive.name,
-                            category = "physical",  -- Attack passives are physical
-                            moveType = passive.moveType or "normal",
+                if (pokemon.battlePP or 0) > 0 and target then
+                    pokemon.battlePP = pokemon.battlePP - 1
+                    
+                    -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
+                    if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
+                        M.currentAction = {
+                            user = pokemon,
+                            target = target,
+                            skill = {
+                                name = passive.name,
+                                category = "physical",  -- Attack passives are physical
+                                moveType = passive.moveType or "normal",
+                            }
                         }
-                    }
+                        
+                        -- Trigger before_ally_attacked for target (this is where Protect triggers)
+                        M.triggerBeforeAllyAttacked(target, pokemon)
+                        
+                        -- Check if target is protected (Protect triggered)
+                        if target.isProtected then
+                            target.isProtected = nil
+                            target.protectedBy = nil
+                            M.currentAction = nil
+                            -- Still show the attack animation with a "blocked" message
+                            local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                            local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                            M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
+                            break
+                        end
+                    end
                     
-                    -- Trigger before_ally_attacked for target (this is where Protect triggers)
-                    M.triggerBeforeAllyAttacked(target, pokemon)
+                    local damageDealt, message = passive:execute(pokemon, target, 0, M)
                     
-                    -- Check if target is protected (Protect triggered)
-                    if target.isProtected then
-                        target.isProtected = nil
-                        target.protectedBy = nil
-                        M.currentAction = nil
-                        -- Still show the attack animation with a "blocked" message
-                        local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                    -- For attack passives that dealt damage, trigger after_ally_hit events
+                    if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
+                        -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
+                        M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
+                    end
+                    
+                    -- Clear current action
+                    M.currentAction = nil
+                    
+                    if message then
                         local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
-                        M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
-                        goto continue
+                        -- Also track target HP changes for damage-dealing passives
+                        if target and target ~= pokemon then
+                            table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                        end
+                        -- Use passive animation for attack-type passives
+                        if passive.animationType then
+                            M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
+                        else
+                            M.queueMessage(message, hpChanges)
+                        end
                     end
                 end
-                
-                local damageDealt, message = passive:execute(pokemon, target, 0, M)
-                
-                -- For attack passives that dealt damage, trigger after_ally_hit events
-                if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
-                    -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
-                    M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
-                end
-                
-                -- Clear current action
-                M.currentAction = nil
-                
-                if message then
-                    local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
-                    -- Also track target HP changes for damage-dealing passives
-                    if target and target ~= pokemon then
-                        table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
-                    end
-                    -- Use passive animation for attack-type passives
-                    if passive.animationType then
-                        M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
-                    else
-                        M.queueMessage(message, hpChanges)
-                    end
-                end
-            end
-            
-            ::continue::
+            until true
         end
     end
 end
