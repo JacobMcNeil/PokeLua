@@ -88,7 +88,10 @@ local TrainerData = {
         pokemon = {
             { species = "pikachu", level = 8 },
             { species = "bulbasaur", level = 7 },
-            { species = "charmander", level = 7 }
+            { species = "charmander", level = 7 },
+            { species = "pidgey", level = 8 },
+            { species = "caterpie", level = 7 },
+            { species = "eevee", level = 7 }
         },
         defeat_message = "Great battle!",
         sprite = nil

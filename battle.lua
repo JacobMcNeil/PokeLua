@@ -1,64 +1,3840 @@
+---@diagnostic disable
+-- battle.lua
+-- Unicorn Overlord-style battle system
+-- Pokemon are placed in a 3x2 formation (3 front, 3 back)
+-- Combat is semi-automated based on skills
+
 local M = {}
 local log = require("log")
 local UI = require("ui")
+local SkillsModule = require("skills")
 
+--------------------------------------------------
+-- BATTLE STATE
+--------------------------------------------------
 M.active = false
-M.p1 = nil
-M.p2 = nil
-M.menuOptions = { "Fight", "Pokemon", "Items", "Run" }
-M.selectedOption = 1
-M.mode = "menu" -- or "moves" or "items" or "choose_pokemon"
-M.moveOptions = {}
+M.mode = "idle" -- "idle", "executing", "result"
+
+-- Player and enemy formations
+-- Each formation is an array of 6 slots: [1-3] = front row, [4-6] = back row
+-- nil = empty slot, otherwise Pokemon object
+M.playerFormation = {nil, nil, nil, nil, nil, nil}
+M.enemyFormation = {nil, nil, nil, nil, nil, nil}
+
+-- Battle log for displaying messages
 M.battleLog = {}
-M.maxLogLines = 1
+M.maxLogLines = 3
 M.logQueue = {}
 M.waitingForZ = false
 M.awaitingClose = false
-M.faintedName = nil
-M.player = nil
-M.chooseIndex = 1
-M.participatingPokemon = {} -- Tracks which Pokémon have participated in the battle
-M.lastUsedMoveSlot = 1 -- Track which move slot was last used for cursor persistence
-M.battleItems = {} -- Available items in battle
-M.itemSelected = nil -- Currently selected item to use
-M.battleItemScrollOffset = 0 -- Scroll offset for battle items
-M.itemSelectMode = false -- Whether we're selecting a target for an item
-M.battleItemCategories = {"medicine", "pokeball", "battle_item", "key_item", "tm", "berry"}
-M.battleCurrentCategory = 1 -- index into battleItemCategories
-M.battleCategoryItems = {} -- Items in current category
 
--- Key holding state for battle menu navigation
-M.heldKeys = {}  -- Tracks which keys are being held
-M.holdDelays = {}  -- Tracks how long each key has been held
-M.holdInitialDelay = 0.3  -- Delay before first repeat
-M.holdRepeatDelay = 0.1   -- Delay between repeats
+-- Player reference
+M.player = nil
 
 -- Trainer battle state
-M.isTrainerBattle = false -- true if fighting a trainer, false if wild Pokemon
-M.trainer = nil -- The trainer object (if trainer battle)
-M.trainerDefeated = false -- Track if trainer is out of Pokemon
+M.isTrainerBattle = false
+M.trainer = nil
+M.trainerDefeated = false
 
--- Whiteout state
-M.playerWhitedOut = false -- Set to true when player loses and needs to be teleported
-M.whiteoutCallback = nil -- Callback function to handle teleporting the player
+-- EXP tracking
+M.defeatedEnemies = {}  -- Track defeated enemies for EXP calculation
 
--- Animation state for HP and EXP bars
-M.p1AnimatedHP = 0
-M.p2AnimatedHP = 0
-M.p1AnimatedExp = 0
+-- Animation state
+M.actionQueue = {} -- Queue of actions to execute
+M.currentAction = nil
+M.actionTimer = 0
+M.actionDelay = 0.8 -- Seconds between actions
 
 -- Attack animation state
-M.attackAnimating = false  -- true when an attack animation is playing
-M.attackAnimTarget = nil   -- "p1" or "p2" - which Pokemon is attacking
-M.attackAnimType = "damage" -- "damage" or "status"
-M.attackAnimTime = 0       -- current animation time
-M.attackAnimDuration = 0.3 -- duration of attack animation in seconds
-M.attackAnimOffset = { x = 0, y = 0 } -- current offset to apply to sprite
+M.animating = false
+M.animAction = nil  -- Current action being animated
+M.animPhase = "none"  -- "move_to", "attack", "move_back", "heal_bounce", "guard_move", "guard_flash"
+M.animTimer = 0
+M.animDuration = 0.15  -- Time for each animation phase
+M.animStartX = 0
+M.animStartY = 0
+M.animTargetX = 0
+M.animTargetY = 0
+M.animCurrentX = 0
+M.animCurrentY = 0
 
--- Sprite cache for Pokemon images
+-- Passive animation state
+M.passiveAnimating = false
+M.passiveAnimType = "none"  -- "heal", "guard", "attack"
+M.passiveAnimTimer = 0
+M.passiveAnimDuration = 0.3
+M.passiveAnimUser = nil  -- Pokemon using the passive
+M.passiveAnimTarget = nil  -- Pokemon receiving the effect
+M.passiveAnimPhase = "none"  -- Phase of the passive animation
+M.passiveAnimUserStartX = 0
+M.passiveAnimUserStartY = 0
+M.passiveAnimUserCurrentX = 0
+M.passiveAnimUserCurrentY = 0
+M.passiveFlashTimer = 0  -- For flash effects
+M.passiveFlashColor = {0, 1, 0}  -- Green for heal, blue for guard
+M.passiveAnimTargetStartX = 0  -- Target position for attack animations
+M.passiveAnimTargetStartY = 0
+
+-- Message-synchronized animation system
+-- Messages are queued with associated animations and HP changes
+-- Animation plays when message is shown, HP updates with message
+M.pendingAnimations = {}  -- Queue: {message, animation, hpChanges}
+M.currentMessageAnim = nil  -- Currently playing animation for shown message
+M.hpSnapshots = {}  -- Snapshot of HP before actions for smooth updates
+
+-- Turn state
+M.turnNumber = 0
+M.roundNumber = 1
+M.battlePhase = "tactics" -- "tactics", "start", "round_end", "end"
+
+-- AP/PP defaults (Action Points / Passive Points per Pokemon per battle)
+M.defaultAP = 1  -- Each Pokemon can act once per round
+M.defaultPP = 1  -- Each Pokemon can trigger passive once per battle
+
+-- Whiteout callback
+M.whiteoutCallback = nil
+M.playerWhitedOut = false
+
+-- Tactics mode state
+M.tacticsMode = false
+M.tacticsCursor = 1  -- Current slot being hovered (1-6)
+M.tacticsSelected = nil  -- Slot of Pokemon being moved (nil if none selected)
+M.tacticsShowHelp = true  -- Show control hints
+M.tacticsFromRoundEnd = false  -- True if entering tactics from round_end phase
+
+-- Skill editing mode (submode of tactics)
+M.skillEditMode = false  -- True when editing skills for a Pokemon
+M.skillEditPokemon = nil  -- The Pokemon being edited
+M.skillEditSlot = 1  -- Current skill slot being edited (1-8)
+M.skillEditField = 1  -- Current field: 1=skill, 2=condition1, 3=condition2
+M.skillPickerOpen = false  -- True when picking a skill/condition
+M.skillPickerCursor = 1  -- Cursor in the picker list
+M.skillPickerMode = "list"  -- "category" for category selection, "list" for item selection
+M.skillPickerCategory = nil  -- Selected category ID when picking conditions
+
+-- Sprite cache
 local spriteCache = {}
 
--- Helper function to load and cache a Pokemon sprite
+--------------------------------------------------
+-- PASSIVE ANIMATION HELPERS
+--------------------------------------------------
+
+-- Queue a passive animation to be played when its message is shown
+-- hpChanges is an optional array of {pokemon, newHP} for synced HP display
+function M.queuePassiveAnimation(animType, user, target, message, hpChanges)
+    -- Queue the message with animation info attached
+    -- Animation will start when this message is processed
+    table.insert(M.logQueue, {
+        text = message,
+        hpChanges = hpChanges or {},
+        animation = {
+            type = animType,
+            user = user,
+            target = target
+        }
+    })
+end
+
+-- Start playing a passive animation (called when message with animation is shown)
+function M.startPassiveAnimation(anim)
+    if not anim then return false end
+    
+    M.passiveAnimating = true
+    M.passiveAnimType = anim.type
+    M.passiveAnimUser = anim.user
+    M.passiveAnimTarget = anim.target
+    M.passiveAnimTimer = 0
+    M.passiveFlashTimer = 0
+    
+    -- Get user position - try both formations if side detection fails
+    local userSide = M.getFormationSide(anim.user)
+    local userX, userY
+    if userSide then
+        userX, userY = M.getSlotPosition(anim.user, userSide == "player")
+    end
+    -- If not found, try the other formation
+    if not userX then
+        userX, userY = M.getSlotPosition(anim.user, true)  -- Try player
+        if not userX then
+            userX, userY = M.getSlotPosition(anim.user, false)  -- Try enemy
+        end
+    end
+    -- Default to center of screen if still not found
+    local UI = require("ui")
+    local screenW, screenH = UI.getGameScreenDimensions()
+    M.passiveAnimUserStartX = userX or (screenW / 2)
+    M.passiveAnimUserStartY = userY or (screenH / 2)
+    M.passiveAnimUserCurrentX = M.passiveAnimUserStartX
+    M.passiveAnimUserCurrentY = M.passiveAnimUserStartY
+    
+    -- Get target position for attack animations
+    if anim.target then
+        local targetSide = M.getFormationSide(anim.target)
+        local targetX, targetY
+        if targetSide then
+            targetX, targetY = M.getSlotPosition(anim.target, targetSide == "player")
+        end
+        -- If not found, try both formations
+        if not targetX then
+            targetX, targetY = M.getSlotPosition(anim.target, true)
+            if not targetX then
+                targetX, targetY = M.getSlotPosition(anim.target, false)
+            end
+        end
+        M.passiveAnimTargetStartX = targetX or (screenW / 2)
+        M.passiveAnimTargetStartY = targetY or (screenH / 2)
+    end
+    
+    if anim.type == "heal" then
+        M.passiveAnimPhase = "bounce_up"
+        M.passiveFlashColor = {0, 1, 0}  -- Green
+        M.passiveAnimDuration = 0.15
+    elseif anim.type == "guard" then
+        M.passiveAnimPhase = "move_to_ally"
+        M.passiveFlashColor = {0, 0.5, 1}  -- Blue
+        M.passiveAnimDuration = 0.2
+    elseif anim.type == "attack" then
+        -- Attack animation similar to active skills (move to target, flash, move back)
+        M.passiveAnimPhase = "attack_move_to"
+        M.passiveFlashColor = {1, 0.5, 0}  -- Orange for pursuit/attack
+        M.passiveAnimDuration = 0.15
+    elseif anim.type == "buff" then
+        -- Buff animation (stat increase) - simple flash effect on self
+        M.passiveAnimPhase = "buff_flash"
+        M.passiveFlashColor = {1, 0.8, 0.2}  -- Yellow/gold for buffs
+        M.passiveAnimDuration = 0.25
+    elseif anim.type == "debuff" then
+        -- Debuff animation (stat decrease) - flash effect on target
+        M.passiveAnimPhase = "debuff_flash"
+        M.passiveFlashColor = {0.7, 0.2, 0.8}  -- Purple for debuffs
+        M.passiveAnimDuration = 0.25
+    elseif anim.type == "recoil" then
+        -- Recoil damage animation
+        M.passiveAnimPhase = "recoil_flash"
+        M.passiveFlashColor = {1, 0.3, 0.3}  -- Red for damage
+        M.passiveAnimDuration = 0.2
+    else
+        -- Default: just show message, no animation
+        M.passiveAnimPhase = "done"
+        M.passiveAnimDuration = 0.1
+    end
+    
+    return true
+end
+
+--------------------------------------------------
+-- COMPATIBILITY API (for main.lua integration)
+--------------------------------------------------
+
+-- Check if battle is active
+function M.isActive()
+    return M.active
+end
+
+-- Start battle (legacy API - routes to startBattle)
+function M.start(enemyPokemonArray, player)
+    local enemies = enemyPokemonArray
+    if type(enemyPokemonArray) == "table" and #enemyPokemonArray > 0 then
+        enemies = enemyPokemonArray
+    end
+    M.startBattle(player, enemies, false, nil)
+end
+
+-- Set whiteout callback
+function M.setWhiteoutCallback(callback)
+    M.whiteoutCallback = callback
+end
+
+--------------------------------------------------
+-- STAT STAGE SYSTEM (Pokemon Standard)
+--------------------------------------------------
+-- Stat stages range from -6 to +6
+-- Each stage applies a multiplier to the stat
+
+-- Multipliers for regular stats (Attack, Defense, Sp.Atk, Sp.Def, Speed)
+-- Stage -6 to +6 corresponds to index 1 to 13
+local StatStageMultipliers = {
+    [1] = 2/8,   -- -6: 25%
+    [2] = 2/7,   -- -5: ~29%
+    [3] = 2/6,   -- -4: ~33%
+    [4] = 2/5,   -- -3: 40%
+    [5] = 2/4,   -- -2: 50%
+    [6] = 2/3,   -- -1: ~67%
+    [7] = 2/2,   --  0: 100% (neutral)
+    [8] = 3/2,   -- +1: 150%
+    [9] = 4/2,   -- +2: 200%
+    [10] = 5/2,  -- +3: 250%
+    [11] = 6/2,  -- +4: 300%
+    [12] = 7/2,  -- +5: 350%
+    [13] = 8/2,  -- +6: 400%
+}
+
+-- Multipliers for Accuracy and Evasion
+local AccuracyEvasionMultipliers = {
+    [1] = 3/9,   -- -6: ~33%
+    [2] = 3/8,   -- -5: ~38%
+    [3] = 3/7,   -- -4: ~43%
+    [4] = 3/6,   -- -3: 50%
+    [5] = 3/5,   -- -2: 60%
+    [6] = 3/4,   -- -1: 75%
+    [7] = 3/3,   --  0: 100% (neutral)
+    [8] = 4/3,   -- +1: ~133%
+    [9] = 5/3,   -- +2: ~167%
+    [10] = 6/3,  -- +3: 200%
+    [11] = 7/3,  -- +4: ~233%
+    [12] = 8/3,  -- +5: ~267%
+    [13] = 9/3,  -- +6: 300%
+}
+
+-- Convert stage (-6 to +6) to array index (1 to 13)
+local function stageToIndex(stage)
+    return math.max(1, math.min(13, stage + 7))
+end
+
+-- Get stat multiplier for a given stage
+local function getStatMultiplier(stage)
+    local index = stageToIndex(stage)
+    return StatStageMultipliers[index] or 1
+end
+
+-- Get accuracy/evasion multiplier for a given stage
+local function getAccuracyEvasionMultiplier(stage)
+    local index = stageToIndex(stage)
+    return AccuracyEvasionMultipliers[index] or 1
+end
+
+-- Initialize stat stages for a Pokemon (called at battle start)
+local function initStatStages(pokemon)
+    if not pokemon then return end
+    pokemon.statStages = {
+        attack = 0,
+        defense = 0,
+        spAttack = 0,
+        spDefense = 0,
+        speed = 0,
+        accuracy = 0,
+        evasion = 0,
+    }
+end
+
+-- Reset stat stages (called when Pokemon switches out or battle ends)
+local function resetStatStages(pokemon)
+    initStatStages(pokemon)
+end
+
+-- Modify a stat stage by a number of stages, returns actual change and message
+local function modifyStatStage(pokemon, stat, stages)
+    if not pokemon then return 0, "" end
+    if not pokemon.statStages then
+        initStatStages(pokemon)
+    end
+    
+    local currentStage = pokemon.statStages[stat] or 0
+    local newStage = math.max(-6, math.min(6, currentStage + stages))
+    local actualChange = newStage - currentStage
+    
+    pokemon.statStages[stat] = newStage
+    
+    -- Generate message based on change
+    local pokeName = pokemon.nickname or pokemon.name or "Pokemon"
+    local statNames = {
+        attack = "Attack",
+        defense = "Defense",
+        spAttack = "Sp. Atk",
+        spDefense = "Sp. Def",
+        speed = "Speed",
+        accuracy = "accuracy",
+        evasion = "evasiveness"
+    }
+    local statName = statNames[stat] or stat
+    
+    local message = ""
+    if actualChange == 0 then
+        if stages > 0 then
+            message = pokeName .. "'s " .. statName .. " won't go any higher!"
+        else
+            message = pokeName .. "'s " .. statName .. " won't go any lower!"
+        end
+    elseif actualChange >= 3 then
+        message = pokeName .. "'s " .. statName .. " rose drastically!"
+    elseif actualChange == 2 then
+        message = pokeName .. "'s " .. statName .. " rose sharply!"
+    elseif actualChange == 1 then
+        message = pokeName .. "'s " .. statName .. " rose!"
+    elseif actualChange == -1 then
+        message = pokeName .. "'s " .. statName .. " fell!"
+    elseif actualChange == -2 then
+        message = pokeName .. "'s " .. statName .. " harshly fell!"
+    elseif actualChange <= -3 then
+        message = pokeName .. "'s " .. statName .. " severely fell!"
+    end
+    
+    return actualChange, message
+end
+
+-- Get effective stat value considering base stat and stage
+local function getEffectiveStat(pokemon, stat)
+    if not pokemon then return 1 end
+    
+    -- Get base calculated stat
+    local baseStat = 1
+    if pokemon.stats and pokemon.stats[stat] then
+        baseStat = pokemon.stats[stat]
+    elseif pokemon[stat] then
+        baseStat = pokemon[stat]
+    end
+    
+    -- Apply stat stage multiplier
+    local stage = 0
+    if pokemon.statStages and pokemon.statStages[stat] then
+        stage = pokemon.statStages[stat]
+    end
+    
+    local multiplier = getStatMultiplier(stage)
+    return math.floor(baseStat * multiplier)
+end
+
+M.initStatStages = initStatStages
+M.resetStatStages = resetStatStages
+M.modifyStatStage = modifyStatStage
+M.getEffectiveStat = getEffectiveStat
+M.getStatMultiplier = getStatMultiplier
+
+--------------------------------------------------
+-- TYPE EFFECTIVENESS CHART
+--------------------------------------------------
+local TypeChart = {
+    normal = { rock = 0.5, steel = 0.5, ghost = 0 },
+    fire = { fire = 0.5, water = 0.5, grass = 2, ice = 2, bug = 2, steel = 2, rock = 0.5, dragon = 0.5 },
+    water = { fire = 2, water = 0.5, grass = 0.5, ground = 2, rock = 2, dragon = 0.5 },
+    grass = { fire = 0.5, water = 2, grass = 0.5, poison = 0.5, ground = 2, flying = 0.5, bug = 0.5, rock = 2, dragon = 0.5, steel = 0.5 },
+    electric = { water = 2, grass = 0.5, electric = 0.5, flying = 2, ground = 0, dragon = 0.5 },
+    ice = { fire = 0.5, water = 0.5, grass = 2, ice = 0.5, ground = 2, flying = 2, dragon = 2, steel = 0.5 },
+    fighting = { normal = 2, ice = 2, rock = 2, dark = 2, steel = 2, flying = 0.5, poison = 0.5, bug = 0.5, psychic = 0.5, ghost = 0, fairy = 0.5 },
+    poison = { grass = 2, poison = 0.5, ground = 0.5, rock = 0.5, ghost = 0.5, steel = 0, fairy = 2 },
+    ground = { fire = 2, electric = 2, grass = 0.5, poison = 2, rock = 2, bug = 0.5, steel = 2, flying = 0 },
+    flying = { grass = 2, fighting = 2, bug = 2, rock = 0.5, steel = 0.5, electric = 0.5 },
+    psychic = { fighting = 2, poison = 2, psychic = 0.5, dark = 0, steel = 0.5 },
+    bug = { grass = 2, psychic = 2, dark = 2, fire = 0.5, fighting = 0.5, poison = 0.5, flying = 0.5, ghost = 0.5, steel = 0.5, fairy = 0.5 },
+    rock = { fire = 2, ice = 2, flying = 2, bug = 2, fighting = 0.5, ground = 0.5, steel = 0.5 },
+    ghost = { psychic = 2, ghost = 2, normal = 0, dark = 0.5 },
+    dragon = { dragon = 2, steel = 0.5, fairy = 0 },
+    dark = { psychic = 2, ghost = 2, fighting = 0.5, dark = 0.5, fairy = 0.5 },
+    steel = { ice = 2, rock = 2, fairy = 2, fire = 0.5, water = 0.5, electric = 0.5, steel = 0.5 },
+    fairy = { fighting = 2, dragon = 2, dark = 2, fire = 0.5, poison = 0.5, steel = 0.5 },
+}
+
+-- Get type effectiveness multiplier
+local function getTypeMultiplier(attackType, defenderTypes)
+    attackType = string.lower(attackType or "normal")
+    if not TypeChart[attackType] then return 1 end
+    
+    local multiplier = 1
+    if type(defenderTypes) == 'string' then
+        multiplier = TypeChart[attackType][string.lower(defenderTypes)] or 1
+    elseif type(defenderTypes) == 'table' then
+        for _, defType in ipairs(defenderTypes) do
+            local typeMultiplier = TypeChart[attackType][string.lower(defType)] or 1
+            multiplier = multiplier * typeMultiplier
+        end
+    end
+    return multiplier
+end
+
+-- Check if user has STAB (Same Type Attack Bonus)
+local function hasSTAB(user, moveType)
+    moveType = string.lower(moveType or "normal")
+    local userTypes = {}
+    
+    if user.species and user.species.types then
+        userTypes = user.species.types
+    elseif user.types then
+        userTypes = user.types
+    end
+    
+    for _, t in ipairs(userTypes) do
+        if string.lower(t) == moveType then
+            return true
+        end
+    end
+    return false
+end
+
+-- Get defender types
+local function getDefenderTypes(target)
+    if target.species and target.species.types then
+        return target.species.types
+    elseif target.types then
+        return target.types
+    end
+    return {"normal"}
+end
+
+M.getTypeMultiplier = getTypeMultiplier
+
+--------------------------------------------------
+-- SKILLS SYSTEM (Pokemon Style)
+--------------------------------------------------
+-- Skills are now defined in skills.lua
+-- Each Pokemon has a loadout of up to 8 skill slots
+-- Each slot contains: skill, condition, target priority
+-- Skills are either Active (use AP) or Passive (use PP on trigger)
+
+local Skills = SkillsModule.Skills
+local Passives = SkillsModule.Passives
+
+-- Skill slot count per Pokemon
+M.maxSkillSlots = 8
+
+-- Use helpers from skills module
+local calculateDamage = SkillsModule.calculateDamage
+local applyDamage = SkillsModule.applyDamage
+local applyHeal = SkillsModule.applyHeal
+
+--------------------------------------------------
+-- CONDITION SYSTEM (Reorganized by Category)
+-- Conditions filter and sort the available targets
+-- Categories: Target HP, Self HP, Target Position, Target Type, Skill Effectiveness, Attacked By
+--------------------------------------------------
+
+-- Condition Categories for UI organization
+local ConditionCategories = {
+    { id = "none", name = "No Filter" },
+    { id = "target_hp", name = "Target HP" },
+    { id = "self_hp", name = "Self HP" },
+    { id = "target_ap_pp", name = "Target AP/PP" },
+    { id = "self_ap_pp", name = "Self AP/PP" },
+    { id = "target_position", name = "Target Position" },
+    { id = "target_type", name = "Target Type" },
+    { id = "skill_effectiveness", name = "Skill Effectiveness" },
+    { id = "attacked_by_type", name = "Attacked By Type" },
+    { id = "attacked_by_effectiveness", name = "Attacked By Effectiveness" },
+    { id = "attacked_by_category", name = "Attacked By Category" },
+    { id = "round", name = "Round Number" },
+}
+M.ConditionCategories = ConditionCategories
+
+-- Helper: Get target's types
+local function getTargetTypes(target)
+    if not target then return {} end
+    if target.species and target.species.types then
+        return target.species.types
+    elseif target.types then
+        return target.types
+    end
+    return {"normal"}
+end
+
+-- Helper: Check if target has a specific type
+local function targetHasType(target, checkType)
+    local types = getTargetTypes(target)
+    checkType = string.lower(checkType)
+    for _, t in ipairs(types) do
+        if string.lower(t) == checkType then
+            return true
+        end
+    end
+    return false
+end
+
+-- Helper: Get skill's move type (for effectiveness checks)
+local function getSkillMoveType(user, battle)
+    -- This gets the move type of the skill being used
+    -- For condition checking, we use the current action's skill if available
+    if battle and battle.currentAction and battle.currentAction.skill then
+        return battle.currentAction.skill.moveType
+    end
+    -- Fallback: check user's first active skill
+    if user and user.skillLoadout then
+        for _, slot in ipairs(user.skillLoadout) do
+            if slot.skill and Skills and Skills[slot.skill] then
+                local skill = Skills[slot.skill]
+                if skill.moveType then
+                    return skill.moveType
+                end
+            end
+        end
+    end
+    return "normal"
+end
+
+-- All conditions organized by category
+local Conditions = {
+    -- No filter (always passes)
+    { id = "none", name = "Any", category = "none", 
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return false end -- No sorting
+    },
+    
+    --------------------------------------------------
+    -- TARGET HP CONDITIONS
+    --------------------------------------------------
+    { id = "target_hp_highest", name = "Highest HP", category = "target_hp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_lowest", name = "Lowest HP", category = "target_hp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_highest_pct", name = "Highest HP %", category = "target_hp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) 
+        local aMax = (a.stats and a.stats.hp) or 100
+        local bMax = (b.stats and b.stats.hp) or 100
+        return (a.currentHP / aMax) > (b.currentHP / bMax)
+      end
+    },
+    { id = "target_hp_lowest_pct", name = "Lowest HP %", category = "target_hp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) 
+        local aMax = (a.stats and a.stats.hp) or 100
+        local bMax = (b.stats and b.stats.hp) or 100
+        return (a.currentHP / aMax) < (b.currentHP / bMax)
+      end
+    },
+    { id = "target_hp_full", name = "HP = 100%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return target.currentHP >= maxHP
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_hp_not_full", name = "HP < 100%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return target.currentHP < maxHP
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_above_90", name = "HP > 90%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) > 0.90
+      end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_below_90", name = "HP < 90%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.90
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_above_75", name = "HP > 75%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) > 0.75
+      end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_below_75", name = "HP < 75%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.75
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_above_66", name = "HP > 66%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) > 0.66
+      end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_below_66", name = "HP < 66%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.66
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_above_50", name = "HP > 50%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) > 0.5
+      end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_below_50", name = "HP < 50%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.5
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_above_33", name = "HP > 33%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) > 0.33
+      end,
+      sort = function(a, b) return a.currentHP > b.currentHP end
+    },
+    { id = "target_hp_below_33", name = "HP < 33%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.33
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_below_25", name = "HP < 25%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.25
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    { id = "target_hp_below_10", name = "HP < 10%", category = "target_hp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local maxHP = (target.stats and target.stats.hp) or 100
+        return (target.currentHP / maxHP) < 0.10
+      end,
+      sort = function(a, b) return a.currentHP < b.currentHP end
+    },
+    
+    --------------------------------------------------
+    -- SELF HP CONDITIONS
+    --------------------------------------------------
+    { id = "self_hp_full", name = "Self HP = 100%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return user.currentHP >= maxHP
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_not_full", name = "Self HP < 100%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return user.currentHP < maxHP
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_above_90", name = "Self HP > 90%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) > 0.90
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_90", name = "Self HP < 90%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.90
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_above_75", name = "Self HP > 75%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) > 0.75
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_75", name = "Self HP < 75%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.75
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_above_66", name = "Self HP > 66%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) > 0.66
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_66", name = "Self HP < 66%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.66
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_above_50", name = "Self HP > 50%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) > 0.5
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_50", name = "Self HP < 50%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.5
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_above_33", name = "Self HP > 33%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) > 0.33
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_33", name = "Self HP < 33%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.33
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_25", name = "Self HP < 25%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.25
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_hp_below_10", name = "Self HP < 10%", category = "self_hp",
+      filter = function(user, target, battle)
+        local maxHP = (user.stats and user.stats.hp) or 100
+        return (user.currentHP / maxHP) < 0.10
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- TARGET AP/PP CONDITIONS
+    --------------------------------------------------
+    { id = "target_has_ap", name = "Has AP", category = "target_ap_pp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        return (target.battleAP or 0) > 0
+      end,
+      sort = function(a, b) return (a.battleAP or 0) > (b.battleAP or 0) end
+    },
+    { id = "target_no_ap", name = "No AP", category = "target_ap_pp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        return (target.battleAP or 0) <= 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_has_pp", name = "Has PP", category = "target_ap_pp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        return (target.battlePP or 0) > 0
+      end,
+      sort = function(a, b) return (a.battlePP or 0) > (b.battlePP or 0) end
+    },
+    { id = "target_no_pp", name = "No PP", category = "target_ap_pp",
+      filter = function(user, target, battle)
+        if not target then return false end
+        return (target.battlePP or 0) <= 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_most_ap", name = "Most AP", category = "target_ap_pp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return (a.battleAP or 0) > (b.battleAP or 0) end
+    },
+    { id = "target_most_pp", name = "Most PP", category = "target_ap_pp",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return (a.battlePP or 0) > (b.battlePP or 0) end
+    },
+    
+    --------------------------------------------------
+    -- SELF AP/PP CONDITIONS
+    --------------------------------------------------
+    { id = "self_has_ap", name = "Self Has AP", category = "self_ap_pp",
+      filter = function(user, target, battle)
+        return (user.battleAP or 0) > 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_no_ap", name = "Self No AP", category = "self_ap_pp",
+      filter = function(user, target, battle)
+        return (user.battleAP or 0) <= 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_has_pp", name = "Self Has PP", category = "self_ap_pp",
+      filter = function(user, target, battle)
+        return (user.battlePP or 0) > 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "self_no_pp", name = "Self No PP", category = "self_ap_pp",
+      filter = function(user, target, battle)
+        return (user.battlePP or 0) <= 0
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- TARGET POSITION CONDITIONS
+    --------------------------------------------------
+    { id = "target_front_row", name = "Front Row Only", category = "target_position",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local formation = battle.getAllyFormation(target)
+        for i = 1, 3 do
+            if formation[i] == target then return true end
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_back_row", name = "Back Row Only", category = "target_position",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local formation = battle.getAllyFormation(target)
+        for i = 4, 6 do
+            if formation[i] == target then return true end
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_across", name = "Across First", category = "target_position",
+      filter = function(user, target, battle) return true end,
+      sort = function(a, b) return false end -- Sorting handled specially in getActiveSkillForAction
+    },
+    
+    --------------------------------------------------
+    -- TARGET TYPE CONDITIONS (all 18 types)
+    --------------------------------------------------
+    { id = "target_type_normal", name = "Normal Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "normal") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_fire", name = "Fire Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "fire") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_water", name = "Water Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "water") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_grass", name = "Grass Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "grass") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_electric", name = "Electric Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "electric") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_ice", name = "Ice Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "ice") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_fighting", name = "Fighting Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "fighting") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_poison", name = "Poison Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "poison") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_ground", name = "Ground Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "ground") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_flying", name = "Flying Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "flying") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_psychic", name = "Psychic Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "psychic") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_bug", name = "Bug Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "bug") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_rock", name = "Rock Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "rock") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_ghost", name = "Ghost Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "ghost") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_dragon", name = "Dragon Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "dragon") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_dark", name = "Dark Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "dark") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_steel", name = "Steel Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "steel") end,
+      sort = function(a, b) return false end
+    },
+    { id = "target_type_fairy", name = "Fairy Type", category = "target_type",
+      filter = function(user, target, battle) return targetHasType(target, "fairy") end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- SKILL EFFECTIVENESS CONDITIONS
+    -- Based on the skill's type vs target's type
+    --------------------------------------------------
+    { id = "skill_super_effective", name = "Super Effective (2x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 2 and mult < 4
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_double_effective", name = "Double Effective (4x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 4
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_not_very_effective", name = "Not Very Effective (0.5x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult > 0 and mult <= 0.5 and mult > 0.25
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_doubly_resisted", name = "Doubly Resisted (0.25x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult > 0 and mult <= 0.25
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_immune", name = "Immune (0x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult == 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_neutral", name = "Neutral (1x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult == 1
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_effective_or_better", name = "Effective+ (>=2x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 2
+      end,
+      sort = function(a, b) 
+        local moveType = getSkillMoveType(user, battle)
+        local aMult = getTypeMultiplier(moveType, getTargetTypes(a))
+        local bMult = getTypeMultiplier(moveType, getTargetTypes(b))
+        return aMult > bMult
+      end
+    },
+    { id = "skill_not_resisted", name = "Not Resisted (>=1x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 1
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_not_super_effective", name = "NOT Super Effective (<2x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult < 2
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_not_immune", name = "NOT Immune (>0x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult > 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "skill_resisted", name = "Resisted (<1x)", category = "skill_effectiveness",
+      filter = function(user, target, battle)
+        if not target then return false end
+        local moveType = getSkillMoveType(user, battle)
+        local defenderTypes = getTargetTypes(target)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult < 1
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- ATTACKED BY TYPE CONDITIONS
+    -- For passives: check if the incoming attack is of a specific type
+    --------------------------------------------------
+    { id = "attacked_by_normal", name = "Attacked by Normal", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "normal"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_fire", name = "Attacked by Fire", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "fire"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_water", name = "Attacked by Water", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "water"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_grass", name = "Attacked by Grass", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "grass"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_electric", name = "Attacked by Electric", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "electric"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_ice", name = "Attacked by Ice", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "ice"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_fighting", name = "Attacked by Fighting", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "fighting"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_poison", name = "Attacked by Poison", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "poison"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_ground", name = "Attacked by Ground", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "ground"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_flying", name = "Attacked by Flying", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "flying"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_psychic", name = "Attacked by Psychic", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "psychic"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_bug", name = "Attacked by Bug", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "bug"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_rock", name = "Attacked by Rock", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "rock"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_ghost", name = "Attacked by Ghost", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "ghost"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_dragon", name = "Attacked by Dragon", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "dragon"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_dark", name = "Attacked by Dark", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "dark"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_steel", name = "Attacked by Steel", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "steel"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_fairy", name = "Attacked by Fairy", category = "attacked_by_type",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.moveType or ""):lower() == "fairy"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- ATTACKED BY EFFECTIVENESS CONDITIONS
+    -- For passives: check the effectiveness of incoming attack on self/ally
+    --------------------------------------------------
+    { id = "attacked_super_effective", name = "Attack is Super Effective", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        -- target here is the ally being protected, so we check effectiveness against them
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 2 and mult < 4
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_double_effective", name = "Attack is 4x Effective", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 4
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_not_very_effective", name = "Attack is Not Very Effective", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult > 0 and mult <= 0.5
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_immune", name = "Attack is Immune", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult == 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_neutral", name = "Attack is Neutral", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult == 1
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_effective_or_better", name = "Attack is 2x+ Effective", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 2
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_not_super_effective", name = "Attack is NOT Super Effective (<2x)", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult < 2
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_not_immune", name = "Attack is NOT Immune (>0x)", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult > 0
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_resisted", name = "Attack is Resisted (<1x)", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult < 1
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_not_resisted", name = "Attack is NOT Resisted (>=1x)", category = "attacked_by_effectiveness",
+      filter = function(user, target, battle)
+        if not battle or not battle.currentAction or not battle.currentAction.skill then return false end
+        local moveType = battle.currentAction.skill.moveType
+        if not moveType then return false end
+        local defenderTypes = getTargetTypes(target or user)
+        local mult = getTypeMultiplier(moveType, defenderTypes)
+        return mult >= 1
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- ATTACKED BY CATEGORY CONDITIONS
+    -- For passives: check if the incoming attack is physical/special/status
+    --------------------------------------------------
+    { id = "attacked_by_physical", name = "Attacked by Physical", category = "attacked_by_category",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.category or ""):lower() == "physical"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_special", name = "Attacked by Special", category = "attacked_by_category",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.category or ""):lower() == "special"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "attacked_by_status", name = "Attacked by Status", category = "attacked_by_category",
+      filter = function(user, target, battle)
+        if battle and battle.currentAction and battle.currentAction.skill then
+            return (battle.currentAction.skill.category or ""):lower() == "status"
+        end
+        return false
+      end,
+      sort = function(a, b) return false end
+    },
+    
+    --------------------------------------------------
+    -- ROUND NUMBER CONDITIONS
+    --------------------------------------------------
+    { id = "round_1", name = "Round 1", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber == 1
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_2", name = "Round 2", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber == 2
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_3", name = "Round 3", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber == 3
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_4", name = "Round 4", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber == 4
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_5", name = "Round 5", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber == 5
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_1_or_2", name = "Round 1-2", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber and battle.roundNumber <= 2
+      end,
+      sort = function(a, b) return false end
+    },
+    { id = "round_3_plus", name = "Round 3+", category = "round",
+      filter = function(user, target, battle)
+        return battle and battle.roundNumber and battle.roundNumber >= 3
+      end,
+      sort = function(a, b) return false end
+    },
+}
+M.Conditions = Conditions
+
+-- Get condition by ID
+local function getConditionById(conditionId)
+    if not conditionId or conditionId == "" then
+        return Conditions[1] -- Default to "none"
+    end
+    for _, cond in ipairs(Conditions) do
+        if cond.id == conditionId then return cond end
+    end
+    return Conditions[1] -- Default to "none"
+end
+
+-- Get conditions by category
+local function getConditionsByCategory(categoryId)
+    local result = {}
+    for _, cond in ipairs(Conditions) do
+        if cond.category == categoryId then
+            table.insert(result, cond)
+        end
+    end
+    return result
+end
+
+M.getConditionsByCategory = getConditionsByCategory
+
+--------------------------------------------------
+-- SKILL EXPORTS (from skills.lua)
+--------------------------------------------------
+-- Skills and Passives are defined in skills.lua module
+
+M.Skills = Skills
+M.Passives = Passives
+M.AllSkills = SkillsModule.AllSkills
+
+-- Use loadouts from skills module
+local TypeDefaultLoadouts = SkillsModule.TypeDefaultLoadouts
+local DefaultLoadout = SkillsModule.DefaultLoadout
+
+-- Helper: Generate type effectiveness message
+local function getTypeEffectivenessMessage(moveType, target)
+    if not moveType then return "" end
+    local defenderTypes = SkillsModule.getDefenderTypes(target)
+    local mult = SkillsModule.getTypeMultiplier(moveType, defenderTypes)
+    if mult >= 2 then
+        return " It's super effective!"
+    elseif mult > 0 and mult < 1 then
+        return " It's not very effective..."
+    elseif mult == 0 then
+        return " It doesn't affect " .. target.name .. "..."
+    end
+    return ""
+end
+
+-- Initialize or get a Pokemon's skill loadout
+local function getOrCreateLoadout(pokemon)
+    if pokemon.skillLoadout then return pokemon.skillLoadout end
+    
+    -- Get the species ID for skill lookups
+    local speciesId = pokemon.speciesId or (pokemon.species and pokemon.species.name and pokemon.species.name:lower():gsub(" ", "_"))
+    local level = pokemon.level or 5
+    
+    -- Get the skills this Pokemon knows based on its learnset
+    local knownSkills = SkillsModule.getKnownSkills(speciesId or "unknown", level)
+    
+    -- Create loadout from known skills
+    pokemon.skillLoadout = {}
+    
+    -- Build a default loadout using known skills with sensible conditions
+    -- Priority: Find damaging moves first, then status moves, then passives
+    local activeDamage = {}
+    local activeStatus = {}
+    local passives = {}
+    
+    for _, skillId in ipairs(knownSkills) do
+        local skill = SkillsModule.getSkillById(skillId)
+        if skill then
+            if skill.skillType == "active" then
+                if skill.category == "status" then
+                    table.insert(activeStatus, skillId)
+                else
+                    table.insert(activeDamage, skillId)
+                end
+            elseif skill.skillType == "passive" then
+                table.insert(passives, skillId)
+            end
+        end
+    end
+    
+    local slotIndex = 1
+    
+    -- Slot 1: First damaging move with condition "target_hp_below_50"
+    if #activeDamage > 0 then
+        pokemon.skillLoadout[slotIndex] = {
+            skill = activeDamage[1],
+            condition1 = "target_hp_below_50",
+            condition2 = "none",
+        }
+        slotIndex = slotIndex + 1
+    end
+    
+    -- Slot 2: First status move with "target_hp_highest"
+    if #activeStatus > 0 then
+        pokemon.skillLoadout[slotIndex] = {
+            skill = activeStatus[1],
+            condition1 = "none",
+            condition2 = "target_hp_highest",
+        }
+        slotIndex = slotIndex + 1
+    end
+    
+    -- Slot 3: Damaging move with no conditions (fallback)
+    if #activeDamage > 0 then
+        pokemon.skillLoadout[slotIndex] = {
+            skill = activeDamage[1],
+            condition1 = "none",
+            condition2 = "none",
+        }
+        slotIndex = slotIndex + 1
+    end
+    
+    -- Slot 4: First passive (like Protect, QuickAttack)
+    if #passives > 0 then
+        pokemon.skillLoadout[slotIndex] = {
+            skill = passives[1],
+            condition1 = "none",
+            condition2 = "none",
+        }
+        slotIndex = slotIndex + 1
+    end
+    
+    -- Fill remaining slots up to 4 with additional skills
+    -- Try to add a second passive if available
+    if slotIndex <= 4 and #passives > 1 then
+        pokemon.skillLoadout[slotIndex] = {
+            skill = passives[2],
+            condition1 = "none",
+            condition2 = "none",
+        }
+        slotIndex = slotIndex + 1
+    end
+    
+    -- If still less than 4 slots, try additional damaging moves
+    local damageIndex = 2
+    while slotIndex <= 4 and damageIndex <= #activeDamage do
+        pokemon.skillLoadout[slotIndex] = {
+            skill = activeDamage[damageIndex],
+            condition1 = "none",
+            condition2 = "none",
+        }
+        slotIndex = slotIndex + 1
+        damageIndex = damageIndex + 1
+    end
+    
+    -- Fallback: If loadout is empty, give Tackle
+    if #pokemon.skillLoadout == 0 then
+        pokemon.skillLoadout[1] = {
+            skill = "Tackle",
+            condition1 = "none",
+            condition2 = "none",
+        }
+    end
+    
+    return pokemon.skillLoadout
+end
+
+-- Helper: Check if a formation has any living Pokemon in front row (slots 1-3)
+local function hasFrontRowAlive(formation)
+    for i = 1, 3 do
+        if formation[i] and formation[i].currentHP and formation[i].currentHP > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+-- Get target pool based on skill's targetType and ranged property
+-- Returns targets with slot info for across-targeting
+-- Non-ranged skills can only target front row if front row has living targets
+local function getTargetPool(skill, user, battle)
+    local targetType = skill.targetType or "enemy"
+    local isRanged = skill.ranged or false
+    
+    if targetType == "self" then
+        return { {pokemon = user, slot = 0} }
+    elseif targetType == "ally_or_self" then
+        -- Include self and all allies
+        local allies = battle.getAllyFormation(user)
+        local pool = {}
+        local frontRowHasTargets = hasFrontRowAlive(allies)
+        
+        -- Add self first
+        table.insert(pool, {pokemon = user, slot = 0})
+        
+        for i = 1, 6 do
+            local ally = allies[i]
+            if ally and ally ~= user and ally.currentHP and ally.currentHP > 0 then
+                -- For non-ranged ally skills, only allow front row if front row has targets
+                local isBackRow = (i >= 4)
+                if isRanged or not frontRowHasTargets or not isBackRow then
+                    table.insert(pool, {pokemon = ally, slot = i})
+                end
+            end
+        end
+        return pool
+    elseif targetType == "ally" then
+        local allies = battle.getAllyFormation(user)
+        local pool = {}
+        local frontRowHasTargets = hasFrontRowAlive(allies)
+        
+        for i = 1, 6 do
+            local ally = allies[i]
+            if ally and ally.currentHP and ally.currentHP > 0 then
+                -- For non-ranged ally skills, only allow front row if front row has targets
+                -- (or back row if front row is empty)
+                local isBackRow = (i >= 4)
+                if isRanged or not frontRowHasTargets or not isBackRow then
+                    table.insert(pool, {pokemon = ally, slot = i})
+                end
+            end
+        end
+        return pool
+    else -- "enemy"
+        local enemies = battle.getEnemyFormation(user)
+        local pool = {}
+        local frontRowHasTargets = hasFrontRowAlive(enemies)
+        
+        for i = 1, 6 do
+            local enemy = enemies[i]
+            if enemy and enemy.currentHP and enemy.currentHP > 0 then
+                -- For non-ranged enemy skills, only allow front row if front row has targets
+                -- (or back row if front row is empty)
+                local isBackRow = (i >= 4)
+                if isRanged or not frontRowHasTargets or not isBackRow then
+                    table.insert(pool, {pokemon = enemy, slot = i})
+                end
+            end
+        end
+        return pool
+    end
+end
+
+-- Get user's slot in their formation
+local function getUserSlot(user, battle)
+    local formation = battle.getAllyFormation(user)
+    for i = 1, 6 do
+        if formation[i] == user then return i end
+    end
+    return 1
+end
+
+-- Get the first active skill that meets conditions
+local function getActiveSkillForAction(pokemon, battle)
+    local loadout = getOrCreateLoadout(pokemon)
+    local enemyFormation = battle.getEnemyFormation(pokemon)
+    local defaultTarget = battle.getFrontMost(enemyFormation)
+    local userSlot = getUserSlot(pokemon, battle)
+    
+    for _, slot in ipairs(loadout) do
+        if slot.skill then
+            local skill = Skills[slot.skill]
+            if skill and skill.skillType == "active" then
+                -- Get target pool based on skill's targetType
+                local targetPoolWithSlots = getTargetPool(skill, pokemon, battle)
+                
+                -- Get conditions
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                -- Apply condition1 filter
+                local filtered = {}
+                for _, targetInfo in ipairs(targetPoolWithSlots) do
+                    if cond1.filter(pokemon, targetInfo.pokemon, battle) then
+                        table.insert(filtered, targetInfo)
+                    end
+                end
+                
+                -- If no targets pass filter, skill doesn't activate
+                if #filtered == 0 then
+                    goto continue
+                end
+                
+                -- Default sort: prefer across (same slot), then front row first
+                -- This is the base ordering before condition sorts are applied
+                table.sort(filtered, function(a, b)
+                    -- Same slot (across) has highest priority
+                    local aAcross = (a.slot == userSlot) and 0 or 1
+                    local bAcross = (b.slot == userSlot) and 0 or 1
+                    if aAcross ~= bAcross then
+                        return aAcross < bAcross
+                    end
+                    -- Then front row (1-3) before back row (4-6)
+                    local aFront = (a.slot <= 3) and 0 or 1
+                    local bFront = (b.slot <= 3) and 0 or 1
+                    return aFront < bFront
+                end)
+                
+                -- Apply condition1 sort if it has one (overrides default)
+                if cond1.sort and cond1.id ~= "none" then
+                    table.sort(filtered, function(a, b)
+                        return cond1.sort(a.pokemon, b.pokemon)
+                    end)
+                end
+                
+                -- Apply condition2 filter (further filtering)
+                local filtered2 = {}
+                for _, targetInfo in ipairs(filtered) do
+                    if cond2.filter(pokemon, targetInfo.pokemon, battle) then
+                        table.insert(filtered2, targetInfo)
+                    end
+                end
+                
+                -- If condition2 has a filter (not "none") and no targets pass, skill doesn't activate
+                if cond2.id ~= "none" and #filtered2 == 0 then
+                    goto continue
+                end
+                
+                -- Use filtered2 if condition2 was applied, otherwise use filtered
+                local finalPool = #filtered2 > 0 and filtered2 or filtered
+                
+                -- Apply condition2 sort if it has one
+                if cond2.sort and cond2.id ~= "none" then
+                    table.sort(finalPool, function(a, b)
+                        return cond2.sort(a.pokemon, b.pokemon)
+                    end)
+                end
+                
+                -- Return first valid target
+                if #finalPool > 0 then
+                    return skill, finalPool[1].pokemon
+                end
+                
+                ::continue::
+            end
+        end
+    end
+    
+    -- Fallback to Tackle targeting front
+    return Skills.Tackle, defaultTarget
+end
+
+-- Get passive skill for a trigger type from loadout
+local function getPassiveForTrigger(pokemon, triggerType)
+    local loadout = getOrCreateLoadout(pokemon)
+    
+    for _, slot in ipairs(loadout) do
+        if slot.skill then
+            local passive = Passives[slot.skill]
+            if passive and passive.skillType == "passive" and passive.triggerType == triggerType then
+                return passive
+            end
+        end
+    end
+    
+    return nil
+end
+
+-- Get all passives for a trigger type from loadout (returns array with slot info)
+local function getAllPassivesForTrigger(pokemon, triggerType)
+    local loadout = getOrCreateLoadout(pokemon)
+    local passives = {}
+    
+    for _, slot in ipairs(loadout) do
+        if slot.skill then
+            local passive = Passives[slot.skill]
+            if passive and passive.skillType == "passive" and passive.triggerType == triggerType then
+                table.insert(passives, {passive = passive, slot = slot})
+            end
+        end
+    end
+    
+    return passives
+end
+
+-- Legacy compatibility function
+local function getSkillsForPokemon(pokemon)
+    local loadout = getOrCreateLoadout(pokemon)
+    local activeSkill = Skills.Tackle
+    local passiveSkill = Passives.Evade
+    
+    for _, slot in ipairs(loadout) do
+        if slot.skill then
+            if Skills[slot.skill] then
+                activeSkill = Skills[slot.skill]
+                break
+            end
+        end
+    end
+    
+    for _, slot in ipairs(loadout) do
+        if slot.skill then
+            if Passives[slot.skill] then
+                passiveSkill = Passives[slot.skill]
+                break
+            end
+        end
+    end
+    
+    return activeSkill, passiveSkill
+end
+
+M.getSkillsForPokemon = getSkillsForPokemon
+M.getOrCreateLoadout = getOrCreateLoadout
+M.getActiveSkillForAction = getActiveSkillForAction
+M.getPassiveForTrigger = getPassiveForTrigger
+M.getConditionById = getConditionById
+M.getTargetPriorityById = getTargetPriorityById
+
+--------------------------------------------------
+-- PASSIVE TRIGGER SYSTEM (Unicorn Overlord Style)
+-- Trigger Types:
+--   on_round_start       - Start of Round
+--   before_ally_attack   - Before Ally Attacks (Active)
+--   after_ally_attack    - After Ally Attacks (Active)
+--   before_ally_attacked - Before Ally is Attacked
+--   after_ally_hit       - After Ally is Hit
+--   before_self_hit      - Before Being Hit (Self)
+--   before_enemy_attack  - Before Enemy Uses Attack Skill
+--   after_enemy_attack   - After Enemy Attacks (Active)
+--   on_round_end         - End of Round
+--------------------------------------------------
+
+-- Track last target for pursuit-style skills
+M.lastTarget = nil
+M.lastAttacker = nil
+
+-- Get which formation the Pokemon belongs to (returns "player" or "enemy")
+function M.getFormationSide(pokemon)
+    for i = 1, 6 do
+        if M.playerFormation[i] == pokemon then return "player" end
+    end
+    for i = 1, 6 do
+        if M.enemyFormation[i] == pokemon then return "enemy" end
+    end
+    return nil
+end
+
+-- Get the enemy formation for a given Pokemon
+function M.getEnemyFormation(pokemon)
+    local side = M.getFormationSide(pokemon)
+    if side == "player" then
+        return M.enemyFormation
+    else
+        return M.playerFormation
+    end
+end
+
+-- Get the ally formation for a given Pokemon
+function M.getAllyFormation(pokemon)
+    local side = M.getFormationSide(pokemon)
+    if side == "player" then
+        return M.playerFormation
+    else
+        return M.enemyFormation
+    end
+end
+
+-- Trigger passives of a specific type on a single Pokemon
+function M.triggerPassives(triggerType, target, source, damage)
+    if not target then return end
+    
+    -- Get all passives for this trigger type from target's loadout
+    local passiveInfos = getAllPassivesForTrigger(target, triggerType)
+    if #passiveInfos == 0 then return end
+    
+    for _, info in ipairs(passiveInfos) do
+        local passive = info.passive
+        local slot = info.slot
+        
+        -- Check conditions (self = target, condition target = source)
+        local cond1 = getConditionById(slot.condition1 or "none")
+        local cond2 = getConditionById(slot.condition2 or "none")
+        
+        if not cond1.filter(target, source, M) then goto continue end
+        if not cond2.filter(target, source, M) then goto continue end
+        
+        -- Check if target has PP remaining
+        if (target.battlePP or 0) > 0 then
+            -- Consume PP
+            target.battlePP = target.battlePP - 1
+            
+            -- Execute passive
+            local result, message = passive:execute(target, source, damage, M)
+            if message then
+                -- Collect HP changes for synced display
+                local hpChanges = {}
+                if target then
+                    table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                end
+                if source then
+                    table.insert(hpChanges, {pokemon = source, newHP = source.currentHP})
+                end
+                M.queueMessage(message, hpChanges)
+            end
+        end
+        
+        ::continue::
+    end
+end
+
+-- Trigger passives for all allies of the triggerPokemon
+-- For after_ally_hit: triggerPokemon is the ally that was hit
+-- For after_ally_attack: triggerPokemon is the ally that attacked
+-- Implements limited passive logic: only one limited skill can activate per trigger
+function M.triggerAllyPassives(triggerType, triggerPokemon, otherPokemon, damage)
+    if not triggerPokemon then return end
+    
+    local formation = M.getAllyFormation(triggerPokemon)
+    if not formation then return end
+    
+    -- Store last target for pursuit-style skills
+    M.lastTarget = otherPokemon
+    M.lastAttacker = triggerPokemon
+    
+    -- Collect all potential passives with their owners
+    local candidates = {}
+    
+    -- First, check the triggerPokemon itself for isSelfTrigger or ally_or_self passives
+    -- This handles passives like Rough Skin and Rage that trigger when the owner is hit
+    -- Also handles passives like HealPowder that can heal self when owner is hit
+    if triggerPokemon.currentHP and triggerPokemon.currentHP > 0 then
+        local selfPassiveInfos = getAllPassivesForTrigger(triggerPokemon, triggerType)
+        for _, info in ipairs(selfPassiveInfos) do
+            local passive = info.passive
+            local slot = info.slot
+            
+            -- Process isSelfTrigger passives OR ally_or_self passives for the triggerPokemon
+            local canTriggerOnSelf = passive.isSelfTrigger or passive.targetType == "ally_or_self"
+            if canTriggerOnSelf then
+                -- Check conditions (self = triggerPokemon, target = otherPokemon/attacker for isSelfTrigger)
+                -- For ally_or_self, the target to heal is triggerPokemon itself
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                local condTarget = passive.isSelfTrigger and otherPokemon or triggerPokemon
+                if cond1.filter(triggerPokemon, condTarget, M) and cond2.filter(triggerPokemon, condTarget, M) then
+                    if (triggerPokemon.battlePP or 0) > 0 then
+                        table.insert(candidates, {
+                            ally = triggerPokemon,
+                            passive = passive,
+                            slot = slot,
+                            priority = passive.passivePriority or 0,
+                            limited = passive.limited or false,
+                            targetOverride = (passive.targetType == "ally_or_self" and not passive.isSelfTrigger) and triggerPokemon or nil
+                        })
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Then check allies (excluding triggerPokemon)
+    for i = 1, 6 do
+        local ally = formation[i]
+        if ally and ally ~= triggerPokemon and ally.currentHP and ally.currentHP > 0 then
+            local passiveInfos = getAllPassivesForTrigger(ally, triggerType)
+            for _, info in ipairs(passiveInfos) do
+                local passive = info.passive
+                local slot = info.slot
+                
+                -- Skip isSelfTrigger passives for allies (they only trigger on the owner)
+                if passive.isSelfTrigger then
+                    goto continue
+                end
+                
+                -- Check conditions (self = ally/passive owner, target = triggerPokemon)
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                if cond1.filter(ally, triggerPokemon, M) and cond2.filter(ally, triggerPokemon, M) then
+                    if (ally.battlePP or 0) > 0 then
+                        -- Check ranged targeting for enemy-targeting passives
+                        local validTarget = true
+                        if passive.targetType == "enemy" and not passive.ranged then
+                            local enemyFormation = M.getEnemyFormation(ally)
+                            if hasFrontRowAlive(enemyFormation) then
+                                local target = otherPokemon or M.lastTarget
+                                if target then
+                                    local targetSlot = nil
+                                    for j = 1, 6 do
+                                        if enemyFormation[j] == target then targetSlot = j break end
+                                    end
+                                    if targetSlot and targetSlot >= 4 then
+                                        validTarget = false  -- Can't reach back row with non-ranged
+                                    end
+                                end
+                            end
+                        end
+                        
+                        if validTarget then
+                            table.insert(candidates, {
+                                ally = ally,
+                                passive = passive,
+                                slot = slot,
+                                priority = passive.passivePriority or 0,
+                                limited = passive.limited or false
+                            })
+                        end
+                    end
+                end
+                
+                ::continue::
+            end
+        end
+    end
+    
+    -- Sort by priority (higher first)
+    table.sort(candidates, function(a, b)
+        return a.priority > b.priority
+    end)
+    
+    -- Track if a limited passive has already triggered
+    local limitedTriggered = false
+    
+    -- Execute passives respecting limited constraint
+    for _, cand in ipairs(candidates) do
+        -- Skip limited passives if one already triggered
+        if cand.limited and limitedTriggered then
+            goto continue
+        end
+        
+        -- Consume PP and execute
+        cand.ally.battlePP = cand.ally.battlePP - 1
+        -- For isSelfTrigger passives, pass otherPokemon (the attacker) as second param
+        -- For canTriggerOnSelf passives, use targetOverride if present
+        -- For other passives, pass triggerPokemon (the ally that was hit/attacked)
+        local executeTarget
+        if cand.targetOverride then
+            executeTarget = cand.targetOverride
+        elseif cand.passive.isSelfTrigger then
+            executeTarget = otherPokemon
+        else
+            executeTarget = triggerPokemon
+        end
+        local result, message = cand.passive:execute(cand.ally, executeTarget, damage, M)
+        
+        -- Mark limited as triggered
+        if cand.limited then
+            limitedTriggered = true
+        end
+        
+        -- Collect HP changes for synced display
+        local hpChanges = {}
+        if cand.ally then
+            table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
+        end
+        if triggerPokemon then
+            table.insert(hpChanges, {pokemon = triggerPokemon, newHP = triggerPokemon.currentHP})
+        end
+        if otherPokemon and otherPokemon ~= triggerPokemon then
+            table.insert(hpChanges, {pokemon = otherPokemon, newHP = otherPokemon.currentHP})
+        end
+        
+        -- Queue animation if passive has one
+        if message and cand.passive.animationType then
+            M.queuePassiveAnimation(cand.passive.animationType, cand.ally, executeTarget or triggerPokemon, message, hpChanges)
+        elseif message then
+            M.queueMessage(message, hpChanges)
+        end
+        
+        ::continue::
+    end
+end
+
+-- Trigger passives for enemies when attacker attacks (before/after enemy attacks)
+function M.triggerEnemyPassives(triggerType, attacker, target, damage)
+    if not attacker or not target then return end
+    
+    -- Get the target's allies (defender's side)
+    local defenderFormation = M.getAllyFormation(target)
+    if not defenderFormation then return end
+    
+    for i = 1, 6 do
+        local defender = defenderFormation[i]
+        if defender and defender.currentHP and defender.currentHP > 0 then
+            local passiveInfos = getAllPassivesForTrigger(defender, triggerType)
+            for _, info in ipairs(passiveInfos) do
+                local passive = info.passive
+                local slot = info.slot
+                
+                -- Check conditions (self = defender, target = attacker)
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                if not cond1.filter(defender, attacker, M) then goto continue end
+                if not cond2.filter(defender, attacker, M) then goto continue end
+                
+                if (defender.battlePP or 0) > 0 then
+                    defender.battlePP = defender.battlePP - 1
+                    local _, message = passive:execute(defender, attacker, damage, M)
+                    if message then
+                        local hpChanges = {}
+                        table.insert(hpChanges, {pokemon = defender, newHP = defender.currentHP})
+                        table.insert(hpChanges, {pokemon = attacker, newHP = attacker.currentHP})
+                        M.queueMessage(message, hpChanges)
+                    end
+                end
+                
+                ::continue::
+            end
+        end
+    end
+end
+
+-- Trigger before_ally_attacked for allies of the target
+-- Implements limited passive logic: only one limited skill can activate per trigger
+function M.triggerBeforeAllyAttacked(target, attacker)
+    if not target then return end
+    
+    -- Only trigger for damaging moves (physical or special), not status moves
+    if M.currentAction and M.currentAction.skill then
+        local category = M.currentAction.skill.category
+        if category == "status" then
+            return  -- Status moves don't trigger Protect
+        end
+    end
+    
+    local formation = M.getAllyFormation(target)
+    if not formation then return end
+    
+    -- Collect all potential passives with their owners
+    local candidates = {}
+    for i = 1, 6 do
+        local ally = formation[i]
+        -- For ally_or_self passives (like Protect), also check the target itself
+        -- For ally-only passives, skip the target
+        if ally and ally.currentHP and ally.currentHP > 0 then
+            local passiveInfos = getAllPassivesForTrigger(ally, "before_ally_attacked")
+            for _, info in ipairs(passiveInfos) do
+                local passive = info.passive
+                local slot = info.slot
+                
+                -- Skip if this is ally-only targeting and ally is the target
+                if ally == target and passive.targetType ~= "ally_or_self" then
+                    goto skip_passive
+                end
+                
+                -- Check conditions (self = ally/passive owner, target = ally being attacked)
+                local cond1 = getConditionById(slot.condition1 or "none")
+                local cond2 = getConditionById(slot.condition2 or "none")
+                
+                if cond1.filter(ally, target, M) and cond2.filter(ally, target, M) then
+                    if (ally.battlePP or 0) > 0 then
+                        table.insert(candidates, {
+                            ally = ally,
+                            passive = passive,
+                            slot = slot,
+                            priority = passive.passivePriority or 0,
+                            limited = passive.limited or false
+                        })
+                    end
+                end
+                
+                ::skip_passive::
+            end
+        end
+    end
+    
+    -- Sort by priority (higher first)
+    table.sort(candidates, function(a, b)
+        return a.priority > b.priority
+    end)
+    
+    -- Track if a limited passive has already triggered
+    local limitedTriggered = false
+    
+    -- Execute passives respecting limited constraint
+    for _, cand in ipairs(candidates) do
+        -- Skip limited passives if one already triggered
+        if cand.limited and limitedTriggered then
+            goto continue
+        end
+        
+        -- Consume PP and execute
+        cand.ally.battlePP = cand.ally.battlePP - 1
+        local result, message = cand.passive:execute(cand.ally, target, 0, M)
+        
+        -- Mark limited as triggered
+        if cand.limited then
+            limitedTriggered = true
+        end
+        
+        -- Collect HP changes for synced display
+        local hpChanges = {}
+        if cand.ally then
+            table.insert(hpChanges, {pokemon = cand.ally, newHP = cand.ally.currentHP})
+        end
+        if target then
+            table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+        end
+        
+        -- Queue animation if passive has one
+        if message and cand.passive.animationType then
+            M.queuePassiveAnimation(cand.passive.animationType, cand.ally, target, message, hpChanges)
+        elseif message then
+            M.queueMessage(message, hpChanges)
+        end
+        
+        ::continue::
+    end
+end
+
+-- Trigger before_self_hit for the target itself
+function M.triggerBeforeSelfHit(target, attacker)
+    if not target or target.currentHP <= 0 then return end
+    
+    local passiveInfos = getAllPassivesForTrigger(target, "before_self_hit")
+    for _, info in ipairs(passiveInfos) do
+        local passive = info.passive
+        local slot = info.slot
+        
+        -- Check conditions (self = target, target = attacker)
+        local cond1 = getConditionById(slot.condition1 or "none")
+        local cond2 = getConditionById(slot.condition2 or "none")
+        
+        if not cond1.filter(target, attacker, M) then goto continue end
+        if not cond2.filter(target, attacker, M) then goto continue end
+        
+        if (target.battlePP or 0) > 0 then
+            target.battlePP = target.battlePP - 1
+            local _, message = passive:execute(target, attacker, 0, M)
+            if message then
+                local hpChanges = {}
+                table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                M.queueMessage(message, hpChanges)
+            end
+        end
+        
+        ::continue::
+    end
+end
+
+-- Trigger round start passives for all living Pokemon
+function M.triggerRoundStartPassives()
+    local allPokemon = {}
+    
+    for i = 1, 6 do
+        local p = M.playerFormation[i]
+        if p and p.currentHP and p.currentHP > 0 then
+            table.insert(allPokemon, p)
+        end
+    end
+    for i = 1, 6 do
+        local p = M.enemyFormation[i]
+        if p and p.currentHP and p.currentHP > 0 then
+            table.insert(allPokemon, p)
+        end
+    end
+    
+    for _, pokemon in ipairs(allPokemon) do
+        local passiveInfos = getAllPassivesForTrigger(pokemon, "on_round_start")
+        for _, info in ipairs(passiveInfos) do
+            local passive = info.passive
+            local slot = info.slot
+            
+            -- Get conditions
+            local cond1 = getConditionById(slot.condition1 or "none")
+            local cond2 = getConditionById(slot.condition2 or "none")
+            
+            -- For self-targeting passives, check conditions against self
+            -- For enemy/ally targeting passives, find appropriate target
+            local target = nil
+            if passive.targetType == "enemy" then
+                local enemyFormation = M.getEnemyFormation(pokemon)
+                local validTargets = {}
+                if enemyFormation then
+                    for j = 1, 6 do
+                        local enemy = enemyFormation[j]
+                        if enemy and enemy.currentHP and enemy.currentHP > 0 then
+                            if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
+                                table.insert(validTargets, enemy)
+                            end
+                        end
+                    end
+                end
+                -- Sort targets based on conditions and pick best
+                if #validTargets > 0 then
+                    table.sort(validTargets, function(a, b)
+                        if cond2.sort then return cond2.sort(a, b) end
+                        if cond1.sort then return cond1.sort(a, b) end
+                        return false
+                    end)
+                    target = validTargets[1]
+                end
+            elseif passive.targetType == "self" then
+                -- Self-targeting passives check conditions against self
+                if not cond1.filter(pokemon, pokemon, M) then goto continue end
+                if not cond2.filter(pokemon, pokemon, M) then goto continue end
+                target = pokemon
+            end
+            
+            if (pokemon.battlePP or 0) > 0 and target then
+                pokemon.battlePP = pokemon.battlePP - 1
+                
+                -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
+                if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
+                    M.currentAction = {
+                        user = pokemon,
+                        target = target,
+                        skill = {
+                            name = passive.name,
+                            category = "physical",  -- Attack passives are physical
+                            moveType = passive.moveType or "normal",
+                        }
+                    }
+                    
+                    -- Trigger before_ally_attacked for target (this is where Protect triggers)
+                    M.triggerBeforeAllyAttacked(target, pokemon)
+                    
+                    -- Check if target is protected (Protect triggered)
+                    if target.isProtected then
+                        target.isProtected = nil
+                        target.protectedBy = nil
+                        M.currentAction = nil
+                        -- Still show the attack animation with a "blocked" message
+                        local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                        local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                        M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
+                        goto continue
+                    end
+                end
+                
+                local damageDealt, message = passive:execute(pokemon, target, 0, M)
+                
+                -- For attack passives that dealt damage, trigger after_ally_hit events
+                if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
+                    -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
+                    M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
+                end
+                
+                -- Clear current action
+                M.currentAction = nil
+                
+                if message then
+                    local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                    -- Also track target HP changes for damage-dealing passives
+                    if target and target ~= pokemon then
+                        table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                    end
+                    -- Use passive animation for attack-type passives
+                    if passive.animationType then
+                        M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
+                    else
+                        M.queueMessage(message, hpChanges)
+                    end
+                end
+            end
+            
+            ::continue::
+        end
+    end
+end
+
+-- Trigger round end passives for all living Pokemon
+function M.triggerRoundEndPassives()
+    local allPokemon = {}
+    
+    for i = 1, 6 do
+        local p = M.playerFormation[i]
+        if p and p.currentHP and p.currentHP > 0 then
+            table.insert(allPokemon, p)
+        end
+    end
+    for i = 1, 6 do
+        local p = M.enemyFormation[i]
+        if p and p.currentHP and p.currentHP > 0 then
+            table.insert(allPokemon, p)
+        end
+    end
+    
+    for _, pokemon in ipairs(allPokemon) do
+        local passiveInfos = getAllPassivesForTrigger(pokemon, "on_round_end")
+        for _, info in ipairs(passiveInfos) do
+            local passive = info.passive
+            local slot = info.slot
+            
+            -- Get conditions
+            local cond1 = getConditionById(slot.condition1 or "none")
+            local cond2 = getConditionById(slot.condition2 or "none")
+            
+            -- For self-targeting passives, check conditions against self
+            -- For enemy/ally targeting passives, find appropriate target
+            local target = nil
+            if passive.targetType == "enemy" then
+                local enemyFormation = M.getEnemyFormation(pokemon)
+                local validTargets = {}
+                if enemyFormation then
+                    for j = 1, 6 do
+                        local enemy = enemyFormation[j]
+                        if enemy and enemy.currentHP and enemy.currentHP > 0 then
+                            if cond1.filter(pokemon, enemy, M) and cond2.filter(pokemon, enemy, M) then
+                                table.insert(validTargets, enemy)
+                            end
+                        end
+                    end
+                end
+                -- Sort targets based on conditions and pick best
+                if #validTargets > 0 then
+                    table.sort(validTargets, function(a, b)
+                        if cond2.sort then return cond2.sort(a, b) end
+                        if cond1.sort then return cond1.sort(a, b) end
+                        return false
+                    end)
+                    target = validTargets[1]
+                end
+            elseif passive.targetType == "self" then
+                -- Self-targeting passives check conditions against self
+                if not cond1.filter(pokemon, pokemon, M) then goto continue end
+                if not cond2.filter(pokemon, pokemon, M) then goto continue end
+                target = pokemon
+            end
+            
+            if (pokemon.battlePP or 0) > 0 and target then
+                pokemon.battlePP = pokemon.battlePP - 1
+                
+                -- For attack-type passives, set currentAction so Rough Skin/Rage can check category
+                if passive.animationType == "attack" and passive.basePower and passive.basePower > 0 then
+                    M.currentAction = {
+                        user = pokemon,
+                        target = target,
+                        skill = {
+                            name = passive.name,
+                            category = "physical",  -- Attack passives are physical
+                            moveType = passive.moveType or "normal",
+                        }
+                    }
+                    
+                    -- Trigger before_ally_attacked for target (this is where Protect triggers)
+                    M.triggerBeforeAllyAttacked(target, pokemon)
+                    
+                    -- Check if target is protected (Protect triggered)
+                    if target.isProtected then
+                        target.isProtected = nil
+                        target.protectedBy = nil
+                        M.currentAction = nil
+                        -- Still show the attack animation with a "blocked" message
+                        local blockedMessage = pokemon.name .. " used " .. passive.name .. " but it was blocked!"
+                        local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                        M.queuePassiveAnimation(passive.animationType, pokemon, target, blockedMessage, hpChanges)
+                        goto continue
+                    end
+                end
+                
+                local damageDealt, message = passive:execute(pokemon, target, 0, M)
+                
+                -- For attack passives that dealt damage, trigger after_ally_hit events
+                if passive.animationType == "attack" and damageDealt and damageDealt > 0 and target.currentHP > 0 then
+                    -- Trigger after_ally_hit for target's side (Rough Skin, Rage, etc.)
+                    M.triggerAllyPassives("after_ally_hit", target, pokemon, damageDealt)
+                end
+                
+                -- Clear current action
+                M.currentAction = nil
+                
+                if message then
+                    local hpChanges = {{pokemon = pokemon, newHP = pokemon.currentHP}}
+                    -- Also track target HP changes for damage-dealing passives
+                    if target and target ~= pokemon then
+                        table.insert(hpChanges, {pokemon = target, newHP = target.currentHP})
+                    end
+                    -- Use passive animation for attack-type passives
+                    if passive.animationType then
+                        M.queuePassiveAnimation(passive.animationType, pokemon, target, message, hpChanges)
+                    else
+                        M.queueMessage(message, hpChanges)
+                    end
+                end
+            end
+            
+            ::continue::
+        end
+    end
+end
+
+--------------------------------------------------
+-- FORMATION HELPERS
+--------------------------------------------------
+
+local function getLivingPokemon(formation)
+    local living = {}
+    for i = 1, 6 do
+        local pokemon = formation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            table.insert(living, {pokemon = pokemon, slot = i})
+        end
+    end
+    return living
+end
+
+local function getFrontMost(formation)
+    -- Check front row first (slots 1-3)
+    for i = 1, 3 do
+        if formation[i] and formation[i].currentHP and formation[i].currentHP > 0 then
+            return formation[i], i
+        end
+    end
+    -- Then check back row (slots 4-6)
+    for i = 4, 6 do
+        if formation[i] and formation[i].currentHP and formation[i].currentHP > 0 then
+            return formation[i], i
+        end
+    end
+    return nil, nil
+end
+
+local function isFormationDefeated(formation)
+    for i = 1, 6 do
+        local pokemon = formation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            return false
+        end
+    end
+    return true
+end
+
+local function countLiving(formation)
+    local count = 0
+    for i = 1, 6 do
+        local pokemon = formation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+M.getLivingPokemon = getLivingPokemon
+M.getFrontMost = getFrontMost
+M.isFormationDefeated = isFormationDefeated
+M.countLiving = countLiving
+
+--------------------------------------------------
+-- BATTLE INITIALIZATION
+--------------------------------------------------
+
+function M.startBattle(player, enemyPokemon, isTrainer, trainerObj)
+    M.active = true
+    M.mode = "idle"
+    M.player = player
+    M.isTrainerBattle = isTrainer or false
+    M.trainer = trainerObj
+    M.trainerDefeated = false
+    M.playerWhitedOut = false
+    
+    M.battleLog = {}
+    M.logQueue = {}
+    M.actionQueue = {}
+    M.currentAction = nil
+    M.actionTimer = 0
+    M.turnNumber = 0
+    M.roundNumber = 1
+    M.battlePhase = "tactics"  -- Start in tactics mode
+    M.waitingForZ = false
+    M.awaitingClose = false
+    
+    -- Reset tactics state
+    M.tacticsMode = true
+    M.tacticsCursor = 1
+    M.tacticsSelected = nil
+    
+    -- Clear formations
+    M.playerFormation = {nil, nil, nil, nil, nil, nil}
+    M.enemyFormation = {nil, nil, nil, nil, nil, nil}
+    
+    -- Reset EXP tracking
+    M.defeatedEnemies = {}
+    
+    -- Helper to initialize AP/PP and stat stages for a Pokemon
+    local function initBattlePoints(pokemon)
+        if pokemon then
+            pokemon.battleAP = M.defaultAP  -- Action Points remaining
+            pokemon.battlePP = M.defaultPP  -- Passive Points remaining
+            pokemon.displayHP = pokemon.currentHP  -- Display HP for synced animations
+            initStatStages(pokemon)  -- Initialize stat stages to 0
+            pokemon.isProtected = false  -- Reset protection status
+            pokemon.protectedBy = nil
+        end
+    end
+    
+    -- Load player Pokemon into formation
+    -- Use saved formation slots if available, otherwise pack sequentially
+    if player and player.party then
+        -- First pass: place Pokemon with saved formation slots
+        local usedSlots = {}
+        local placedPokemon = {}
+        for i, pokemon in ipairs(player.party) do
+            if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+                local savedSlot = pokemon.formationSlot
+                if savedSlot and savedSlot >= 1 and savedSlot <= 6 and not usedSlots[savedSlot] then
+                    initBattlePoints(pokemon)
+                    M.playerFormation[savedSlot] = pokemon
+                    usedSlots[savedSlot] = true
+                    placedPokemon[pokemon] = true
+                end
+            end
+        end
+        
+        -- Second pass: place remaining Pokemon in first available slots
+        local nextSlot = 1
+        for i, pokemon in ipairs(player.party) do
+            if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+                -- Skip if already placed in first pass
+                if not placedPokemon[pokemon] then
+                    -- Find next available slot
+                    while nextSlot <= 6 and usedSlots[nextSlot] do
+                        nextSlot = nextSlot + 1
+                    end
+                    if nextSlot <= 6 then
+                        initBattlePoints(pokemon)
+                        M.playerFormation[nextSlot] = pokemon
+                        pokemon.formationSlot = nextSlot  -- Save the slot
+                        usedSlots[nextSlot] = true
+                        nextSlot = nextSlot + 1
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Load enemy Pokemon into formation
+    if type(enemyPokemon) == "table" then
+        if enemyPokemon.speciesId or enemyPokemon.species then
+            -- Single Pokemon
+            initBattlePoints(enemyPokemon)
+            M.enemyFormation[1] = enemyPokemon
+        else
+            -- Array of Pokemon
+            local slot = 1
+            for i, pokemon in ipairs(enemyPokemon) do
+                if slot <= 6 and pokemon then
+                    initBattlePoints(pokemon)
+                    M.enemyFormation[slot] = pokemon
+                    slot = slot + 1
+                end
+            end
+        end
+    end
+    
+    -- Log battle start
+    local enemyCount = countLiving(M.enemyFormation)
+    local playerCount = countLiving(M.playerFormation)
+    
+    if M.isTrainerBattle and M.trainer then
+        M.queueMessage(M.trainer.name .. " wants to battle!")
+    else
+        local firstEnemy = getFrontMost(M.enemyFormation)
+        if firstEnemy then
+            M.queueMessage("A wild " .. firstEnemy.name .. " appeared!")
+        end
+    end
+    
+    M.queueMessage("Organize your formation! (" .. playerCount .. " vs " .. enemyCount .. ")")
+end
+
+-- Start a wild Pokemon battle (convenience function)
+function M.startWildBattle(wildPokemon, player)
+    M.startBattle(player, wildPokemon, false, nil)
+end
+
+-- Start a trainer battle
+-- Can accept either a trainer ID (string) or a trainer object
+function M.startTrainerBattle(trainerIdOrObj, player)
+    local trainer = trainerIdOrObj
+    
+    -- If given a trainer ID string, create trainer from ID
+    if type(trainerIdOrObj) == "string" then
+        local ok, trainerMod = pcall(require, "trainer")
+        if ok and trainerMod and trainerMod.Trainer then
+            trainer = trainerMod.Trainer:new(trainerIdOrObj)
+        else
+            log.log("battle.startTrainerBattle - failed to load trainer module")
+            return
+        end
+    end
+    
+    if not trainer then
+        log.log("battle.startTrainerBattle - invalid trainer")
+        return
+    end
+    
+    local enemyParty = {}
+    if trainer and trainer.party then
+        for _, pokemon in ipairs(trainer.party) do
+            table.insert(enemyParty, pokemon)
+        end
+    end
+    M.startBattle(player, enemyParty, true, trainer)
+end
+
+--------------------------------------------------
+-- MESSAGE SYSTEM
+-- Messages can have associated HP changes that apply when the message is shown
+-- This creates the visual effect of HP bars updating in sync with battle text
+--------------------------------------------------
+
+-- Queue a message with optional HP changes
+-- hpChanges is an array of {pokemon, newHP} pairs to apply when message is shown
+function M.queueMessage(msg, hpChanges)
+    if msg and msg ~= "" then
+        table.insert(M.logQueue, {
+            text = msg,
+            hpChanges = hpChanges or {}
+        })
+    end
+end
+
+-- Apply HP changes from a message
+local function applyHPChanges(hpChanges)
+    if not hpChanges then return end
+    for _, change in ipairs(hpChanges) do
+        if change.pokemon and change.newHP then
+            change.pokemon.displayHP = change.newHP
+        end
+    end
+end
+
+-- Initialize display HP for a Pokemon (call at battle start)
+local function initDisplayHP(pokemon)
+    if pokemon then
+        pokemon.displayHP = pokemon.currentHP
+    end
+end
+
+function M.processMessageQueue()
+    if #M.logQueue > 0 and not M.waitingForZ then
+        local msgData = table.remove(M.logQueue, 1)
+        local msg = type(msgData) == "table" and msgData.text or msgData
+        local hpChanges = type(msgData) == "table" and msgData.hpChanges or nil
+        local animation = type(msgData) == "table" and msgData.animation or nil
+        
+        -- Apply any HP changes associated with this message
+        applyHPChanges(hpChanges)
+        
+        -- Start animation if this message has one attached
+        if animation then
+            M.startPassiveAnimation(animation)
+        end
+        
+        table.insert(M.battleLog, msg)
+        
+        -- Trim log to max display lines (counting newlines in messages)
+        local function countDisplayLines()
+            local total = 0
+            for _, m in ipairs(M.battleLog) do
+                -- Count lines in this message
+                local lines = 1
+                for _ in string.gmatch(m, "\n") do
+                    lines = lines + 1
+                end
+                total = total + lines
+            end
+            return total
+        end
+        
+        while countDisplayLines() > M.maxLogLines and #M.battleLog > 1 do
+            table.remove(M.battleLog, 1)
+        end
+        
+        M.waitingForZ = true
+        return true
+    end
+    return false
+end
+
+--------------------------------------------------
+-- ACTION EXECUTION
+--------------------------------------------------
+
+-- Queue an action to be executed
+function M.queueAction(action)
+    table.insert(M.actionQueue, action)
+end
+
+-- Execute the next turn
+function M.executeTurn()
+    if M.mode ~= "idle" then return end
+    
+    M.turnNumber = M.turnNumber + 1
+    M.mode = "executing"
+    
+    -- Gather all actions for this turn
+    local actions = {}
+    
+    -- Player Pokemon actions (each living Pokemon with AP attacks)
+    local playerLiving = getLivingPokemon(M.playerFormation)
+    for _, data in ipairs(playerLiving) do
+        -- Only act if Pokemon has AP remaining
+        if (data.pokemon.battleAP or 0) > 0 then
+            -- Get skill and target from loadout
+            local activeSkill, target = getActiveSkillForAction(data.pokemon, M)
+            if activeSkill and target then
+                table.insert(actions, {
+                    user = data.pokemon,
+                    userSlot = data.slot,
+                    target = target,
+                    skill = activeSkill,
+                    team = "player",
+                    priority = activeSkill.priority or 0
+                })
+            end
+        end
+    end
+    
+    -- Enemy Pokemon actions
+    local enemyLiving = getLivingPokemon(M.enemyFormation)
+    for _, data in ipairs(enemyLiving) do
+        -- Only act if Pokemon has AP remaining
+        if (data.pokemon.battleAP or 0) > 0 then
+            -- Get skill and target from loadout
+            local activeSkill, target = getActiveSkillForAction(data.pokemon, M)
+            if activeSkill and target then
+                table.insert(actions, {
+                    user = data.pokemon,
+                    userSlot = data.slot,
+                    target = target,
+                    skill = activeSkill,
+                    team = "enemy",
+                    priority = activeSkill.priority or 0
+                })
+            end
+        end
+    end
+    
+    -- Sort by priority first, then by speed
+    table.sort(actions, function(a, b)
+        if a.priority ~= b.priority then
+            return a.priority > b.priority
+        end
+        local speedA = (a.user.stats and a.user.stats.speed) or 10
+        local speedB = (b.user.stats and b.user.stats.speed) or 10
+        return speedA > speedB
+    end)
+    
+    -- Queue all actions
+    for _, action in ipairs(actions) do
+        M.queueAction(action)
+    end
+    
+    -- Start executing
+    M.actionTimer = 0
+end
+
+-- Helper to get screen position for a Pokemon in formation
+local function getSlotPosition(pokemon, isPlayer)
+    local UI = require("ui")
+    local screenW, screenH = UI.getGameScreenDimensions()
+    
+    local slotWidth = 70
+    local slotHeight = 85
+    local rowGap = 5
+    local colGap = 8
+    local logBoxHeight = 50
+    local logBoxY = screenH - logBoxHeight - 5
+    local formationAreaHeight = logBoxY - 30
+    local formationAreaTop = 25
+    local totalFormationHeight = slotHeight * 3 + rowGap * 2
+    local formationStartY = formationAreaTop + (formationAreaHeight - totalFormationHeight) / 2
+    
+    local playerBackX = 10
+    local playerFrontX = playerBackX + slotWidth + colGap
+    local enemyFrontX = screenW - 10 - slotWidth * 2 - colGap
+    local enemyBackX = screenW - 10 - slotWidth
+    
+    local formation = isPlayer and M.playerFormation or M.enemyFormation
+    for i = 1, 6 do
+        local p = formation[i]
+        if p == pokemon then
+            local x, y
+            if isPlayer then
+                if i <= 3 then
+                    x = playerFrontX
+                    y = formationStartY + (i - 1) * (slotHeight + rowGap)
+                else
+                    x = playerBackX
+                    y = formationStartY + (i - 4) * (slotHeight + rowGap)
+                end
+            else
+                if i <= 3 then
+                    x = enemyFrontX
+                    y = formationStartY + (i - 1) * (slotHeight + rowGap)
+                else
+                    x = enemyBackX
+                    y = formationStartY + (i - 4) * (slotHeight + rowGap)
+                end
+            end
+            return x + slotWidth / 2, y + slotHeight / 2, slotWidth, slotHeight
+        end
+    end
+    return nil, nil, slotWidth, slotHeight
+end
+
+M.getSlotPosition = getSlotPosition
+
+-- Start animation for an action
+local function startActionAnimation(action)
+    local userIsPlayer = action.team == "player"
+    local userX, userY = getSlotPosition(action.user, userIsPlayer)
+    local targetX, targetY = getSlotPosition(action.target, not userIsPlayer)
+    
+    if not userX or not targetX then
+        -- Can't animate, just execute immediately
+        return false
+    end
+    
+    M.animating = true
+    M.animAction = action
+    M.animTimer = 0
+    M.animStartX = userX
+    M.animStartY = userY
+    M.animTargetX = targetX
+    M.animTargetY = targetY
+    M.animCurrentX = userX
+    M.animCurrentY = userY
+    
+    -- Check if this is a status move (use flash animation instead of move)
+    if action.skill and action.skill.category == "status" then
+        M.animPhase = "status_flash"
+    else
+        M.animPhase = "move_to"
+    end
+    
+    return true
+end
+
+-- Execute the actual skill (called after animation)
+local function executeAction(action)
+    -- Store current action for passive checks (e.g., Rage checks if attack was physical)
+    M.currentAction = action
+    
+    -- Apply attack boost if present
+    local originalAttack = nil
+    if action.user.battleAttackBoost and action.user.battleAttackBoost > 1 then
+        if action.user.stats and action.user.stats.attack then
+            originalAttack = action.user.stats.attack
+            action.user.stats.attack = math.floor(action.user.stats.attack * action.user.battleAttackBoost)
+        end
+    end
+    
+    -- Trigger before passives (before the attack happens)
+    M.triggerAllyPassives("before_ally_attack", action.user, action.target, 0)
+    M.triggerEnemyPassives("before_enemy_attack", action.user, action.target, 0)
+    
+    -- Trigger before_ally_attacked for allies of target (this is where Protect triggers)
+    M.triggerBeforeAllyAttacked(action.target, action.user)
+    
+    -- Check if target was protected (by Protect passive)
+    if action.target.isProtected then
+        action.target.isProtected = false
+        local protector = action.target.protectedBy
+        action.target.protectedBy = nil
+        local protectorName = protector and protector.name or "an ally"
+        M.queueMessage(action.target.name .. " was protected!")
+        -- Restore original attack if modified
+        if originalAttack then
+            action.user.stats.attack = originalAttack
+        end
+        return
+    end
+    
+    -- Trigger before_self_hit for target
+    M.triggerBeforeSelfHit(action.target, action.user)
+    
+    -- Check if target evaded
+    if action.target.evadedAttack then
+        action.target.evadedAttack = nil
+        M.queueMessage(action.target.name .. " evaded " .. action.user.name .. "'s attack!")
+        -- Restore original attack if modified
+        if originalAttack then
+            action.user.stats.attack = originalAttack
+        end
+        return
+    end
+    
+    -- Execute the skill - deals damage and returns message
+    local damage, message = action.skill:execute(action.user, action.target, M)
+    
+    -- Queue the main attack message with HP changes for synced display
+    if message then
+        local hpChanges = {}
+        -- Track target's HP change
+        if action.target then
+            table.insert(hpChanges, {pokemon = action.target, newHP = action.target.currentHP})
+        end
+        -- Track user's HP change (for skills that cost HP or self-damage)
+        if action.user then
+            table.insert(hpChanges, {pokemon = action.user, newHP = action.user.currentHP})
+        end
+        M.queueMessage(message, hpChanges)
+    end
+    
+    -- NOW trigger after passives (after the attack message is queued)
+    if damage and damage > 0 then
+        -- Trigger after_ally_hit for allies of the hit Pokemon (Quick Heal, etc)
+        M.triggerAllyPassives("after_ally_hit", action.target, action.user, damage)
+        -- Trigger after_ally_attack for allies of the attacker (Pursuit, etc)
+        M.triggerAllyPassives("after_ally_attack", action.user, action.target, damage)
+        -- Trigger after_enemy_attack for enemies
+        M.triggerEnemyPassives("after_enemy_attack", action.user, action.target, damage)
+    end
+    
+    -- Restore original attack if modified
+    if originalAttack then
+        action.user.stats.attack = originalAttack
+    end
+    
+    -- Clear current action after execution
+    M.currentAction = nil
+end
+
+-- Process one action from the queue
+function M.processNextAction()
+    if #M.actionQueue == 0 then
+        M.mode = "idle"
+        M.checkBattleEnd()
+        return false
+    end
+    
+    local action = table.remove(M.actionQueue, 1)
+    
+    -- Skip if user is fainted or out of AP
+    if action.user.currentHP <= 0 then
+        return M.processNextAction()
+    end
+    
+    if (action.user.battleAP or 0) <= 0 then
+        return M.processNextAction()
+    end
+    
+    -- Consume AP
+    action.user.battleAP = (action.user.battleAP or 0) - 1
+    
+    -- Re-target if target is fainted
+    if action.target.currentHP <= 0 then
+        local newTarget
+        if action.team == "player" then
+            newTarget = getFrontMost(M.enemyFormation)
+        else
+            newTarget = getFrontMost(M.playerFormation)
+        end
+        
+        if not newTarget then
+            -- No valid target - check if battle should end before processing more actions
+            local enemyDefeated = isFormationDefeated(M.enemyFormation)
+            local playerDefeated = isFormationDefeated(M.playerFormation)
+            if enemyDefeated or playerDefeated then
+                -- Clear remaining actions and check battle end
+                M.actionQueue = {}
+                M.mode = "idle"
+                M.checkBattleEnd()
+                return false
+            end
+            return M.processNextAction()
+        end
+        action.target = newTarget
+    end
+    
+    -- Start animation
+    if not startActionAnimation(action) then
+        -- No animation, execute immediately
+        executeAction(action)
+    end
+    
+    return true
+end
+
+local function teamHasAP(formation)
+    for i = 1, 6 do
+        local pokemon = formation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            if (pokemon.battleAP or 0) > 0 then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- Track when an enemy Pokemon is defeated
+function M.trackDefeatedEnemy(pokemon)
+    if pokemon then
+        table.insert(M.defeatedEnemies, {
+            pokemon = pokemon,
+            level = pokemon.level or 1,
+            species = pokemon.species
+        })
+    end
+end
+
+-- Distribute EXP to surviving player Pokemon
+function M.distributeExp()
+    if #M.defeatedEnemies == 0 then return end
+    
+    -- Load Pokemon module for EXP calculation
+    local ok, pmod = pcall(require, "pokemon")
+    if not ok or not pmod then return end
+    
+    -- Get living player Pokemon
+    local livingPlayers = {}
+    for i = 1, 6 do
+        local pokemon = M.playerFormation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            table.insert(livingPlayers, pokemon)
+        end
+    end
+    
+    if #livingPlayers == 0 then return end
+    
+    -- Calculate total EXP from all defeated enemies
+    local totalExp = 0
+    for _, defeated in ipairs(M.defeatedEnemies) do
+        -- Use base exp yield if available, otherwise estimate from level
+        local baseExp = (defeated.species and defeated.species.baseExpYield) or (defeated.level * 10)
+        local enemyLevel = defeated.level or 1
+        -- Simple formula: (baseExp * level) / 7
+        local exp = math.floor((baseExp * enemyLevel) / 7)
+        totalExp = totalExp + math.max(1, exp)
+    end
+    
+    -- Divide EXP among living Pokemon
+    local expPerPokemon = math.floor(totalExp / #livingPlayers)
+    if expPerPokemon < 1 then expPerPokemon = 1 end
+    
+    -- Give EXP to each living Pokemon
+    for _, pokemon in ipairs(livingPlayers) do
+        local pokeName = pokemon.nickname or pokemon.name or "Pokemon"
+        M.queueMessage(pokeName .. " gained " .. expPerPokemon .. " EXP!")
+        
+        -- Apply EXP and check for level ups
+        if pokemon.gainExp then
+            local levelsGained, pendingEvolution = pokemon:gainExp(expPerPokemon)
+            
+            -- Queue level up messages
+            if levelsGained and #levelsGained > 0 then
+                for _, newLevel in ipairs(levelsGained) do
+                    M.queueMessage(pokeName .. " grew to level " .. newLevel .. "!")
+                end
+            end
+            
+            -- Handle pending evolution (just notify for now)
+            if pendingEvolution then
+                M.queueMessage(pokeName .. " is ready to evolve into " .. pendingEvolution .. "!")
+            end
+        end
+    end
+end
+
+function M.checkBattleEnd()
+    local playerDefeated = isFormationDefeated(M.playerFormation)
+    local enemyDefeated = isFormationDefeated(M.enemyFormation)
+    
+    if enemyDefeated then
+        M.battlePhase = "end"
+        M.queueMessage("You won!")
+        -- Distribute EXP to surviving player Pokemon
+        M.distributeExp()
+        if M.isTrainerBattle and M.trainer then
+            M.trainerDefeated = true
+        end
+        M.awaitingClose = true
+    elseif playerDefeated then
+        M.battlePhase = "end"
+        M.queueMessage("You lost...")
+        M.playerWhitedOut = true
+        M.awaitingClose = true
+    else
+        -- Check if both teams are out of AP (round end)
+        local playerHasAP = teamHasAP(M.playerFormation)
+        local enemyHasAP = teamHasAP(M.enemyFormation)
+        
+        if not playerHasAP and not enemyHasAP then
+            -- Trigger round end passives (like Quick Heal)
+            M.triggerRoundEndPassives()
+            
+            -- Round ended - give player choice to continue or run
+            M.battlePhase = "round_end"
+            M.queueMessage("Round " .. M.roundNumber .. " complete!")
+        end
+    end
+end
+
+-- Start a new round - restore all AP/PP for living Pokemon
+function M.startNewRound()
+    M.roundNumber = M.roundNumber + 1
+    M.battlePhase = "start"
+    M.mode = "idle"
+    
+    -- Restore AP/PP for all living Pokemon in both formations
+    -- Also reset per-round flags like keenEyeUsedThisRound
+    for i = 1, 6 do
+        local pokemon = M.playerFormation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            pokemon.battleAP = M.defaultAP
+            pokemon.battlePP = M.defaultPP
+            pokemon.keenEyeUsedThisRound = false
+            pokemon.guaranteedHit = false
+        end
+    end
+    for i = 1, 6 do
+        local pokemon = M.enemyFormation[i]
+        if pokemon and pokemon.currentHP and pokemon.currentHP > 0 then
+            pokemon.battleAP = M.defaultAP
+            pokemon.battlePP = M.defaultPP
+            pokemon.keenEyeUsedThisRound = false
+            pokemon.guaranteedHit = false
+        end
+    end
+    
+    M.queueMessage("Round " .. M.roundNumber .. " - Fight!")
+    
+    -- Trigger round start passives (like Regenerate)
+    M.triggerRoundStartPassives()
+end
+
+--------------------------------------------------
+-- END BATTLE
+--------------------------------------------------
+
+function M.endBattle()
+    M.active = false
+    M.mode = "idle"
+    M.playerFormation = {nil, nil, nil, nil, nil, nil}
+    M.enemyFormation = {nil, nil, nil, nil, nil, nil}
+    M.battleLog = {}
+    M.logQueue = {}
+    M.actionQueue = {}
+    
+    if M.playerWhitedOut and M.whiteoutCallback then
+        M.whiteoutCallback(M.player)
+    end
+end
+
+--------------------------------------------------
+-- UPDATE
+--------------------------------------------------
+
+function M.update(dt)
+    if not M.active then return end
+    
+    -- Update attack animation
+    if M.animating and M.animAction then
+        M.animTimer = M.animTimer + dt
+        local progress = math.min(1, M.animTimer / M.animDuration)
+        
+        if M.animPhase == "move_to" then
+            -- Lerp from start to target
+            M.animCurrentX = M.animStartX + (M.animTargetX - M.animStartX) * progress
+            M.animCurrentY = M.animStartY + (M.animTargetY - M.animStartY) * progress
+            
+            if progress >= 1 then
+                -- Hit the target - execute the skill
+                executeAction(M.animAction)
+                M.animPhase = "move_back"
+                M.animTimer = 0
+            end
+        elseif M.animPhase == "move_back" then
+            -- Lerp from target back to start
+            M.animCurrentX = M.animTargetX + (M.animStartX - M.animTargetX) * progress
+            M.animCurrentY = M.animTargetY + (M.animStartY - M.animTargetY) * progress
+            
+            if progress >= 1 then
+                -- Animation complete
+                M.animating = false
+                M.animAction = nil
+                M.animPhase = "none"
+            end
+        elseif M.animPhase == "status_flash" then
+            -- Status move animation: flash the target without moving the user
+            -- Duration is 0.3 seconds for the flash effect
+            local statusDuration = 0.3
+            local statusProgress = math.min(1, M.animTimer / statusDuration)
+            
+            if statusProgress >= 0.5 and not M.statusActionExecuted then
+                -- Execute the skill at the midpoint of the flash
+                executeAction(M.animAction)
+                M.statusActionExecuted = true
+            end
+            
+            if statusProgress >= 1 then
+                -- Animation complete
+                M.animating = false
+                M.animAction = nil
+                M.animPhase = "none"
+                M.statusActionExecuted = nil
+            end
+        end
+        return
+    end
+    
+    -- Update passive animation
+    if M.passiveAnimating then
+        M.passiveAnimTimer = M.passiveAnimTimer + dt
+        M.passiveFlashTimer = M.passiveFlashTimer + dt
+        local progress = math.min(1, M.passiveAnimTimer / M.passiveAnimDuration)
+        
+        if M.passiveAnimType == "heal" then
+            -- Heal animation: healer bounces up then down, target flashes green
+            if M.passiveAnimPhase == "bounce_up" then
+                -- Move up by 10 pixels
+                M.passiveAnimUserCurrentY = M.passiveAnimUserStartY - (10 * progress)
+                if progress >= 1 then
+                    M.passiveAnimPhase = "bounce_down"
+                    M.passiveAnimTimer = 0
+                end
+            elseif M.passiveAnimPhase == "bounce_down" then
+                -- Move back down
+                M.passiveAnimUserCurrentY = M.passiveAnimUserStartY - 10 + (10 * progress)
+                if progress >= 1 then
+                    M.passiveAnimPhase = "flash"
+                    M.passiveAnimTimer = 0
+                    M.passiveAnimDuration = 0.3
+                end
+            elseif M.passiveAnimPhase == "flash" then
+                -- Target flashes green (handled in draw)
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        elseif M.passiveAnimType == "guard" then
+            -- Guard animation: guardian moves to ally, then flash
+            if M.passiveAnimPhase == "move_to_ally" then
+                -- Get target position
+                local isPlayer = M.getFormationSide(M.passiveAnimTarget) == "player"
+                local targetX, targetY = M.getSlotPosition(M.passiveAnimTarget, isPlayer)
+                if targetX then
+                    M.passiveAnimUserCurrentX = M.passiveAnimUserStartX + (targetX - M.passiveAnimUserStartX) * progress
+                    M.passiveAnimUserCurrentY = M.passiveAnimUserStartY + (targetY - M.passiveAnimUserStartY) * progress
+                end
+                if progress >= 1 then
+                    M.passiveAnimPhase = "guard_flash"
+                    M.passiveAnimTimer = 0
+                    M.passiveAnimDuration = 0.25
+                end
+            elseif M.passiveAnimPhase == "guard_flash" then
+                -- Blue flash on both (handled in draw)
+                if progress >= 1 then
+                    M.passiveAnimPhase = "move_back"
+                    M.passiveAnimTimer = 0
+                    M.passiveAnimDuration = 0.15
+                end
+            elseif M.passiveAnimPhase == "move_back" then
+                -- Move guardian back to original position
+                local isPlayer = M.getFormationSide(M.passiveAnimTarget) == "player"
+                local targetX, targetY = M.getSlotPosition(M.passiveAnimTarget, isPlayer)
+                if targetX then
+                    M.passiveAnimUserCurrentX = targetX + (M.passiveAnimUserStartX - targetX) * progress
+                    M.passiveAnimUserCurrentY = targetY + (M.passiveAnimUserStartY - targetY) * progress
+                end
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        elseif M.passiveAnimType == "attack" then
+            -- Attack animation for passives like Pursuit: move to target, hit, move back
+            if M.passiveAnimPhase == "attack_move_to" then
+                -- Lerp from user position to target position
+                M.passiveAnimUserCurrentX = M.passiveAnimUserStartX + (M.passiveAnimTargetStartX - M.passiveAnimUserStartX) * progress
+                M.passiveAnimUserCurrentY = M.passiveAnimUserStartY + (M.passiveAnimTargetStartY - M.passiveAnimUserStartY) * progress
+                if progress >= 1 then
+                    M.passiveAnimPhase = "attack_hit"
+                    M.passiveAnimTimer = 0
+                    M.passiveAnimDuration = 0.15
+                end
+            elseif M.passiveAnimPhase == "attack_hit" then
+                -- Brief pause at target with hit effect (handled in draw)
+                if progress >= 1 then
+                    M.passiveAnimPhase = "attack_move_back"
+                    M.passiveAnimTimer = 0
+                    M.passiveAnimDuration = 0.15
+                end
+            elseif M.passiveAnimPhase == "attack_move_back" then
+                -- Lerp back to original position
+                M.passiveAnimUserCurrentX = M.passiveAnimTargetStartX + (M.passiveAnimUserStartX - M.passiveAnimTargetStartX) * progress
+                M.passiveAnimUserCurrentY = M.passiveAnimTargetStartY + (M.passiveAnimUserStartY - M.passiveAnimTargetStartY) * progress
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        elseif M.passiveAnimType == "buff" then
+            -- Buff animation: flash effect on user
+            M.passiveFlashTimer = M.passiveFlashTimer + dt
+            if M.passiveAnimPhase == "buff_flash" then
+                -- Just a timed flash effect (handled in draw)
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        elseif M.passiveAnimType == "debuff" then
+            -- Debuff animation: flash effect on target
+            M.passiveFlashTimer = M.passiveFlashTimer + dt
+            if M.passiveAnimPhase == "debuff_flash" then
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        elseif M.passiveAnimType == "recoil" then
+            -- Recoil animation: red flash on target (attacker taking recoil damage)
+            M.passiveFlashTimer = M.passiveFlashTimer + dt
+            if M.passiveAnimPhase == "recoil_flash" then
+                if progress >= 1 then
+                    M.passiveAnimating = false
+                    M.passiveAnimPhase = "none"
+                    -- Don't auto-start next - let message queue handle it
+                end
+            end
+        else
+            -- Unknown type, just finish
+            M.passiveAnimating = false
+            M.passiveAnimPhase = "none"
+        end
+        return
+    end
+    
+    -- Process message queue (animations are now started when messages are shown)
+    if M.waitingForZ then
+        -- Waiting for player to press Z to continue
+        return
+    end
+    
+    if M.processMessageQueue() then
+        return
+    end
+    
+    -- If awaiting close, don't process actions
+    if M.awaitingClose then
+        return
+    end
+    
+    -- Process actions with delay
+    if M.mode == "executing" then
+        M.actionTimer = M.actionTimer + dt
+        if M.actionTimer >= M.actionDelay then
+            M.actionTimer = 0
+            M.processNextAction()
+        end
+    end
+end
+
+--------------------------------------------------
+-- INPUT HANDLING
+--------------------------------------------------
+
+-- Handle skill picker input (selecting skill/condition1/condition2)
+local function handleSkillPickerInput(key)
+    local listItems = {}
+    
+    if M.skillEditField == 1 then
+        -- Skill picker - show only skills this Pokemon knows
+        table.insert(listItems, {id = nil, name = "(Empty)"})
+        
+        -- Get the species ID and level for skill lookups
+        local speciesId = M.skillEditPokemon.speciesId or 
+                         (M.skillEditPokemon.species and M.skillEditPokemon.species.name and 
+                          M.skillEditPokemon.species.name:lower():gsub(" ", "_"))
+        local level = M.skillEditPokemon.level or 5
+        
+        -- Get known skills for this Pokemon
+        local knownSkills = SkillsModule.getKnownSkills(speciesId or "unknown", level)
+        
+        for _, skillId in ipairs(knownSkills) do
+            local skill = SkillsModule.getSkillById(skillId)
+            if skill then
+                table.insert(listItems, skill)
+            end
+        end
+    elseif M.skillEditField == 2 or M.skillEditField == 3 then
+        -- Condition picker - two-step: category first, then conditions
+        if M.skillPickerMode == "category" then
+            -- Show categories
+            for _, cat in ipairs(ConditionCategories) do
+                table.insert(listItems, cat)
+            end
+        else
+            -- Show conditions in selected category
+            local conditions = getConditionsByCategory(M.skillPickerCategory)
+            for _, cond in ipairs(conditions) do
+                table.insert(listItems, cond)
+            end
+        end
+    end
+    
+    if key == "up" then
+        M.skillPickerCursor = M.skillPickerCursor - 1
+        if M.skillPickerCursor < 1 then M.skillPickerCursor = #listItems end
+        return true
+    elseif key == "down" then
+        M.skillPickerCursor = M.skillPickerCursor + 1
+        if M.skillPickerCursor > #listItems then M.skillPickerCursor = 1 end
+        return true
+    elseif key == "z" or key == "return" then
+        local selected = listItems[M.skillPickerCursor]
+        local loadout = getOrCreateLoadout(M.skillEditPokemon)
+        
+        -- Ensure slot exists
+        if not loadout[M.skillEditSlot] then
+            loadout[M.skillEditSlot] = {skill = nil, condition1 = "none", condition2 = "none"}
+        end
+        
+        if M.skillEditField == 1 then
+            -- Skill selected
+            loadout[M.skillEditSlot].skill = selected.id
+            M.skillPickerOpen = false
+            M.skillPickerCursor = 1
+        elseif M.skillPickerMode == "category" then
+            -- Category selected - show conditions in that category
+            M.skillPickerCategory = selected.id
+            M.skillPickerMode = "list"
+            M.skillPickerCursor = 1
+        else
+            -- Condition selected
+            if M.skillEditField == 2 then
+                loadout[M.skillEditSlot].condition1 = selected.id
+            elseif M.skillEditField == 3 then
+                loadout[M.skillEditSlot].condition2 = selected.id
+            end
+            M.skillPickerOpen = false
+            M.skillPickerCursor = 1
+            M.skillPickerMode = "category"
+            M.skillPickerCategory = nil
+        end
+        return true
+    elseif key == "x" or key == "escape" then
+        if M.skillPickerMode == "list" and (M.skillEditField == 2 or M.skillEditField == 3) then
+            -- Go back to category selection
+            M.skillPickerMode = "category"
+            M.skillPickerCategory = nil
+            M.skillPickerCursor = 1
+        else
+            -- Close picker
+            M.skillPickerOpen = false
+            M.skillPickerCursor = 1
+            M.skillPickerMode = "category"
+            M.skillPickerCategory = nil
+        end
+        return true
+    end
+    
+    return false
+end
+
+-- Handle skill edit mode input
+local function handleSkillEditInput(key)
+    if M.skillPickerOpen then
+        return handleSkillPickerInput(key)
+    end
+    
+    local loadout = getOrCreateLoadout(M.skillEditPokemon)
+    local maxSlots = M.maxSkillSlots
+    
+    if key == "up" then
+        M.skillEditSlot = M.skillEditSlot - 1
+        if M.skillEditSlot < 1 then M.skillEditSlot = maxSlots end
+        return true
+    elseif key == "down" then
+        M.skillEditSlot = M.skillEditSlot + 1
+        if M.skillEditSlot > maxSlots then M.skillEditSlot = 1 end
+        return true
+    elseif key == "left" then
+        M.skillEditField = M.skillEditField - 1
+        if M.skillEditField < 1 then M.skillEditField = 3 end
+        return true
+    elseif key == "right" then
+        M.skillEditField = M.skillEditField + 1
+        if M.skillEditField > 3 then M.skillEditField = 1 end
+        return true
+    elseif key == "z" or key == "return" then
+        -- Open picker for current field
+        M.skillPickerOpen = true
+        M.skillPickerCursor = 1
+        -- For condition fields, start with category selection
+        if M.skillEditField == 2 or M.skillEditField == 3 then
+            M.skillPickerMode = "category"
+            M.skillPickerCategory = nil
+        else
+            M.skillPickerMode = "list"
+        end
+        return true
+    elseif key == "x" or key == "escape" then
+        -- Exit skill edit mode
+        M.skillEditMode = false
+        M.skillEditPokemon = nil
+        M.skillEditSlot = 1
+        M.skillEditField = 1
+        return true
+    end
+    
+    return false
+end
+
+-- Handle tactics mode navigation
+local function handleTacticsInput(key)
+    -- If in skill edit mode, handle that separately
+    if M.skillEditMode then
+        return handleSkillEditInput(key)
+    end
+    
+    -- Navigation in tactics mode
+    -- Layout: Back row (4,5,6) on left, Front row (1,2,3) on right
+    -- Cursor positions: 1-6 for player formation
+    
+    if key == "up" then
+        -- Move up in current column
+        if M.tacticsCursor == 2 then M.tacticsCursor = 1
+        elseif M.tacticsCursor == 3 then M.tacticsCursor = 2
+        elseif M.tacticsCursor == 5 then M.tacticsCursor = 4
+        elseif M.tacticsCursor == 6 then M.tacticsCursor = 5
+        end
+        return true
+    elseif key == "down" then
+        -- Move down in current column
+        if M.tacticsCursor == 1 then M.tacticsCursor = 2
+        elseif M.tacticsCursor == 2 then M.tacticsCursor = 3
+        elseif M.tacticsCursor == 4 then M.tacticsCursor = 5
+        elseif M.tacticsCursor == 5 then M.tacticsCursor = 6
+        end
+        return true
+    elseif key == "left" then
+        -- Move from front row to back row
+        if M.tacticsCursor == 1 then M.tacticsCursor = 4
+        elseif M.tacticsCursor == 2 then M.tacticsCursor = 5
+        elseif M.tacticsCursor == 3 then M.tacticsCursor = 6
+        end
+        return true
+    elseif key == "right" then
+        -- Move from back row to front row
+        if M.tacticsCursor == 4 then M.tacticsCursor = 1
+        elseif M.tacticsCursor == 5 then M.tacticsCursor = 2
+        elseif M.tacticsCursor == 6 then M.tacticsCursor = 3
+        end
+        return true
+    elseif key == "z" or key == "return" then
+        -- Select or swap
+        if M.tacticsSelected == nil then
+            -- Select this slot (even if empty, for swapping)
+            M.tacticsSelected = M.tacticsCursor
+        else
+            -- Swap the two slots
+            local slot1 = M.tacticsSelected
+            local slot2 = M.tacticsCursor
+            
+            if slot1 ~= slot2 then
+                local temp = M.playerFormation[slot1]
+                M.playerFormation[slot1] = M.playerFormation[slot2]
+                M.playerFormation[slot2] = temp
+                
+                -- Update saved formation slots on each Pokemon
+                if M.playerFormation[slot1] then
+                    M.playerFormation[slot1].formationSlot = slot1
+                end
+                if M.playerFormation[slot2] then
+                    M.playerFormation[slot2].formationSlot = slot2
+                end
+                
+                -- Show swap message
+                M.queueMessage("Swapped positions!")
+            end
+            
+            M.tacticsSelected = nil
+        end
+        return true
+    elseif key == "c" then
+        -- Open skill edit mode for the hovered Pokemon
+        local hoveredPokemon = M.playerFormation[M.tacticsCursor]
+        if hoveredPokemon then
+            M.skillEditMode = true
+            M.skillEditPokemon = hoveredPokemon
+            M.skillEditSlot = 1
+            M.skillEditField = 1
+            M.skillPickerOpen = false
+        end
+        return true
+    elseif key == "x" or key == "escape" then
+        if M.tacticsSelected then
+            -- Cancel selection
+            M.tacticsSelected = nil
+        else
+            -- Exit tactics mode and start battle/round
+            M.tacticsMode = false
+            if M.tacticsFromRoundEnd then
+                -- Coming from round end - start the new round properly
+                M.tacticsFromRoundEnd = false
+                M.startNewRound()
+            else
+                -- Initial battle start (Round 1)
+                M.battlePhase = "start"
+                M.queueMessage("Battle Start!")
+                -- Trigger round start passives for round 1 (Quick Attack, Intimidate, etc.)
+                M.triggerRoundStartPassives()
+            end
+        end
+        return true
+    end
+    
+    return false
+end
+
+function M.keypressed(key)
+    if not M.active then return false end
+    
+    -- Handle tactics mode separately
+    if M.tacticsMode and M.battlePhase == "tactics" then
+        return handleTacticsInput(key)
+    end
+    
+    if key == "z" or key == "return" then
+        if M.waitingForZ then
+            M.waitingForZ = false
+            
+            -- Check if we should close battle
+            if M.awaitingClose and #M.logQueue == 0 then
+                M.endBattle()
+                return true
+            end
+            return true
+        end
+        
+        -- At round end, Z opens tactics mode for reorganizing
+        if M.mode == "idle" and M.battlePhase == "round_end" then
+            M.tacticsMode = true
+            M.battlePhase = "tactics"
+            M.tacticsCursor = 1
+            M.tacticsSelected = nil
+            M.tacticsFromRoundEnd = true  -- Mark that we came from round end
+            M.queueMessage("Organize your formation for the next round!")
+            return true
+        end
+        
+        -- Start executing if idle and not at end
+        if M.mode == "idle" and M.battlePhase ~= "end" and M.battlePhase ~= "round_end" and M.battlePhase ~= "tactics" then
+            M.executeTurn()
+            return true
+        end
+    end
+    
+    if key == "x" or key == "escape" then
+        -- At round end, X tries to run (always succeeds at round end)
+        if M.battlePhase == "round_end" and not M.isTrainerBattle then
+            M.queueMessage("Got away safely!")
+            M.awaitingClose = true
+            return true
+        end
+        
+        -- Try to run from wild battles during normal play
+        if not M.isTrainerBattle and M.mode == "idle" and M.battlePhase ~= "end" and M.battlePhase ~= "tactics" then
+            local escaped = math.random(1, 100) <= 50 -- 50% chance to escape
+            if escaped then
+                M.queueMessage("Got away safely!")
+                M.awaitingClose = true
+            else
+                M.queueMessage("Can't escape!")
+            end
+            return true
+        end
+    end
+    
+    return false
+end
+
+--------------------------------------------------
+-- DRAWING
+--------------------------------------------------
+
+-- Helper to load sprites
 local function loadSprite(spritePath)
     if not spritePath then return nil end
     if spriteCache[spritePath] then return spriteCache[spritePath] end
@@ -71,9 +3847,13 @@ local function loadSprite(spritePath)
     return nil
 end
 
--- Helper function to draw a Pokemon sprite in a box
+-- Draw a Pokemon sprite
 local function drawPokemonSprite(pokemon, x, y, width, height, isBackSprite)
     if not pokemon or not pokemon.species or not pokemon.species.sprite then
+        -- Draw placeholder
+        love.graphics.setColor(0.5, 0.5, 0.5, 1)
+        love.graphics.rectangle("fill", x, y, width, height)
+        love.graphics.setColor(1, 1, 1, 1)
         return
     end
     
@@ -83,2792 +3863,827 @@ local function drawPokemonSprite(pokemon, x, y, width, height, isBackSprite)
     if image then
         local imgWidth = image:getWidth()
         local imgHeight = image:getHeight()
-        
-        -- Calculate scale to fit within the box while maintaining aspect ratio
         local scaleX = width / imgWidth
         local scaleY = height / imgHeight
-        local scale = math.min(scaleX, scaleY)  -- Allow upscaling
+        local scale = math.min(scaleX, scaleY)
         
         local displayWidth = imgWidth * scale
         local displayHeight = imgHeight * scale
-        
-        -- Center the sprite in the box
         local spriteX = x + (width - displayWidth) / 2
         local spriteY = y + (height - displayHeight) / 2
         
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(image, spriteX, spriteY, 0, scale, scale)
-    end
-end
-
--- Helper function to resolve a move name/object to a Move instance
-local function resolveMoveInstance(mv)
-    if not mv then return nil end
-    if type(mv) == "table" then
-        -- Check if this is already a Move instance (has either use or pp)
-        log.log("resolveMoveInstance: got table, checking for use/pp")
-        if mv.use and type(mv.use) == "function" then 
-            log.log("  found use method, returning move instance")
-            return mv 
-        end
-        if mv.pp then 
-            log.log("  found pp property, returning move instance")
-            return mv 
-        end
-        if mv.name then
-            log.log("  has name property: ", mv.name)
-        end
-        if mv.new and type(mv.new) == "function" then
-            local ok, inst = pcall(function() return mv:new() end)
-            if ok and inst then return inst end
-        end
-    end
-    if type(mv) == "string" or (type(mv) == "table" and mv.name) then
-        local mvname = type(mv) == "string" and mv or mv.name
-        log.log("resolveMoveInstance: trying to resolve ", mvname)
-        local ok, mm = pcall(require, "moves")
-        if ok and mm then
-            local key = mvname
-            local norm = mvname:gsub("%s+", "")
-            local norm2 = norm:gsub("%p", "")
-            local lkey = string.lower(key)
-            local lnorm = string.lower(norm)
-            local lnorm2 = string.lower(norm2)
-            log.log("  trying keys: ", key, " / ", norm, " / ", norm2, " / ", lkey, " / ", lnorm, " / ", lnorm2)
-            local cls = mm[key] or mm[norm] or mm[norm2] or mm[lkey] or mm[lnorm] or mm[lnorm2]
-            log.log("  found class: ", cls)
-            if cls and type(cls) == "table" and cls.new then
-                log.log("  attempting to instantiate move class")
-                local suc, inst = pcall(function() return cls:new() end)
-                log.log("  instantiation result: suc=", suc, " inst=", inst)
-                if suc and inst then return inst end
-            elseif mm.Move and mm.Move.new then
-                log.log("  creating generic move from name")
-                local suc, inst = pcall(function() return mm.Move:new({ name = mvname }) end)
-                log.log("  generic move result: suc=", suc, " inst=", inst)
-                if suc and inst then return inst end
-            end
-        end
-    end
-    return nil
-end
-
--- Helper function to rebuild move instances for a Pokemon (used when moves change)
-local function refreshMoveInstances(p)
-    if not p then return end
-    
-    -- Save current PP values before refreshing
-    local savedPP = {}
-    if p._move_instances then
-        for i = 1, 4 do
-            local inst = p._move_instances[i]
-            if type(inst) == "table" and inst.pp then
-                savedPP[i] = inst.pp
-            end
-        end
-    end
-    
-    local arr = {}
-    if p.moves and #p.moves > 0 then
-        for i = 1, 4 do
-            local mv = p.moves[i]
-            local inst = resolveMoveInstance(mv)
-            if inst then
-                inst.maxPP = inst.maxPP or inst.pp
-                -- Restore saved PP if it exists, otherwise use max
-                if savedPP[i] then
-                    inst.pp = savedPP[i]
-                elseif inst.maxPP and (inst.pp == nil) then
-                    inst.pp = inst.maxPP
-                end
-            end
-            arr[i] = inst or ""
-        end
     else
-        for i = 1, 4 do arr[i] = "" end
-    end
-    p._move_instances = arr
-end
-
--- Helper function to refresh battle items for the current category
-function M.refreshBattleCategoryItems()
-    M.battleCategoryItems = {}
-    if M.player and M.player.bag then
-        local category = M.battleItemCategories[M.battleCurrentCategory]
-        local items = M.player.bag[category] or {}
-        for itemId, item in pairs(items) do
-            if item and item.quantity and item.quantity > 0 then
-                table.insert(M.battleCategoryItems, item)
-            end
-        end
-    end
-    M.selectedOption = 1
-end
-
---------------------------------------------------
--- HELD ITEM EFFECTS
---------------------------------------------------
-
--- Get the held item effect ID from a Pokemon's heldItem field
-local function getHeldItemEffect(pokemon)
-    if not pokemon or not pokemon.heldItem then return nil end
-    
-    -- heldItem can be a string (item ID) or a table with id/effect
-    if type(pokemon.heldItem) == "string" then
-        -- Look up the item data to get the effect
-        local ok, itemModule = pcall(require, "item")
-        if ok and itemModule and itemModule.ItemData then
-            local data = itemModule.ItemData[pokemon.heldItem]
-            if data and data.heldEffect then
-                return data.heldEffect
-            end
-            -- For berries, use the item ID as effect
-            if data and data.category == "berry" then
-                return pokemon.heldItem
-            end
-        end
-        return pokemon.heldItem -- Return as-is if no special lookup
-    elseif type(pokemon.heldItem) == "table" then
-        return pokemon.heldItem.effect or pokemon.heldItem.id
-    end
-    return nil
-end
-
--- Consume a held item (remove from Pokemon)
-local function consumeHeldItem(pokemon)
-    if pokemon then
-        pokemon.heldItem = nil
+        -- Placeholder if no sprite
+        love.graphics.setColor(0.7, 0.7, 0.7, 1)
+        love.graphics.rectangle("fill", x, y, width, height)
+        love.graphics.setColor(0, 0, 0, 1)
+        love.graphics.print(pokemon.name or "???", x + 5, y + height/2 - 8)
     end
 end
 
--- Apply end-of-turn held item effects (Leftovers, Black Sludge, etc.)
-local function applyEndOfTurnHeldItemEffects(pokemon, battle)
-    if not pokemon or (pokemon.currentHP or 0) <= 0 then return nil end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if not effect then return nil end
-    
-    local messages = {}
-    local name = pokemon.nickname or pokemon.name or "Pokemon"
-    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
-    
-    if effect == "leftovers" then
-        -- Restore 1/16 of max HP each turn
-        local healAmount = math.max(1, math.floor(maxHP / 16))
-        local oldHP = pokemon.currentHP
-        pokemon.currentHP = math.min(maxHP, (pokemon.currentHP or 0) + healAmount)
-        local healed = pokemon.currentHP - oldHP
-        if healed > 0 then
-            table.insert(messages, name .. " restored a little HP using its Leftovers!")
-        end
-    elseif effect == "black_sludge" then
-        -- Poison types heal; others take damage
-        local isPoisonType = false
-        local types = pokemon.types or (pokemon.species and pokemon.species.types) or {}
-        if type(types) == "string" then types = {types} end
-        for _, t in ipairs(types) do
-            if string.lower(t) == "poison" then isPoisonType = true; break end
-        end
-        
-        if isPoisonType then
-            local healAmount = math.max(1, math.floor(maxHP / 16))
-            local oldHP = pokemon.currentHP
-            pokemon.currentHP = math.min(maxHP, (pokemon.currentHP or 0) + healAmount)
-            local healed = pokemon.currentHP - oldHP
-            if healed > 0 then
-                table.insert(messages, name .. " restored HP using its Black Sludge!")
-            end
-        else
-            local damage = math.max(1, math.floor(maxHP / 8))
-            pokemon.currentHP = math.max(0, (pokemon.currentHP or 0) - damage)
-            table.insert(messages, name .. " was hurt by its Black Sludge!")
-        end
-    end
-    
-    return #messages > 0 and messages or nil
-end
-
--- Check and apply berry effects when HP drops (call after taking damage)
-local function checkBerryTrigger(pokemon, battle)
-    if not pokemon or (pokemon.currentHP or 0) <= 0 then return nil end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if not effect then return nil end
-    
-    local messages = {}
-    local name = pokemon.nickname or pokemon.name or "Pokemon"
-    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
-    local currentHP = pokemon.currentHP or 0
-    local hpPercent = currentHP / maxHP
-    
-    -- Oran Berry: Restore 10 HP when below 50%
-    if effect == "oran_berry" and hpPercent <= 0.5 then
-        local healAmount = 10
-        local oldHP = pokemon.currentHP
-        pokemon.currentHP = math.min(maxHP, currentHP + healAmount)
-        local healed = pokemon.currentHP - oldHP
-        if healed > 0 then
-            table.insert(messages, name .. " ate its Oran Berry and restored HP!")
-            consumeHeldItem(pokemon)
-        end
-    -- Sitrus Berry: Restore 25% HP when below 50%
-    elseif effect == "sitrus_berry" and hpPercent <= 0.5 then
-        local healAmount = math.max(1, math.floor(maxHP * 0.25))
-        local oldHP = pokemon.currentHP
-        pokemon.currentHP = math.min(maxHP, currentHP + healAmount)
-        local healed = pokemon.currentHP - oldHP
-        if healed > 0 then
-            table.insert(messages, name .. " ate its Sitrus Berry and restored HP!")
-            consumeHeldItem(pokemon)
-        end
-    -- Lum Berry: Cure status condition when afflicted
-    elseif effect == "lum_berry" and pokemon.status then
-        local oldStatus = pokemon.status
-        pokemon.status = nil
-        table.insert(messages, name .. "'s Lum Berry cured its " .. tostring(oldStatus) .. "!")
-        consumeHeldItem(pokemon)
-    end
-    
-    return #messages > 0 and messages or nil
-end
-
--- Apply Focus Sash effect (survive fatal hit at 1 HP)
-local function checkFocusSash(pokemon, damageAboutToBeTaken, battle)
-    if not pokemon then return false end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if effect ~= "focus_sash" then return false end
-    
-    local currentHP = pokemon.currentHP or 0
-    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
-    
-    -- Focus Sash only works if at full HP
-    if currentHP >= maxHP and damageAboutToBeTaken >= currentHP then
-        return true -- Will trigger focus sash
-    end
-    return false
-end
-
-local function applyFocusSash(pokemon)
-    if not pokemon then return nil end
-    local name = pokemon.nickname or pokemon.name or "Pokemon"
-    pokemon.currentHP = 1
-    consumeHeldItem(pokemon)
-    return name .. " held on using its Focus Sash!"
-end
-
--- Get damage modifier from held items (Life Orb, Choice items)
-local function getHeldItemDamageModifier(pokemon, category)
-    if not pokemon then return 1.0 end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if not effect then return 1.0 end
-    
-    if effect == "life_orb" then
-        return 1.3 -- 30% damage boost
-    elseif effect == "choice_band" and (category == "Physical" or category == "physical") then
-        return 1.5 -- 50% boost to physical moves
-    elseif effect == "choice_specs" and (category == "Special" or category == "special") then
-        return 1.5 -- 50% boost to special moves
-    end
-    
-    return 1.0
-end
-
--- Apply Life Orb recoil after attacking
-local function applyLifeOrbRecoil(pokemon, battle)
-    if not pokemon then return nil end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if effect ~= "life_orb" then return nil end
-    
-    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
-    local recoil = math.max(1, math.floor(maxHP / 10))
-    pokemon.currentHP = math.max(0, (pokemon.currentHP or 0) - recoil)
-    
-    local name = pokemon.nickname or pokemon.name or "Pokemon"
-    return name .. " lost some HP due to Life Orb!"
-end
-
--- Get speed modifier from held items (Choice Scarf)
-local function getHeldItemSpeedModifier(pokemon)
-    if not pokemon then return 1.0 end
-    
-    local effect = getHeldItemEffect(pokemon)
-    if effect == "choice_scarf" then
-        return 1.5 -- 50% speed boost
-    end
-    
-    return 1.0
-end
-
--- Export held item functions for use in battle
-M.getHeldItemEffect = getHeldItemEffect
-M.applyEndOfTurnHeldItemEffects = applyEndOfTurnHeldItemEffects
-M.checkBerryTrigger = checkBerryTrigger
-M.checkFocusSash = checkFocusSash
-M.applyFocusSash = applyFocusSash
-M.getHeldItemDamageModifier = getHeldItemDamageModifier
-M.applyLifeOrbRecoil = applyLifeOrbRecoil
-M.getHeldItemSpeedModifier = getHeldItemSpeedModifier
-
-local function queueLog(entry)
-    if not entry then return end
-    local item
-    if type(entry) == "table" then
-        if entry.text then
-            -- Entry with text and action
-            item = { text = entry.text, action = entry.action or function() end }
-            table.insert(M.logQueue, item)
-        elseif #entry > 0 then
-            -- Array of messages - queue each one
-            for _, msg in ipairs(entry) do
-                if type(msg) == "string" and msg ~= "" then
-                    table.insert(M.logQueue, { text = msg, action = function() end })
-                elseif type(msg) == "table" and msg.text then
-                    table.insert(M.logQueue, { text = msg.text, action = msg.action or function() end })
-                end
-            end
-            return -- Already inserted, don't insert again below
-        else
-            -- Table without text or array items - skip or log warning
-            log.log("queueLog: received table without .text property, skipping")
-            return
-        end
-    else
-        item = { text = tostring(entry), action = function() end }
-        table.insert(M.logQueue, item)
-    end
-    if #M.logQueue > 200 then table.remove(M.logQueue, 1) end
-end
-
--- Note: leveling up is now handled through the experience system in Pokemon.gainExp()
--- when a Pokémon defeats another, it gains experience that may trigger level ups
-
--- Queue a move as a log entry with a deferred action. The action runs when the
--- player acknowledges the log (presses Z). If `after_cb` is provided it will
--- be invoked by the action after the move effects are applied and the target
--- remains alive.
-local function queueMove(attacker, defender, mvname, after_cb)
-    if not attacker or not defender then
-        return
-    end
-    local mvlabel = tostring(mvname)
-    local mvobj = resolveMoveInstance(mvname)
-    if type(mvobj) == "table" and mvobj.name then mvlabel = mvobj.name end
-
-    local function action()
-        local a_hp = attacker.currentHP or 0
-        local d_hp = defender.currentHP or 0
-        -- don't act if attacker already fainted
-        if attacker and (attacker.currentHP or 0) <= 0 then
-            queueLog((attacker.nickname or "attacker") .. " can't move (fainted)")
-            return
-        end
-        if not mvname or mvname == "" then
-            queueLog((attacker.nickname or "attacker") .. " has no move")
-            return
-        end
-
-        -- Fix broken instances: if mvobj has pp but not use, it might be a stale instance with broken metatable
-        -- Try to recreate it or access use through metatable
-        if type(mvobj) == "table" and mvobj.pp and not mvobj.use then
-            log.log("battle: detected stale move instance, attempting to fix")
-            -- Try to look up use in the metatable chain
-            local mt = getmetatable(mvobj)
-            if mt and mt.__index then
-                local idx = mt.__index
-                if type(idx) == "table" and idx.use then
-                    log.log("  found use in metatable, patching instance")
-                    mvobj.use = idx.use
-                end
-            end
-        end
-
-        -- Apply move damage or effects
-        local moveSuccessful = false
-        
-        -- Load moves module for special move handling
-        local ok_mvmod, mvModule = pcall(require, "moves")
-        
-        -- Handle charging moves (first turn = charge, second turn = attack)
-        if type(mvobj) == "table" and mvobj.isChargingMove then
-            if attacker.charging then
-                -- Second turn - execute the attack and clear charging state
-                if mvModule then mvModule.completeCharging(attacker) end
-                -- Continue to normal move execution below
-            else
-                -- First turn - start charging
-                if mvModule then
-                    local chargeMsg = mvobj.chargeMessage or "is charging power!"
-                    local attackerName = attacker.nickname or attacker.name or "Pokemon"
-                    mvModule.startCharging(attacker, mvobj, attackerName .. " " .. chargeMsg)
-                    
-                    -- Apply charge effect if any (e.g., Skull Bash raises Defense)
-                    if mvobj.chargeEffect then
-                        mvobj.chargeEffect(attacker)
-                    end
-                end
-                
-                -- Show charge messages
-                local effectMsgs = mvModule and mvModule.getEffectMessages() or {}
-                for _, msg in ipairs(effectMsgs) do
-                    queueLog(msg)
-                end
-                
-                -- Return to menu/next turn without attacking
-                if after_cb then after_cb() end
-                return
-            end
-        end
-        
-        -- Handle locked/rampage moves (Thrash, Outrage, Petal Dance)
-        if type(mvobj) == "table" and mvobj.isLockedMove then
-            if not attacker.lockedMove then
-                -- First use - start the locked move
-                if mvModule then
-                    mvModule.startLockedMove(attacker, mvobj, mvobj.lockedTurnsMin or 2, mvobj.lockedTurnsMax or 3)
-                end
-            end
-            -- Continue to execute the move, decrement will happen after
-        end
-        
-        -- Reset protect count if not using a protect-type move
-        if type(mvobj) == "table" and not mvobj.isProtectMove then
-            if mvModule then mvModule.resetProtectCount(attacker) end
-        end
-        
-        if type(mvobj) == "table" then
-            -- Trigger attack animation
-            local animType = "damage" -- default to damage animation
-            if mvobj.category == "status" or mvobj.power == 0 or not mvobj.power then
-                animType = "status"
-            end
-            M.attackAnimating = true
-            M.attackAnimTarget = (attacker == M.p1) and "p1" or "p2"
-            M.attackAnimType = animType
-            M.attackAnimTime = 0
-            
-            -- Try to call use method (handles both direct and metatable access)
-            local ok, result = pcall(function() return mvobj:use(attacker, defender, M) end)
-            if ok and result then
-                moveSuccessful = true
-                log.log("battle: move executed successfully: ", mvobj.name or "unknown")
-                log.log("  result.message: ", result.message or "nil")
-                log.log("  result.damage: ", result.damage or "nil")
-                if result.message then
-                    queueLog(result.message)
-                end
-                -- Display any effect messages (stat changes, status effects, etc.)
-                if result.effectMessages and #result.effectMessages > 0 then
-                    for _, effectMsg in ipairs(result.effectMessages) do
-                        queueLog(effectMsg)
-                    end
-                end
-                
-                -- Apply Life Orb recoil if attacker has Life Orb and dealt damage
-                if result.damage and result.damage > 0 then
-                    local lifeOrbMsg = applyLifeOrbRecoil(attacker, M)
-                    if lifeOrbMsg then
-                        queueLog(lifeOrbMsg)
-                    end
-                    
-                    -- Check if defender's berry triggers from damage
-                    local berryMsgs = checkBerryTrigger(defender, M)
-                    if berryMsgs then
-                        for _, msg in ipairs(berryMsgs) do
-                            queueLog(msg)
-                        end
-                    end
-                end
-            else
-                log.log("battle: move execution failed. ok=", ok, " result=", result)
-            end
-        end
-        
-        if not moveSuccessful then
-            -- Trigger attack animation for fallback damage
-            M.attackAnimating = true
-            M.attackAnimTarget = (attacker == M.p1) and "p1" or "p2"
-            M.attackAnimType = "damage"
-            M.attackAnimTime = 0
-            
-            -- Default damage
-            log.log("battle: using fallback 20 damage. mvobj type=", type(mvobj))
-            if type(mvobj) == "table" then
-                log.log("  mvobj.use=", mvobj.use, " mvobj.pp=", mvobj.pp, " mvobj.name=", mvobj.name)
-            end
-            local dmg = 20
-            defender.currentHP = (defender.currentHP or 0) - dmg
-            if defender.currentHP < 0 then defender.currentHP = 0 end
-            queueLog((attacker.nickname or tostring(attacker)) .. " used " .. mvlabel .. "! It dealt " .. tostring(dmg) .. " damage.")
-        end
-        
-        -- Handle locked move continuation/ending
-        if type(mvobj) == "table" and mvobj.isLockedMove and attacker.lockedMove then
-            local continues = mvModule and mvModule.continueLockedMove(attacker)
-            if not continues then
-                -- Move ended, confusion is applied by continueLockedMove
-                local effectMsgs = mvModule and mvModule.getEffectMessages() or {}
-                for _, msg in ipairs(effectMsgs) do
-                    queueLog(msg)
-                end
-            end
-        end
-        
-        -- Check if attacker fainted from recoil
-        if attacker.currentHP and attacker.currentHP <= 0 then
-            local attackerName = attacker.nickname or attacker.name or "Pokemon"
-            queueLog(attackerName .. " fainted!")
-        end
-
-        -- Check if defender fainted after the move
-        if defender.currentHP and defender.currentHP <= 0 then
-            local faint_text = (defender.nickname or "target") .. " fainted"
-            queueLog({ text = faint_text, action = function()
-                
-                -- Award experience to all participating Pokémon (shared equally)
-                if defender == M.p2 and M.participatingPokemon and #M.participatingPokemon > 0 then
-                    local ok, pmod = pcall(require, "pokemon")
-                    if ok and pmod and pmod.Pokemon then
-                        -- Calculate base exp yield from the defeated Pokémon
-                        local totalExpYield = pmod.Pokemon.calculateExpYield(defender, attacker.level)
-                        
-                        -- Find Pokemon with Exp Share
-                        local expShareHolders = {}
-                        if M.player and M.player.party then
-                            for _, p in ipairs(M.player.party) do
-                                if p.heldItem == "exp_share" and not p:isFainted() then
-                                    table.insert(expShareHolders, p)
-                                end
-                            end
-                        end
-                        
-                        -- Exp Share holders get 50% of total, participants share the other 50%
-                        local expShareAmount = 0
-                        local participantExp = totalExpYield
-                        
-                        if #expShareHolders > 0 then
-                            -- 50% to exp share holders
-                            expShareAmount = math.floor(totalExpYield * 0.5 / #expShareHolders)
-                            -- 50% to participants
-                            participantExp = math.floor(totalExpYield * 0.5 / #M.participatingPokemon)
-                        else
-                            -- No exp share, split equally among participants
-                            participantExp = math.floor(totalExpYield / #M.participatingPokemon)
-                        end
-                        
-                        -- Award exp to Exp Share holders
-                        for _, expSharePoke in ipairs(expShareHolders) do
-                            if expSharePoke and expSharePoke.gainExp and type(expSharePoke.gainExp) == "function" then
-                                -- Capture moves before gaining exp to detect newly learned moves
-                                local movesBefore = {}
-                                if expSharePoke.moves then
-                                    for _, m in ipairs(expSharePoke.moves) do
-                                        movesBefore[m] = true
-                                    end
-                                end
-                                
-                                local levelsGained, pendingEvolution = expSharePoke:gainExp(expShareAmount)
-                                queueLog((expSharePoke.nickname or "Pokémon") .. " gained " .. expShareAmount .. " Exp. Points! (Exp. Share)")
-                                
-                                if levelsGained and #levelsGained > 0 then
-                                    for _, newLevel in ipairs(levelsGained) do
-                                        queueLog((expSharePoke.nickname or "Pokémon") .. " grew to level " .. newLevel .. "!")
-                                    end
-                                    -- Check for newly learned moves
-                                    if expSharePoke.moves then
-                                        for _, move in ipairs(expSharePoke.moves) do
-                                            if not movesBefore[move] then
-                                                -- Format move name (convert "thunder_shock" to "Thunder Shock")
-                                                local moveName = move:gsub("_", " "):gsub("(%l)(%w*)", function(a,b) return a:upper()..b end)
-                                                queueLog((expSharePoke.nickname or "Pokémon") .. " learned " .. moveName .. "!")
-                                            end
-                                        end
-                                    end
-                                    refreshMoveInstances(expSharePoke)
-                                end
-                                
-                                if pendingEvolution then
-                                    local oldName = expSharePoke.nickname
-                                    local success, evoMessage = expSharePoke:evolve(pendingEvolution)
-                                    if success then
-                                        queueLog("What? " .. oldName .. " is evolving!")
-                                        queueLog(evoMessage)
-                                        refreshMoveInstances(expSharePoke)
-                                    end
-                                end
-                            end
-                        end
-                        
-                        -- Award exp to participants
-                        local expShare = participantExp
-                        
-                        for _, participatingPoke in ipairs(M.participatingPokemon) do
-                            if participatingPoke and participatingPoke.gainExp and type(participatingPoke.gainExp) == "function" then
-                                -- Capture moves before gaining exp to detect newly learned moves
-                                local movesBefore = {}
-                                if participatingPoke.moves then
-                                    for _, m in ipairs(participatingPoke.moves) do
-                                        movesBefore[m] = true
-                                    end
-                                end
-                                
-                                local levelsGained, pendingEvolution = participatingPoke:gainExp(expShare)
-                                queueLog((participatingPoke.nickname or "Pokémon") .. " gained " .. expShare .. " Exp. Points!")
-                                
-                                -- Log each level up that occurred
-                                if levelsGained and #levelsGained > 0 then
-                                    for _, newLevel in ipairs(levelsGained) do
-                                        queueLog((participatingPoke.nickname or "Pokémon") .. " grew to level " .. newLevel .. "!")
-                                    end
-                                    -- Check for newly learned moves
-                                    if participatingPoke.moves then
-                                        for _, move in ipairs(participatingPoke.moves) do
-                                            if not movesBefore[move] then
-                                                -- Format move name (convert "thunder_shock" to "Thunder Shock")
-                                                local moveName = move:gsub("_", " "):gsub("(%l)(%w*)", function(a,b) return a:upper()..b end)
-                                                queueLog((participatingPoke.nickname or "Pokémon") .. " learned " .. moveName .. "!")
-                                            end
-                                        end
-                                    end
-                                    -- Refresh move instances if moves were learned
-                                    refreshMoveInstances(participatingPoke)
-                                end
-                                
-                                -- Handle evolution if pending
-                                if pendingEvolution then
-                                    local oldName = participatingPoke.nickname
-                                    local success, evoMessage = participatingPoke:evolve(pendingEvolution)
-                                    if success then
-                                        queueLog("What? " .. oldName .. " is evolving!")
-                                        queueLog(evoMessage)
-                                        -- Refresh move instances after evolution
-                                        refreshMoveInstances(participatingPoke)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-                if defender == M.p1 then
-                    local party = (M.player and M.player.party) or nil
-                    local hasAlive = false
-                    if party then
-                        for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                    end
-                    if hasAlive then
-                        M.mode = "choose_pokemon"
-                        M.chooseIndex = 1
-                        M.faintedName = M.p1 and M.p1.nickname or "Player"
-                    else
-                        -- Player has no more Pokemon - they white out
-                        local lostMoney = M.triggerWhiteout()
-                        if M.isTrainerBattle and M.trainer then
-                            queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                queueLog({ text = "You lost to " .. M.trainer:getDisplayName() .. "!", action = function()
-                                    queueLog({ text = "You blacked out!", action = function()
-                                        if lostMoney and lostMoney > 0 then
-                                            queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                                M.awaitingClose = true
-                                                M.faintedName = nil
-                                            end })
-                                        else
-                                            M.awaitingClose = true
-                                            M.faintedName = nil
-                                        end
-                                    end })
-                                end })
-                            end })
-                        else
-                            -- Wild battle whiteout
-                            queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                queueLog({ text = "You blacked out!", action = function()
-                                    if lostMoney and lostMoney > 0 then
-                                        queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                            M.awaitingClose = true
-                                            M.faintedName = nil
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = nil
-                                    end
-                                end })
-                            end })
-                        end
-                    end
-                elseif defender == M.p2 then
-                    -- Check if this is a trainer battle and trainer has more Pokemon
-                    if M.isTrainerBattle and M.trainer and M.trainer:hasAlivePokemon() then
-                        -- Trainer sends out next Pokemon
-                        local nextPokemon = M.trainer:getNextAlivePokemon()
-                        if nextPokemon then
-                            queueLog({ text = M.trainer:getDisplayName() .. " is about to send out " .. (nextPokemon.nickname or nextPokemon.name) .. "!", action = function()
-                                M.p2 = nextPokemon
-                                -- Reset animated HP for the new opponent Pokemon
-                                M.p2AnimatedHP = M.p2.currentHP or 0
-                                
-                                -- Initialize stat stages for the new Pokemon
-                                local ok_moves, movesModule = pcall(require, "moves")
-                                if ok_moves and movesModule and movesModule.initStatStages then
-                                    movesModule.initStatStages(M.p2)
-                                end
-                                
-                                -- Ensure the new Pokemon has move instances
-                                if not M.p2._move_instances then
-                                    local arr = {}
-                                    if M.p2.moves and #M.p2.moves > 0 then
-                                        for i = 1, 4 do
-                                            local mv = M.p2.moves[i]
-                                            local inst = resolveMoveInstance(mv)
-                                            if inst then
-                                                inst.maxPP = inst.maxPP or inst.pp
-                                                if inst.maxPP and (inst.pp == nil) then inst.pp = inst.maxPP end
-                                            end
-                                            arr[i] = inst or ""
-                                        end
-                                    else
-                                        for i = 1, 4 do arr[i] = "" end
-                                    end
-                                    M.p2._move_instances = arr
-                                end
-                                queueLog(M.trainer:getDisplayName() .. " sent out " .. (nextPokemon.nickname or nextPokemon.name) .. "!")
-                                -- Return to menu for next turn
-                                M.mode = "menu"
-                                M.selectedOption = 1
-                                M.moveOptions = {}
-                            end })
-                        else
-                            M.awaitingClose = true
-                            M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                        end
-                    else
-                        -- Wild battle or trainer out of Pokemon - battle ends
-                        if M.isTrainerBattle and M.trainer then
-                            M.trainerDefeated = true
-                            M.trainer:setDefeated()
-                            -- Award prize money
-                            local prizeMoney = M.trainer:getPrizeMoney()
-                            if M.player then
-                                M.player.money = (M.player.money or 0) + prizeMoney
-                            end
-                            queueLog({ text = "You defeated " .. M.trainer:getDisplayName() .. "!", action = function()
-                                queueLog({ text = M.trainer.defeatMessage or "...", action = function()
-                                    queueLog({ text = "You received $" .. tostring(prizeMoney) .. " for winning!", action = function()
-                                        M.awaitingClose = true
-                                        M.faintedName = nil
-                                    end })
-                                end })
-                            end })
-                        else
-                            M.awaitingClose = true
-                            M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                        end
-                    end
-                end
-            end })
-            return
-        end
-
-        -- If there's an after-callback and the defender survived, call it to queue the next action
-        if after_cb then
-            if not (defender.currentHP and defender.currentHP <= 0) then
-                after_cb()
-            end
-        else
-            -- end of turn: apply status effects (burn, poison, leech seed, etc.)
-            local ok_moves, movesModule = pcall(require, "moves")
-            if ok_moves and movesModule then
-                -- Reset protect status at end of turn
-                if movesModule.resetProtect then
-                    movesModule.resetProtect(attacker)
-                    movesModule.resetProtect(defender)
-                end
-                
-                -- Clear enduring status at end of turn
-                if attacker then attacker.enduring = nil end
-                if defender then defender.enduring = nil end
-                
-                if movesModule.applyEndOfTurnEffects then
-                    -- Apply end of turn effects to attacker (player's Pokemon)
-                    if attacker and (attacker.currentHP or 0) > 0 then
-                        local attackerMsgs = movesModule.applyEndOfTurnEffects(attacker, M)
-                        if attackerMsgs then
-                            for _, msg in ipairs(attackerMsgs) do
-                                queueLog(msg)
-                            end
-                        end
-                        
-                        -- Apply held item end-of-turn effects (Leftovers, Black Sludge)
-                        local heldItemMsgs = applyEndOfTurnHeldItemEffects(attacker, M)
-                        if heldItemMsgs then
-                            for _, msg in ipairs(heldItemMsgs) do
-                                queueLog(msg)
-                            end
-                        end
-                        
-                        -- Check if attacker fainted from status damage
-                        if attacker.currentHP and attacker.currentHP <= 0 then
-                        local faint_text = (attacker.nickname or "Pokemon") .. " fainted!"
-                        queueLog({ text = faint_text, action = function()
-                            -- Handle faint properly - check if it's player or opponent
-                            if attacker == M.p1 then
-                                -- Player's Pokemon fainted from status
-                                local party = (M.player and M.player.party) or nil
-                                local hasAlive = false
-                                if party then
-                                    for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                                end
-                                if hasAlive then
-                                    M.mode = "choose_pokemon"
-                                    M.chooseIndex = 1
-                                    M.faintedName = M.p1 and M.p1.nickname or "Player"
-                                else
-                                    -- Player lost - no more Pokemon - white out
-                                    local lostMoney = M.triggerWhiteout()
-                                    if M.isTrainerBattle and M.trainer then
-                                        queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                            queueLog({ text = "You lost to " .. M.trainer:getDisplayName() .. "!", action = function()
-                                                queueLog({ text = "You blacked out!", action = function()
-                                                    if lostMoney and lostMoney > 0 then
-                                                        queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                                            M.awaitingClose = true
-                                                            M.faintedName = nil
-                                                        end })
-                                                    else
-                                                        M.awaitingClose = true
-                                                        M.faintedName = nil
-                                                    end
-                                                end })
-                                            end })
-                                        end })
-                                    else
-                                        -- Wild battle whiteout
-                                        queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                            queueLog({ text = "You blacked out!", action = function()
-                                                if lostMoney and lostMoney > 0 then
-                                                    queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                                        M.awaitingClose = true
-                                                        M.faintedName = nil
-                                                    end })
-                                                else
-                                                    M.awaitingClose = true
-                                                    M.faintedName = nil
-                                                end
-                                            end })
-                                        end })
-                                    end
-                                end
-                            elseif attacker == M.p2 then
-                                -- Opponent's Pokemon fainted from status
-                                if M.isTrainerBattle and M.trainer and M.trainer:hasAlivePokemon() then
-                                    -- Trainer sends out next Pokemon
-                                    local nextPokemon = M.trainer:getNextAlivePokemon()
-                                    if nextPokemon then
-                                        queueLog({ text = M.trainer:getDisplayName() .. " is about to send out " .. (nextPokemon.nickname or nextPokemon.name) .. "!", action = function()
-                                            M.p2 = nextPokemon
-                                            M.p2AnimatedHP = M.p2.currentHP or 0
-                                            
-                                            local ok_moves2, movesModule2 = pcall(require, "moves")
-                                            if ok_moves2 and movesModule2 and movesModule2.initStatStages then
-                                                movesModule2.initStatStages(M.p2)
-                                            end
-                                            
-                                            if not M.p2._move_instances then
-                                                local arr = {}
-                                                if M.p2.moves and #M.p2.moves > 0 then
-                                                    for i = 1, 4 do
-                                                        local mv = M.p2.moves[i]
-                                                        local inst = resolveMoveInstance(mv)
-                                                        if inst then
-                                                            inst.maxPP = inst.maxPP or inst.pp
-                                                            if inst.maxPP and (inst.pp == nil) then inst.pp = inst.maxPP end
-                                                        end
-                                                        arr[i] = inst or ""
-                                                    end
-                                                else
-                                                    for i = 1, 4 do arr[i] = "" end
-                                                end
-                                                M.p2._move_instances = arr
-                                            end
-                                            queueLog(M.trainer:getDisplayName() .. " sent out " .. (nextPokemon.nickname or nextPokemon.name) .. "!")
-                                            M.mode = "menu"
-                                            M.selectedOption = 1
-                                            M.moveOptions = {}
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                                    end
-                                else
-                                    -- Wild battle or trainer out of Pokemon
-                                    if M.isTrainerBattle and M.trainer then
-                                        M.trainerDefeated = true
-                                        M.trainer:setDefeated()
-                                        local prizeMoney = M.trainer:getPrizeMoney()
-                                        if M.player then
-                                            M.player.money = (M.player.money or 0) + prizeMoney
-                                        end
-                                        queueLog({ text = "You defeated " .. M.trainer:getDisplayName() .. "!", action = function()
-                                            queueLog({ text = "You won $" .. tostring(prizeMoney) .. "!", action = function()
-                                                M.awaitingClose = true
-                                                M.faintedName = nil
-                                            end })
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                                    end
-                                end
-                            end
-                        end })
-                        return  -- Don't continue to menu if someone fainted
-                    end
-                end
-                
-                -- Also apply end of turn effects to defender (opponent's Pokemon)
-                if defender and (defender.currentHP or 0) > 0 then
-                    local defenderMsgs = movesModule.applyEndOfTurnEffects(defender, M)
-                    if defenderMsgs then
-                        for _, msg in ipairs(defenderMsgs) do
-                            queueLog(msg)
-                        end
-                    end
-                    
-                    -- Apply held item end-of-turn effects (Leftovers, Black Sludge)
-                    local heldItemMsgs = applyEndOfTurnHeldItemEffects(defender, M)
-                    if heldItemMsgs then
-                        for _, msg in ipairs(heldItemMsgs) do
-                            queueLog(msg)
-                        end
-                    end
-                    
-                    -- Check if defender fainted from status damage
-                    if defender.currentHP and defender.currentHP <= 0 then
-                        local faint_text = (defender.nickname or "Pokemon") .. " fainted!"
-                        queueLog({ text = faint_text, action = function()
-                            -- Handle faint properly - check if it's player or opponent
-                            if defender == M.p1 then
-                                -- Player's Pokemon fainted from status
-                                local party = (M.player and M.player.party) or nil
-                                local hasAlive = false
-                                if party then
-                                    for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                                end
-                                if hasAlive then
-                                    M.mode = "choose_pokemon"
-                                    M.chooseIndex = 1
-                                    M.faintedName = M.p1 and M.p1.nickname or "Player"
-                                else
-                                    -- Player lost - no more Pokemon - white out
-                                    local lostMoney = M.triggerWhiteout()
-                                    if M.isTrainerBattle and M.trainer then
-                                        queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                            queueLog({ text = "You lost to " .. M.trainer:getDisplayName() .. "!", action = function()
-                                                queueLog({ text = "You blacked out!", action = function()
-                                                    if lostMoney and lostMoney > 0 then
-                                                        queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                                            M.awaitingClose = true
-                                                            M.faintedName = nil
-                                                        end })
-                                                    else
-                                                        M.awaitingClose = true
-                                                        M.faintedName = nil
-                                                    end
-                                                end })
-                                            end })
-                                        end })
-                                    else
-                                        -- Wild battle whiteout
-                                        queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                            queueLog({ text = "You blacked out!", action = function()
-                                                if lostMoney and lostMoney > 0 then
-                                                    queueLog({ text = "You lost $" .. tostring(lostMoney) .. "...", action = function()
-                                                        M.awaitingClose = true
-                                                        M.faintedName = nil
-                                                    end })
-                                                else
-                                                    M.awaitingClose = true
-                                                    M.faintedName = nil
-                                                end
-                                            end })
-                                        end })
-                                    end
-                                end
-                            elseif defender == M.p2 then
-                                -- Opponent's Pokemon fainted from status
-                                if M.isTrainerBattle and M.trainer and M.trainer:hasAlivePokemon() then
-                                    -- Trainer sends out next Pokemon
-                                    local nextPokemon = M.trainer:getNextAlivePokemon()
-                                    if nextPokemon then
-                                        queueLog({ text = M.trainer:getDisplayName() .. " is about to send out " .. (nextPokemon.nickname or nextPokemon.name) .. "!", action = function()
-                                            M.p2 = nextPokemon
-                                            M.p2AnimatedHP = M.p2.currentHP or 0
-                                            
-                                            local ok_moves2, movesModule2 = pcall(require, "moves")
-                                            if ok_moves2 and movesModule2 and movesModule2.initStatStages then
-                                                movesModule2.initStatStages(M.p2)
-                                            end
-                                            
-                                            if not M.p2._move_instances then
-                                                local arr = {}
-                                                if M.p2.moves and #M.p2.moves > 0 then
-                                                    for i = 1, 4 do
-                                                        local mv = M.p2.moves[i]
-                                                        local inst = resolveMoveInstance(mv)
-                                                        if inst then
-                                                            inst.maxPP = inst.maxPP or inst.pp
-                                                            if inst.maxPP and (inst.pp == nil) then inst.pp = inst.maxPP end
-                                                        end
-                                                        arr[i] = inst or ""
-                                                    end
-                                                else
-                                                    for i = 1, 4 do arr[i] = "" end
-                                                end
-                                                M.p2._move_instances = arr
-                                            end
-                                            queueLog(M.trainer:getDisplayName() .. " sent out " .. (nextPokemon.nickname or nextPokemon.name) .. "!")
-                                            M.mode = "menu"
-                                            M.selectedOption = 1
-                                            M.moveOptions = {}
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                                    end
-                                else
-                                    -- Wild battle or trainer out of Pokemon
-                                    if M.isTrainerBattle and M.trainer then
-                                        M.trainerDefeated = true
-                                        M.trainer:setDefeated()
-                                        local prizeMoney = M.trainer:getPrizeMoney()
-                                        if M.player then
-                                            M.player.money = (M.player.money or 0) + prizeMoney
-                                        end
-                                        queueLog({ text = "You defeated " .. M.trainer:getDisplayName() .. "!", action = function()
-                                            queueLog({ text = "You won $" .. tostring(prizeMoney) .. "!", action = function()
-                                                M.awaitingClose = true
-                                                M.faintedName = nil
-                                            end })
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                                    end
-                                end
-                            end
-                        end })
-                        return  -- Don't continue to menu if someone fainted
-                    end
-                end
-                end
-            end
-            
-            -- end of turn: if nobody fainted and we're not in choose_pokemon, return to menu
-            if M.active and not M.awaitingClose and M.mode ~= "choose_pokemon" then
-                M.mode = "menu"
-                M.selectedOption = 1
-                M.moveOptions = {}
-                M.awaitingClose = false
-                M.faintedName = nil
-            end
-        end
-    end
-
-    -- Check if the attacker can move BEFORE showing "used" message
-    -- This way we don't say "X used Move!" if they're asleep/frozen/etc.
-    local ok_moves, movesModule = pcall(require, "moves")
-    local canMoveResult = true
-    local preStatusMessages = {}
-    local forceMove = nil
-    if ok_moves and movesModule and movesModule.checkCanMove then
-        canMoveResult, preStatusMessages, forceMove = movesModule.checkCanMove(attacker, M)
-    end
-    
-    -- If there's a forced move (from charging or locked move), use it instead
-    if forceMove then
-        mvname = forceMove
-        mvobj = resolveMoveInstance(forceMove)
-        if type(mvobj) == "table" and mvobj.name then mvlabel = mvobj.name end
-    end
-    
-    if not canMoveResult then
-        -- Pokemon can't move - show status messages (includes faint message if they died from confusion)
-        -- We need to queue these messages with a proper action to handle faint state
-        queueLog({ text = "", action = function()
-            -- Show all the status messages first
-            if preStatusMessages and type(preStatusMessages) == "table" then
-                for _, msg in ipairs(preStatusMessages) do
-                    if msg and msg ~= "" then
-                        queueLog(msg)
-                    end
-                end
-            end
-            
-            -- After messages are shown, check if attacker fainted (e.g., from confusion)
-            if attacker and attacker.currentHP and attacker.currentHP <= 0 then
-                -- Attacker fainted - handle battle end logic
-                if attacker == M.p1 then
-                    -- Player's Pokemon fainted
-                    local party = (M.player and M.player.party) or nil
-                    local hasAlive = false
-                    if party then
-                        for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                    end
-                    if hasAlive then
-                        M.mode = "choose_pokemon"
-                        M.chooseIndex = 1
-                        M.faintedName = M.p1 and M.p1.nickname or "Player"
-                    else
-                        -- Player lost
-                        if M.isTrainerBattle and M.trainer then
-                            local lostMoney = 0
-                            if M.player and M.player.money then
-                                lostMoney = math.floor(M.player.money / 2)
-                                M.player.money = M.player.money - lostMoney
-                            end
-                            queueLog({ text = "You have no more Pokémon that can fight!", action = function()
-                                queueLog({ text = "You lost to " .. M.trainer:getDisplayName() .. "!", action = function()
-                                    if lostMoney > 0 then
-                                        queueLog({ text = "You paid $" .. tostring(lostMoney) .. " to the winner...", action = function()
-                                            M.awaitingClose = true
-                                            M.faintedName = nil
-                                        end })
-                                    else
-                                        M.awaitingClose = true
-                                        M.faintedName = nil
-                                    end
-                                end })
-                            end })
-                        else
-                            M.awaitingClose = true
-                            M.faintedName = M.p1 and M.p1.nickname or "Player"
-                        end
-                    end
-                elseif attacker == M.p2 then
-                    -- Opponent's Pokemon fainted
-                    if M.isTrainerBattle and M.trainer and M.trainer:hasAlivePokemon() then
-                        local nextPokemon = M.trainer:getNextAlivePokemon()
-                        if nextPokemon then
-                            queueLog({ text = M.trainer:getDisplayName() .. " is about to send out " .. (nextPokemon.nickname or nextPokemon.name) .. "!", action = function()
-                                M.p2 = nextPokemon
-                                M.p2AnimatedHP = M.p2.currentHP or 0
-                                
-                                local ok_moves2, movesModule2 = pcall(require, "moves")
-                                if ok_moves2 and movesModule2 and movesModule2.initStatStages then
-                                    movesModule2.initStatStages(M.p2)
-                                end
-                                
-                                if not M.p2._move_instances then
-                                    local arr = {}
-                                    if M.p2.moves and #M.p2.moves > 0 then
-                                        for i = 1, 4 do
-                                            local mv = M.p2.moves[i]
-                                            local inst = resolveMoveInstance(mv)
-                                            if inst then
-                                                inst.maxPP = inst.maxPP or inst.pp
-                                                if inst.maxPP and (inst.pp == nil) then inst.pp = inst.maxPP end
-                                            end
-                                            arr[i] = inst or ""
-                                        end
-                                    else
-                                        for i = 1, 4 do arr[i] = "" end
-                                    end
-                                    M.p2._move_instances = arr
-                                end
-                                queueLog(M.trainer:getDisplayName() .. " sent out " .. (nextPokemon.nickname or nextPokemon.name) .. "!")
-                                M.mode = "menu"
-                                M.selectedOption = 1
-                                M.moveOptions = {}
-                            end })
-                        else
-                            M.awaitingClose = true
-                            M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                        end
-                    else
-                        -- Wild battle or trainer out of Pokemon
-                        if M.isTrainerBattle and M.trainer then
-                            M.trainerDefeated = true
-                            M.trainer:setDefeated()
-                            local prizeMoney = M.trainer:getPrizeMoney()
-                            if M.player then
-                                M.player.money = (M.player.money or 0) + prizeMoney
-                            end
-                            queueLog({ text = "You defeated " .. M.trainer:getDisplayName() .. "!", action = function()
-                                queueLog({ text = "You won $" .. tostring(prizeMoney) .. "!", action = function()
-                                    M.awaitingClose = true
-                                    M.faintedName = nil
-                                end })
-                            end })
-                        else
-                            M.awaitingClose = true
-                            M.faintedName = M.p2 and M.p2.nickname or "Opponent"
-                        end
-                    end
-                end
-                return -- Don't continue if attacker fainted
-            end
-            
-            -- If attacker didn't faint, continue with after_cb
-            if after_cb then
-                if not (defender.currentHP and defender.currentHP <= 0) then
-                    after_cb()
-                end
-            end
-        end })
-        return
-    end
-    
-    -- Pokemon can move - show any pre-status messages (like "X snapped out of confusion!")
-    -- then show "used" message
-    if preStatusMessages and type(preStatusMessages) == "table" and #preStatusMessages > 0 then
-        for _, msg in ipairs(preStatusMessages) do
-            if msg and msg ~= "" then
-                queueLog(msg)
-            end
-        end
-    end
-    
-    queueLog({ text = (attacker.nickname or tostring(attacker)) .. " used " .. mvlabel .. "!", action = action })
-end
-
-local function chooseTwo(list)
-    if not list or #list == 0 then return nil, nil end
-    if #list == 1 then return list[1], nil end
-    local i = math.random(1, #list)
-    local j = math.random(1, #list)
-    while j == i do j = math.random(1, #list) end
-    return list[i], list[j]
-end
-
--- Internal helper to set up move instances for a Pokemon
-local function setupMoveInstances(pokemon)
+-- Draw HP bar
+-- Uses displayHP if available for synced message/HP display, otherwise uses currentHP
+local function drawHPBar(pokemon, x, y, width, height)
     if not pokemon then return end
-    if not pokemon._move_instances then
-        local arr = {}
-        if pokemon.moves and #pokemon.moves > 0 then
-            for i = 1, 4 do
-                local mv = pokemon.moves[i]
-                local inst = resolveMoveInstance(mv)
-                if inst then
-                    inst.maxPP = inst.maxPP or inst.pp
-                    if inst.maxPP and (inst.pp == nil) then
-                        inst.pp = inst.maxPP
-                    end
-                end
-                arr[i] = inst or ""
-            end
-        else
-            for i = 1, 4 do arr[i] = "" end
-        end
-        pokemon._move_instances = arr
-    end
-end
-
--- Internal helper to get player's first alive Pokemon
-local function getFirstAlivePokemon(playerObj)
-    if not playerObj or not playerObj.party then return nil end
-    for _, p in ipairs(playerObj.party) do
-        if p and (p.currentHP == nil or p.currentHP > 0) then
-            return p
-        end
-    end
-    return playerObj.party[1] -- fallback to first slot if none alive
-end
-
--- Internal helper to initialize common battle state
-local function initBattleState(playerObj)
-    M.active = true
-    M.selectedOption = 1
-    M.mode = "menu"
-    M.player = playerObj
-    M.chooseIndex = 1
-    M.battleLog = {}
-    M.logQueue = {}
-    M.waitingForZ = false
-    M.awaitingClose = false
-    M.faintedName = nil
-    M.lastUsedMoveSlot = 1
-    M.participatingPokemon = {}
-    M.trainerDefeated = false
     
-    -- Initialize animated HP and EXP values
-    M.p1AnimatedHP = (M.p1 and M.p1.currentHP) or 0
-    M.p2AnimatedHP = (M.p2 and M.p2.currentHP) or 0
-    M.p1AnimatedExp = (M.p1 and M.p1.exp) or 0
+    local maxHP = (pokemon.stats and pokemon.stats.hp) or 100
+    -- Use displayHP for visual display (synced with messages), fallback to currentHP
+    local displayHP = pokemon.displayHP or pokemon.currentHP or 0
+    local hpPercent = displayHP / maxHP
     
-    -- Clear any persistent battle states from previous battles
-    if M.p1 then
-        M.p1.recharging = nil
-    end
-    if M.p2 then
-        M.p2.recharging = nil
-    end
+    -- Background
+    love.graphics.setColor(0.2, 0.2, 0.2, 1)
+    love.graphics.rectangle("fill", x, y, width, height)
     
-    -- Initialize stat stages for both Pokemon (this is the new stat stage system)
-    local ok, movesModule = pcall(require, "moves")
-    if ok and movesModule then
-        if M.p1 then
-            movesModule.initStatStages(M.p1)
-        end
-        if M.p2 then
-            movesModule.initStatStages(M.p2)
-        end
-    end
-    
-    -- Track p1 as participating
-    if M.p1 then
-        table.insert(M.participatingPokemon, M.p1)
-    end
-end
-
--- Start a wild Pokemon battle
-function M.startWildBattle(wildPokemon, playerObj)
-    log.log("battle.startWildBattle: starting wild battle")
-    
-    -- Reset trainer battle state
-    M.isTrainerBattle = false
-    M.trainer = nil
-    
-    -- Get player's Pokemon
-    M.p1 = getFirstAlivePokemon(playerObj)
-    
-    -- Set wild Pokemon as opponent
-    if wildPokemon then
-        if type(wildPokemon) == "table" and wildPokemon.currentHP then
-            -- It's already a Pokemon instance
-            M.p2 = wildPokemon
-        elseif type(wildPokemon) == "table" and #wildPokemon > 0 then
-            -- It's a list of Pokemon, pick random one
-            local idx = math.random(1, #wildPokemon)
-            M.p2 = wildPokemon[idx]
-        else
-            -- Try to create a default wild Pokemon
-            local ok, pmod = pcall(require, "pokemon")
-            if ok and pmod and pmod.Pokemon then
-                M.p2 = pmod.Pokemon:new("pikachu", 5)
-            end
-        end
+    -- HP bar color based on percentage
+    if hpPercent > 0.5 then
+        love.graphics.setColor(0.2, 0.8, 0.3, 1)
+    elseif hpPercent > 0.25 then
+        love.graphics.setColor(0.9, 0.8, 0.2, 1)
     else
-        -- Create default wild Pokemon
-        local ok, pmod = pcall(require, "pokemon")
-        if ok and pmod and pmod.Pokemon then
-            M.p2 = pmod.Pokemon:new("pikachu", 5)
-        end
+        love.graphics.setColor(0.9, 0.2, 0.2, 1)
     end
     
-    -- Set up move instances
-    setupMoveInstances(M.p1)
-    setupMoveInstances(M.p2)
+    love.graphics.rectangle("fill", x, y, width * math.max(0, hpPercent), height)
     
-    -- Initialize common battle state
-    initBattleState(playerObj)
-    
-    -- Queue encounter message
-    local wildName = M.p2 and (M.p2.nickname or M.p2.name) or "wild Pokémon"
-    queueLog("A wild " .. wildName .. " appeared!")
+    -- Border
+    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.rectangle("line", x, y, width, height)
 end
 
--- Start a trainer battle
-function M.startTrainerBattle(trainerOrId, playerObj)
-    log.log("battle.startTrainerBattle: starting trainer battle")
+-- Draw stat stage indicators as small arrows/icons
+local function drawStatStageIndicators(pokemon, x, y, width)
+    if not pokemon or not pokemon.statStages then return end
     
-    -- Set trainer battle state
-    M.isTrainerBattle = true
-    M.trainerDefeated = false
+    local stages = pokemon.statStages
+    local indicators = {}
     
-    -- Get or create trainer instance
-    if type(trainerOrId) == "string" then
-        -- It's a trainer ID, create instance
-        local ok, trainerMod = pcall(require, "trainer")
-        if ok and trainerMod and trainerMod.Trainer then
-            M.trainer = trainerMod.Trainer:new(trainerOrId)
+    -- Collect all modified stats
+    if stages.attack and stages.attack ~= 0 then
+        table.insert(indicators, {stat = "Atk", stage = stages.attack, color = {1, 0.3, 0.3}})  -- Red
+    end
+    if stages.defense and stages.defense ~= 0 then
+        table.insert(indicators, {stat = "Def", stage = stages.defense, color = {0.3, 0.6, 1}})  -- Blue
+    end
+    if stages.special_attack and stages.special_attack ~= 0 then
+        table.insert(indicators, {stat = "SpA", stage = stages.special_attack, color = {1, 0.5, 1}})  -- Magenta
+    end
+    if stages.special_defense and stages.special_defense ~= 0 then
+        table.insert(indicators, {stat = "SpD", stage = stages.special_defense, color = {0.5, 1, 0.5}})  -- Green
+    end
+    if stages.speed and stages.speed ~= 0 then
+        table.insert(indicators, {stat = "Spd", stage = stages.speed, color = {1, 1, 0.3}})  -- Yellow
+    end
+    
+    if #indicators == 0 then return end
+    
+    -- Draw indicators stacked vertically on the right side of the slot
+    local indicatorHeight = 10
+    local indicatorWidth = 22
+    local startY = y
+    
+    for i, ind in ipairs(indicators) do
+        if i > 3 then break end  -- Max 3 visible at once
+        local indY = startY + (i - 1) * (indicatorHeight + 2)
+        local indX = x + width - indicatorWidth - 2
+        
+        -- Background
+        local bgColor = ind.stage > 0 and {0.1, 0.3, 0.1} or {0.3, 0.1, 0.1}
+        love.graphics.setColor(bgColor[1], bgColor[2], bgColor[3], 0.8)
+        love.graphics.rectangle("fill", indX, indY, indicatorWidth, indicatorHeight, 2, 2)
+        
+        -- Border with stat color
+        love.graphics.setColor(ind.color[1], ind.color[2], ind.color[3], 0.9)
+        love.graphics.rectangle("line", indX, indY, indicatorWidth, indicatorHeight, 2, 2)
+        
+        -- Draw arrow and number
+        love.graphics.setColor(1, 1, 1, 1)
+        local arrow = ind.stage > 0 and "+" or ""
+        local stageText = arrow .. tostring(ind.stage)
+        love.graphics.print(stageText, indX + 2, indY + 1, 0, 0.7, 0.7)
+    end
+    
+    -- If more than 3 modified stats, show "..."
+    if #indicators > 3 then
+        love.graphics.setColor(1, 1, 1, 0.7)
+        love.graphics.print("...", x + width - 12, startY + 3 * (indicatorHeight + 2), 0, 0.6, 0.6)
+    end
+end
+
+-- Draw AP/PP indicators as small circles/pips
+local function drawPointIndicators(pokemon, x, y, width)
+    if not pokemon then return end
+    
+    local ap = pokemon.battleAP or 0
+    local pp = pokemon.battlePP or 0
+    local maxAP = M.defaultAP
+    local maxPP = M.defaultPP
+    
+    local pipSize = 6
+    local pipGap = 3
+    local startX = x
+    
+    -- Draw AP pips (blue)
+    for i = 1, maxAP do
+        local pipX = startX + (i - 1) * (pipSize + pipGap)
+        if i <= ap then
+            love.graphics.setColor(0.2, 0.5, 1, 1)  -- Filled blue
         else
-            log.log("battle.startTrainerBattle: failed to load trainer module")
-            return
+            love.graphics.setColor(0.3, 0.3, 0.4, 1)  -- Empty gray
         end
-    elseif type(trainerOrId) == "table" then
-        -- It's already a trainer instance
-        M.trainer = trainerOrId
+        love.graphics.circle("fill", pipX + pipSize/2, y + pipSize/2, pipSize/2)
+        love.graphics.setColor(0.1, 0.1, 0.2, 1)
+        love.graphics.circle("line", pipX + pipSize/2, y + pipSize/2, pipSize/2)
+    end
+    
+    -- Draw PP pips (orange) after AP pips
+    local ppStartX = startX + maxAP * (pipSize + pipGap) + 5
+    for i = 1, maxPP do
+        local pipX = ppStartX + (i - 1) * (pipSize + pipGap)
+        if i <= pp then
+            love.graphics.setColor(1, 0.6, 0.2, 1)  -- Filled orange
+        else
+            love.graphics.setColor(0.3, 0.3, 0.4, 1)  -- Empty gray
+        end
+        love.graphics.circle("fill", pipX + pipSize/2, y + pipSize/2, pipSize/2)
+        love.graphics.setColor(0.1, 0.1, 0.2, 1)
+        love.graphics.circle("line", pipX + pipSize/2, y + pipSize/2, pipSize/2)
+    end
+end
+
+-- Draw a formation slot with optional highlighting for tactics mode
+local function drawFormationSlot(pokemon, x, y, width, height, isPlayer, slotIndex)
+    -- Check if this slot is highlighted in tactics mode (only for player formation)
+    local isCursor = isPlayer and M.tacticsMode and M.battlePhase == "tactics" and slotIndex == M.tacticsCursor
+    local isSelected = isPlayer and M.tacticsMode and M.battlePhase == "tactics" and slotIndex == M.tacticsSelected
+    
+    -- Draw slot background
+    if isSelected then
+        -- Selected slot - gold highlight
+        love.graphics.setColor(1, 0.8, 0.2, 0.7)
+        love.graphics.rectangle("fill", x, y, width, height, 5, 5)
+        love.graphics.setColor(1, 0.9, 0.3, 1)
+        love.graphics.setLineWidth(3)
+        love.graphics.rectangle("line", x, y, width, height, 5, 5)
+        love.graphics.setLineWidth(1)
+    elseif isCursor then
+        -- Cursor hovering - cyan highlight
+        love.graphics.setColor(0.2, 0.8, 1, 0.5)
+        love.graphics.rectangle("fill", x, y, width, height, 5, 5)
+        love.graphics.setColor(0.3, 0.9, 1, 1)
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line", x, y, width, height, 5, 5)
+        love.graphics.setLineWidth(1)
     else
-        log.log("battle.startTrainerBattle: invalid trainer argument")
-        return
+        love.graphics.setColor(0.3, 0.3, 0.4, 0.5)
+        love.graphics.rectangle("fill", x, y, width, height, 5, 5)
+        love.graphics.setColor(0.5, 0.5, 0.6, 1)
+        love.graphics.rectangle("line", x, y, width, height, 5, 5)
     end
     
-    if not M.trainer then
-        log.log("battle.startTrainerBattle: trainer is nil")
-        return
-    end
-    
-    -- Get player's Pokemon
-    M.p1 = getFirstAlivePokemon(playerObj)
-    
-    -- Get trainer's first Pokemon
-    M.p2 = M.trainer:getNextAlivePokemon()
-    
-    if not M.p2 then
-        log.log("battle.startTrainerBattle: trainer has no Pokemon")
-        return
-    end
-    
-    -- Set up move instances
-    setupMoveInstances(M.p1)
-    setupMoveInstances(M.p2)
-    
-    -- Initialize common battle state
-    initBattleState(playerObj)
-    
-    -- Queue trainer encounter messages
-    local trainerName = M.trainer:getDisplayName()
-    local pokemonName = M.p2.nickname or M.p2.name or "Pokémon"
-    queueLog(trainerName .. " wants to battle!")
-    queueLog(trainerName .. " sent out " .. pokemonName .. "!")
-end
-
--- Legacy start function - defaults to wild battle for backwards compatibility
-function M.start(pokemonList, playerObj)
-    local list = pokemonList
-    if not list then
-        local ok, pmod = pcall(require, "pokemon")
-        log.log("battle.start: require ok=", ok, "module_type=", type(pmod))
-        if ok and pmod and pmod.Pokemon then
-            -- create a small manual list of wild Pokemon using the new speciesId-based constructor
-            list = {
-                pmod.Pokemon:new("pikachu", 5),
-                pmod.Pokemon:new("bulbasaur", 5),
-                pmod.Pokemon:new("squirtle", 5),
-                pmod.Pokemon:new("charmander", 5),
-            }
-            log.log("battle.start: created manual pokemon list, len=", #list)
-        end
-    end
-
-    -- Use the new startWildBattle function
-    M.startWildBattle(list, playerObj)
-end
-
-function M.isActive()
-    return M.active
-end
-
--- Set the callback function for handling whiteout (teleporting player)
-function M.setWhiteoutCallback(callback)
-    M.whiteoutCallback = callback
-end
-
--- Function to trigger whiteout - heals all Pokemon and teleports player
-function M.triggerWhiteout()
-    if not M.player then return end
-    
-    -- Calculate money to lose (half of current money)
-    local lostMoney = 0
-    if M.player.money and M.player.money > 0 then
-        lostMoney = math.floor(M.player.money / 2)
-        M.player.money = M.player.money - lostMoney
-    end
-    
-    -- Heal all player's Pokemon
-    if M.player.party then
-        for _, pokemon in ipairs(M.player.party) do
-            if pokemon and pokemon.stats and pokemon.stats.hp then
-                pokemon.currentHP = pokemon.stats.hp
-                -- Clear all status conditions
-                pokemon.status = nil
-                -- Clear volatile status conditions
-                pokemon.confused = nil
-                pokemon.confusedTurns = nil
-                pokemon.seeded = nil
-                pokemon.infatuated = nil
-                pokemon.trapped = nil
-                pokemon.curse = nil
-                pokemon.nightmare = nil
-                pokemon.perishCount = nil
-                -- Restore PP for all moves
-                if pokemon._move_instances then
-                    for _, moveInst in ipairs(pokemon._move_instances) do
-                        if type(moveInst) == "table" and moveInst.maxPP then
-                            moveInst.pp = moveInst.maxPP
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    M.playerWhitedOut = true
-    return lostMoney
-end
-
-M["end"] = function()
-    -- Check if player whited out and needs to be teleported
-    local whitedOut = M.playerWhitedOut
-    local whiteoutCb = M.whiteoutCallback
-    local playerRef = M.player
-    
-    M.active = false
-    M.p1 = nil
-    M.p2 = nil
-    M.participatingPokemon = {}
-    M.selectedOption = 1
-    M.mode = "menu"
-    M.moveOptions = {}
-    M.battleLog = {}
-    M.logQueue = {}
-    M.waitingForZ = false
-    M.awaitingClose = false
-    M.faintedName = nil
-    M.chooseIndex = 1
-    M.choose_context = nil
-    M.player = nil
-    M.lastUsedMoveSlot = 1
-    -- Reset trainer battle state
-    M.isTrainerBattle = false
-    M.trainer = nil
-    M.trainerDefeated = false
-    -- Reset animation state
-    M.p1AnimatedHP = 0
-    M.p2AnimatedHP = 0
-    M.p1AnimatedExp = 0
-    -- Reset whiteout state
-    M.playerWhitedOut = false
-    
-    -- Execute whiteout callback after resetting state
-    if whitedOut and whiteoutCb and playerRef then
-        whiteoutCb(playerRef)
-    end
-end
-
-function M.keypressed(key)
-    if not M.active then return end
-    -- If we're waiting for the player to press Z to advance the battle log, block other inputs
-    if M.waitingForZ then
-        if key == "z" then
-            -- Execute and remove the deferred action associated with the most recently displayed log
-            -- (the end of the `M.battleLog` list).
-            local actionCount = 0
-            for _, v in ipairs(M.battleLog) do if v and v.action then actionCount = actionCount + 1 end end
-            log.log("battle.keypressed Z: logCount=", #M.battleLog, " actionCount=", actionCount, " queue=", #M.logQueue)
-            local act = nil
-            if #M.battleLog > 0 then
-                local last = M.battleLog[#M.battleLog]
-                act = last and last.action
-            end
-            if act then
-                local ok, err = pcall(act)
-                if not ok then log.log("battle action error:", err) end
-            else
-                log.log("battle.keypressed: no action to run")
-            end
-            -- remove the displayed log entry after running its action (so the action
-            -- can append/replace logs without creating duplicates)
-            if #M.battleLog > 0 then table.remove(M.battleLog, #M.battleLog) end
-            log.log("battle.keypressed after run: logCount=", #M.battleLog, " queue=", #M.logQueue)
-            M.waitingForZ = false
-        end
-        return
-    end
-    -- if a Pokemon fainted and we're awaiting close, only accept 'z' to exit
-    if M.awaitingClose then
-        if key == "z" then
-            M["end"]()
-        end
-        return
-    end
-
-    -- If player must choose a replacement Pokemon, handle navigation separately
-    if M.mode == "choose_pokemon" then
-        local party = (M.player and M.player.party) or {}
-        local count = #party
-        -- up/down wrap through party + Back option
-        if key == "up" then
-            M.chooseIndex = M.chooseIndex - 1
-            if M.chooseIndex < 1 then M.chooseIndex = count + 1 end
-            return
-        elseif key == "down" then
-            M.chooseIndex = M.chooseIndex + 1
-            if M.chooseIndex > count + 1 then M.chooseIndex = 1 end
-            return
-        elseif key == "space" or key == "b" then
-            -- Back button: act like selecting the Back option
-            if M.choose_context == "menu_switch" then
-                -- Return to battle menu if this was a voluntary switch
-                M.mode = "menu"
-                M.selectedOption = 2  -- Pokemon option
-                M.choose_context = nil
-            else
-                -- For forced replacements, back button does nothing (must select a pokemon)
-                -- Don't forfeit the battle
-            end
-            return
-        elseif key == "return" or key == "z" or key == "enter" then
-            if M.chooseIndex == count + 1 then
-                -- Back option: if the player opened the party from the menu to switch,
-                -- then Back should return to the battle menu. If this was a forced
-                -- replacement (context "forced"), treat Back as a forfeit and end.
-                if M.choose_context == "menu_switch" then
-                    M.mode = "menu"
-                    M.selectedOption = 2  -- Pokemon option
-                    M.choose_context = nil
-                    return
-                else
-                    -- Back / forfeit
-                    M["end"]()
-                    return
-                end
-            else
-                local sel = party[M.chooseIndex]
-                -- Do not allow selecting a fainted Pokémon (currentHP <= 0).
-                -- If currentHP is nil, treat the Pokémon as selectable (unknown/full).
-                local sel_alive = false
-                if sel then
-                    if not (sel.currentHP ~= nil and sel.currentHP <= 0) then sel_alive = true end
-                end
-                if sel and sel_alive then
-                    -- Reset stat stages and volatile statuses on the outgoing Pokemon
-                    local ok_moves, movesModule = pcall(require, "moves")
-                    if ok_moves and movesModule then
-                        if M.p1 then
-                            -- Reset stat stages when switching out (like the real games)
-                            movesModule.resetStatStages(M.p1)
-                            -- Cure volatile statuses (confusion, seeded, infatuated, etc.)
-                            if movesModule.cureVolatileStatus then
-                                movesModule.cureVolatileStatus(M.p1)
-                            end
-                        end
-                    end
-                    
-                    M.p1 = sel
-                    
-                    -- Initialize stat stages for the new Pokemon
-                    if ok_moves and movesModule then
-                        movesModule.initStatStages(M.p1)
-                    end
-                    
-                    -- Ensure stats are properly initialized (Pokemon from party should already have these)
-                    if not M.p1.stats or not M.p1.stats.hp then
-                        -- Shouldn't happen, but provide defaults just in case
-                        M.p1.stats = { hp = 100, attack = 10, defense = 10, spAttack = 10, spDefense = 10, speed = 10 }
-                        M.p1.currentHP = M.p1.stats.hp
-                    end
-                    -- ensure the selected pokemon has per-pokemon move instances
-                    if not M.p1._move_instances then
-                        local arr = {}
-                        if M.p1.moves and #M.p1.moves > 0 then
-                            for i = 1, 4 do
-                                local mv = M.p1.moves[i]
-                                local inst = resolveMoveInstance(mv)
-                                if inst then
-                                    inst.maxPP = inst.maxPP or inst.pp
-                                    if inst.maxPP and (inst.pp == nil) then inst.pp = inst.maxPP end
-                                end
-                                arr[i] = inst or ""
-                            end
-                        else
-                            for i = 1, 4 do arr[i] = "" end
-                        end
-                        M.p1._move_instances = arr
-                    end
-                    -- announce the switch
-                    queueLog("Switched to " .. (M.p1.nickname or "Pokémon"))
-                    
-                    -- Reset animated HP and EXP for the new Pokemon
-                    M.p1AnimatedHP = M.p1.currentHP or 0
-                    M.p1AnimatedExp = M.p1.exp or 0
-                    
-                    -- Track this Pokémon as having participated in the battle
-                    local alreadyParticipating = false
-                    for _, p in ipairs(M.participatingPokemon) do
-                        if p == M.p1 then
-                            alreadyParticipating = true
-                            break
-                        end
-                    end
-                    if not alreadyParticipating then
-                        table.insert(M.participatingPokemon, M.p1)
-                    end
-
-                    -- If this selection was initiated from the menu as a switch, it consumes the turn
-                    if M.choose_context == "menu_switch" then
-                        -- opponent selects a move and immediately attacks the switched-in Pokemon
-                        local omv = ""
-                        if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                            omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                        end
-                        -- ensure stats
-                        if not M.p1.stats then M.p1.stats = { hp = 10 } end
-                        if not M.p2.stats then M.p2.stats = { hp = 10 } end
-                        M.p1.speed = (M.p1.speed ~= nil) and M.p1.speed or 10
-                        M.p2.speed = (M.p2.speed ~= nil) and M.p2.speed or 10
-
-                        -- Queue the opponent's move; its effects will occur when the
-                        -- associated log is acknowledged by the player. The queued
-                        -- action will handle fainting and menu transitions.
-                        queueMove(M.p2, M.p1, omv)
-                        M.choose_context = nil
-                        M.mode = "menu"
-                        M.selectedOption = 1
-                        M.moveOptions = {}
-                    else
-                        -- normal forced or non-consuming selection: just return to menu
-                        M.mode = "menu"
-                        M.selectedOption = 1
-                        M.moveOptions = {}
-                        M.awaitingClose = false
-                        M.faintedName = nil
-                    end
-                end
-                return
-            end
-        end
-    end
-    
-    -- Navigation for selecting a Pokemon to use an item on (check this BEFORE items menu)
-    if M.itemSelectMode then
-        local party = (M.player and M.player.party) or nil
-        local count = party and #party or 0
+    if pokemon then
+        -- Draw Pokemon sprite (adjusted for AP/PP indicators)
+        local spriteHeight = height - 40
+        drawPokemonSprite(pokemon, x + 5, y + 5, width - 10, spriteHeight, isPlayer)
         
-        if key == "up" then
-            M.chooseIndex = M.chooseIndex - 1
-            if M.chooseIndex < 1 then M.chooseIndex = count + 1 end
-            return
-        elseif key == "down" then
-            M.chooseIndex = M.chooseIndex + 1
-            if M.chooseIndex > count + 1 then M.chooseIndex = 1 end
-            return
-        elseif key == "space" then
-            -- Cancel item use
-            M.itemSelectMode = false
-            M.itemSelected = nil
-            M.mode = "items"
-            M.selectedOption = 1
-            return
-        elseif key == "return" or key == "z" or key == "enter" then
-            if M.chooseIndex == count + 1 then
-                -- Back option
-                M.itemSelectMode = false
-                M.itemSelected = nil
-                M.mode = "items"
-                M.selectedOption = 1
-                return
-            else
-                -- Use item on selected Pokemon
-                local pokemon = party[M.chooseIndex]
-                local item = M.itemSelected
-                
-                if pokemon and item then
-                    local ok, itemModule = pcall(require, "item")
-                    if ok and itemModule and itemModule.useItem then
-                        local success = itemModule.useItem(item, {
-                            type = "battle",
-                            target = pokemon,
-                            flags = {}
-                        })
-                        if success then
-                            queueLog({ text = "Used " .. item.data.name .. " on " .. (pokemon.nickname or pokemon.name) })
-                        else
-                            queueLog({ text = item.data.name .. " had no effect!" })
-                        end
-                    end
-                end
-                
-                -- Item always goes first in battle
-                -- Opponent selects a move
-                local omv = ""
-                if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                    omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                end
-                
-                -- Queue opponent's move after item
-                if M.p2 and (M.p2.currentHP or 0) > 0 then
-                    queueMove(M.p2, M.p1, omv)
-                end
-                
-                -- Return to menu
-                M.itemSelectMode = false
-                M.itemSelected = nil
-                M.mode = "menu"
-                M.selectedOption = 1
-                return
-            end
-        end
-        return
-    end
-    
-    -- navigation for items menu
-    if M.mode == "items" then
-        if key == "left" then
-            -- Previous category
-            M.battleCurrentCategory = M.battleCurrentCategory - 1
-            if M.battleCurrentCategory < 1 then
-                M.battleCurrentCategory = #M.battleItemCategories
-            end
-            M.refreshBattleCategoryItems()
-            M.selectedOption = 1
-            M.battleItemScrollOffset = 0
-            return
-        elseif key == "right" then
-            -- Next category
-            M.battleCurrentCategory = M.battleCurrentCategory + 1
-            if M.battleCurrentCategory > #M.battleItemCategories then
-                M.battleCurrentCategory = 1
-            end
-            M.refreshBattleCategoryItems()
-            M.selectedOption = 1
-            M.battleItemScrollOffset = 0
-            return
-        elseif key == "up" then
-            M.selectedOption = M.selectedOption - 1
-            if M.selectedOption < 1 then M.selectedOption = #M.battleCategoryItems + 1 end
-            -- Adjust scroll
-            if M.selectedOption <= M.battleItemScrollOffset then
-                M.battleItemScrollOffset = math.max(0, M.selectedOption - 1)
-            end
-            -- Handle wrap-around to bottom
-            local maxVisible = 6
-            if M.selectedOption == #M.battleCategoryItems + 1 and M.selectedOption > maxVisible then
-                M.battleItemScrollOffset = M.selectedOption - maxVisible
-            end
-            return
-        elseif key == "down" then
-            M.selectedOption = M.selectedOption + 1
-            if M.selectedOption > #M.battleCategoryItems + 1 then M.selectedOption = 1 end
-            -- Adjust scroll
-            local maxVisible = 6
-            if M.selectedOption > M.battleItemScrollOffset + maxVisible then
-                M.battleItemScrollOffset = M.selectedOption - maxVisible
-            end
-            -- Handle wrap-around to top
-            if M.selectedOption == 1 then
-                M.battleItemScrollOffset = 0
-            end
-            return
-        elseif key == "space" then
-            -- Cancel items menu
-            M.mode = "menu"
-            M.selectedOption = 3 -- Back to Items option
-            return
-        elseif key == "return" or key == "z" or key == "enter" then
-            if M.selectedOption == #M.battleCategoryItems + 1 then
-                -- Back option
-                M.mode = "menu"
-                M.selectedOption = 3
-                return
-            else
-                -- Item selected
-                M.itemSelected = M.battleCategoryItems[M.selectedOption]
-                if M.itemSelected and M.itemSelected:canUse("battle") then
-                    -- Check if this is a Pokeball (catch effect)
-                    if M.itemSelected.data.effect and M.itemSelected.data.effect.type == "catch" then
-                        -- Block pokeball usage in trainer battles
-                        if M.isTrainerBattle then
-                            queueLog({ text = "You can't catch another trainer's Pokémon!" })
-                            M.itemSelected = nil
-                            M.mode = "menu"
-                            M.selectedOption = 1
-                            return
-                        end
-                        
-                        -- Throw Pokeball at wild Pokemon immediately
-                        local ok, itemModule = pcall(require, "item")
-                        if ok and itemModule and itemModule.useItem then
-                            local result = itemModule.useItem(M.itemSelected, {
-                                type = "battle",
-                                target = M.p2, -- The wild Pokemon
-                                player = M.player,
-                                flags = {}
-                            })
-                            
-                            local pokemonName = M.p2 and (M.p2.nickname or M.p2.name) or "wild Pokémon"
-                            
-                            if result == "caught" then
-                                queueLog({ text = "You threw a " .. M.itemSelected.data.name .. "!" })
-                                queueLog({ text = "Gotcha! " .. pokemonName .. " was caught!", action = function()
-                                    -- End battle after catching
-                                    M.awaitingClose = true
-                                    M.faintedName = nil
-                                end })
-                            elseif result == "sent_to_box" then
-                                queueLog({ text = "You threw a " .. M.itemSelected.data.name .. "!" })
-                                queueLog({ text = "Gotcha! " .. pokemonName .. " was caught!" })
-                                queueLog({ text = "Your party is full! " .. pokemonName .. " was sent to the Box.", action = function()
-                                    -- End battle after catching
-                                    M.awaitingClose = true
-                                    M.faintedName = nil
-                                end })
-                            else
-                                queueLog({ text = "You threw a " .. M.itemSelected.data.name .. "!" })
-                                queueLog({ text = "Oh no! " .. pokemonName .. " broke free!" })
-                                -- Opponent gets to attack after failed catch
-                                local omv = ""
-                                if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                                    omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                                end
-                                if M.p2 and (M.p2.currentHP or 0) > 0 then
-                                    queueMove(M.p2, M.p1, omv)
-                                end
-                            end
-                        end
-                        
-                        -- Return to menu
-                        M.itemSelected = nil
-                        M.mode = "menu"
-                        M.selectedOption = 1
-                    else
-                        -- Other items - proceed to Pokemon selection
-                        M.itemSelectMode = true
-                        M.chooseIndex = 1
-                    end
-                else
-                    queueLog({ text = "Cannot use this item now!" })
-                    M.mode = "menu"
-                    M.selectedOption = 3
-                end
-                return
-            end
-        end
-        return
-    end
-    
-    -- 2x2 grid navigation (left side): indices arranged as
-    -- 1 2
-    -- 3 4
-    local function idx_to_rc(idx)
-        local r = math.floor((idx - 1) / 2)
-        local c = (idx - 1) % 2
-        return r, c
-    end
-    local function rc_to_idx(r, c)
-        return r * 2 + c + 1
-    end
-
-    if key == "left" or key == "a" then
-        local r, c = idx_to_rc(M.selectedOption)
-        c = c - 1
-        if c < 0 then c = 1 end
-        M.selectedOption = rc_to_idx(r, c)
-        return
-    end
-    if key == "right" or key == "d" then
-        local r, c = idx_to_rc(M.selectedOption)
-        c = c + 1
-        if c > 1 then c = 0 end
-        M.selectedOption = rc_to_idx(r, c)
-        return
-    end
-    if key == "up" or key == "w" then
-        local r, c = idx_to_rc(M.selectedOption)
-        r = r - 1
-        if r < 0 then r = 1 end
-        M.selectedOption = rc_to_idx(r, c)
-        return
-    end
-    if key == "down" or key == "s" then
-        local r, c = idx_to_rc(M.selectedOption)
-        r = r + 1
-        if r > 1 then r = 0 end
-        M.selectedOption = rc_to_idx(r, c)
-        return
-    end
-
-    -- cancel/back when in moves
-    if key == "b" and M.mode == "moves" then
-        M.mode = "menu"
-        M.selectedOption = 1
-        return
-    end
-
-    -- select / confirm
-    if key == "return" or key == "z" or key == "enter" then
-        if M.mode == "menu" then
-            local opt = M.menuOptions[M.selectedOption]
-            if opt == "Run" then
-                -- Cannot run from trainer battles
-                if M.isTrainerBattle then
-                    queueLog({ text = "You can't run from a trainer battle!" })
-                    return
-                end
-                M["end"]()
-            elseif opt == "Fight" then
-                -- if player's pokemon is fainted, force choose replacement instead of fighting
-                if M.p1 and (M.p1.currentHP or 0) <= 0 then
-                    local party = (M.player and M.player.party) or nil
-                    local hasAlive = false
-                    if party then
-                        for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                    end
-                    if hasAlive then
-                        M.mode = "choose_pokemon"
-                        M.choose_context = "forced"
-                        M.chooseIndex = 1
-                        return
-                    else
-                        M.awaitingClose = true
-                        M.faintedName = M.p1 and M.p1.nickname or "Player"
-                        return
-                    end
-                end
-                
-                -- Check if Pokemon must recharge (Hyper Beam, Giga Impact, etc.)
-                if M.p1 and M.p1.recharging then
-                    -- Pokemon must recharge - skip move selection entirely
-                    local ok_mvmod, mvModule = pcall(require, "moves")
-                    
-                    -- Choose opponent move
-                    local omv = ""
-                    if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                        omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                    end
-                    
-                    -- Ensure stats defaults exist
-                    if not M.p1.stats then M.p1.stats = { hp = 10 } end
-                    if not M.p2.stats then M.p2.stats = { hp = 10 } end
-                    
-                    -- Clear recharging flag and show message
-                    M.p1.recharging = nil
-                    local p1Name = M.p1.nickname or M.p1.name or "Pokemon"
-                    queueLog({ text = p1Name .. " must recharge!", action = function()
-                        -- Opponent gets a free turn to attack
-                        if M.p2 and (M.p2.currentHP or 0) > 0 and M.p1 and (M.p1.currentHP or 0) > 0 then
-                            queueMove(M.p2, M.p1, omv)
-                        end
-                    end })
-                    
-                    if M.active and not M.awaitingClose and M.mode ~= "choose_pokemon" then
-                        M.mode = "menu"
-                        M.selectedOption = 1
-                    end
-                    return
-                end
-                
-                -- Check if Pokemon is locked into a move (charging, recharging, or rampage move)
-                local ok_mvmod, mvModule = pcall(require, "moves")
-                local lockedMove = nil
-                
-                -- Check for charging move (second turn)
-                if M.p1 and M.p1.charging and M.p1.charging.move then
-                    lockedMove = M.p1.charging.move
-                end
-                
-                -- Check for locked/rampage move (Thrash, Outrage, etc.)
-                if M.p1 and M.p1.lockedMove and M.p1.lockedMove.move then
-                    lockedMove = M.p1.lockedMove.move
-                end
-                
-                -- If locked into a move, skip move selection and execute immediately
-                if lockedMove then
-                    -- Choose opponent move
-                    local omv = ""
-                    if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                        omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                    end
-                    
-                    -- Ensure stats defaults exist
-                    if not M.p1.stats then M.p1.stats = { hp = 10 } end
-                    if not M.p2.stats then M.p2.stats = { hp = 10 } end
-                    
-                    -- Determine order by speed
-                    local p1spd, p2spd
-                    if mvModule and mvModule.getEffectiveStat then
-                        p1spd = mvModule.getEffectiveStat(M.p1, "speed")
-                        p2spd = mvModule.getEffectiveStat(M.p2, "speed")
-                    else
-                        p1spd = (M.p1.stats and M.p1.stats.speed) or 10
-                        p2spd = (M.p2.stats and M.p2.stats.speed) or 10
-                    end
-                    if M.p1.status == "paralyzed" then p1spd = math.floor(p1spd / 4) end
-                    if M.p2.status == "paralyzed" then p2spd = math.floor(p2spd / 4) end
-                    
-                    -- Apply held item speed modifiers (Choice Scarf)
-                    p1spd = math.floor(p1spd * getHeldItemSpeedModifier(M.p1))
-                    p2spd = math.floor(p2spd * getHeldItemSpeedModifier(M.p2))
-                    
-                    local p1first = p1spd > p2spd or (p1spd == p2spd and math.random(0, 1) == 1)
-                    
-                    if p1first then
-                        queueMove(M.p1, M.p2, lockedMove, function()
-                            if M.p2 and (M.p2.currentHP or 0) > 0 then
-                                queueMove(M.p2, M.p1, omv)
-                            end
-                        end)
-                    else
-                        queueMove(M.p2, M.p1, omv, function()
-                            if M.p1 and (M.p1.currentHP or 0) > 0 then
-                                queueMove(M.p1, M.p2, lockedMove)
-                            end
-                        end)
-                    end
-                    
-                    if M.active and not M.awaitingClose and M.mode ~= "choose_pokemon" then
-                        M.mode = "menu"
-                        M.selectedOption = 1
-                    end
-                    return
-                end
-                
-                -- populate moves into a 4-slot grid using per-battle instances
-                M.moveOptions = {}
-                local insts = (M.p1 and M.p1._move_instances) or nil
-                if insts then
-                    for i = 1, 4 do
-                        M.moveOptions[i] = insts[i] or ""
-                    end
-                else
-                    if M.p1 and M.p1.moves then
-                        for i = 1, 4 do
-                            M.moveOptions[i] = M.p1.moves[i] or ""
-                        end
-                    else
-                        for i = 1, 4 do M.moveOptions[i] = "" end
-                    end
-                end
-                M.mode = "moves"
-                M.selectedOption = M.lastUsedMoveSlot
-            elseif opt == "Pokemon" then
-                -- allow switching from the menu; this will consume the player's turn
-                local party = (M.player and M.player.party) or nil
-                local hasAlive = false
-                if party then
-                    for _, pp in ipairs(party) do if pp and (pp.currentHP or 0) > 0 then hasAlive = true; break end end
-                end
-                if hasAlive then
-                    M.mode = "choose_pokemon"
-                    M.chooseIndex = 1
-                    M.choose_context = "menu_switch"
-                end
-            elseif opt == "Items" then
-                -- Open bag with category-based browsing
-                M.battleCurrentCategory = 1 -- Start on medicine
-                M.refreshBattleCategoryItems()
-                M.mode = "items"
-                M.selectedOption = 1
-            end
-        elseif M.mode == "moves" then
-            local mv = M.moveOptions[M.selectedOption]
-            if mv and mv ~= "" then
-                -- Track the last used move slot for cursor persistence
-                M.lastUsedMoveSlot = M.selectedOption
-                
-                -- choose opponent move
-                local omv = ""
-                if M.p2 and M.p2.moves and #M.p2.moves > 0 then
-                    omv = M.p2.moves[math.random(1, #M.p2.moves)] or ""
-                end
-
-                -- ensure stats defaults exist
-                if not M.p1.stats then M.p1.stats = { hp = 10 } end
-                if not M.p2.stats then M.p2.stats = { hp = 10 } end
-
-                -- determine order by effective speed stat (considering stat stages and paralysis)
-                local ok_moves, movesModule = pcall(require, "moves")
-                local p1spd, p2spd
-                if ok_moves and movesModule and movesModule.getEffectiveStat then
-                    p1spd = movesModule.getEffectiveStat(M.p1, "speed")
-                    p2spd = movesModule.getEffectiveStat(M.p2, "speed")
-                else
-                    p1spd = (M.p1.stats and M.p1.stats.speed) or 10
-                    p2spd = (M.p2.stats and M.p2.stats.speed) or 10
-                end
-                -- Apply paralysis speed reduction (quartered)
-                if M.p1.status == "paralyzed" then
-                    p1spd = math.floor(p1spd / 4)
-                end
-                if M.p2.status == "paralyzed" then
-                    p2spd = math.floor(p2spd / 4)
-                end
-                
-                -- Apply held item speed modifiers (Choice Scarf)
-                p1spd = math.floor(p1spd * getHeldItemSpeedModifier(M.p1))
-                p2spd = math.floor(p2spd * getHeldItemSpeedModifier(M.p2))
-                
-                -- Check for priority moves
-                local p1priority = 0
-                local p2priority = 0
-                local p1moveObj = resolveMoveInstance(mv)
-                local p2moveObj = resolveMoveInstance(omv)
-                if p1moveObj and p1moveObj.priority then
-                    p1priority = p1moveObj.priority
-                end
-                if p2moveObj and p2moveObj.priority then
-                    p2priority = p2moveObj.priority
-                end
-                
-                -- Priority takes precedence over speed
-                local p1first = false
-                if p1priority > p2priority then
-                    p1first = true
-                elseif p1priority < p2priority then
-                    p1first = false
-                elseif p1spd > p2spd then
-                    p1first = true
-                elseif p2spd > p1spd then
-                    p1first = false
-                else
-                    -- tie: randomize
-                    p1first = (math.random(0, 1) == 1)
-                end
-                
-                if p1first then
-                    -- player first: queue player's move, then queue opponent if still alive
-                    queueMove(M.p1, M.p2, mv, function()
-                        if M.p2 and (M.p2.currentHP or 0) > 0 then
-                            queueMove(M.p2, M.p1, omv)
-                        end
-                    end)
-                else
-                    -- opponent first
-                    queueMove(M.p2, M.p1, omv, function()
-                        if M.p1 and (M.p1.currentHP or 0) > 0 then
-                            queueMove(M.p1, M.p2, mv)
-                        end
-                    end)
-                end
-                -- after turn return to menu only if no one fainted and player is not choosing a replacement
-                if M.active and not M.awaitingClose and M.mode ~= "choose_pokemon" then
-                    M.mode = "menu"
-                    M.selectedOption = 1
-                end
-            end
-        end
-        return
-    end
-    
-    -- Handle back button (space, b, escape) based on current mode
-    if key == "space" or key == "b" or key == "escape" then
-        if M.mode == "moves" then
-            -- Back to main menu from move selection
-            M.mode = "menu"
-            M.selectedOption = 1
-            return
-        elseif M.mode == "items" then
-            -- Back to main menu from items
-            M.mode = "menu"
-            M.selectedOption = 3 -- Items option
-            return
-        elseif M.mode == "menu" then
-            -- In main menu, back button does nothing (use Run option to run)
-            return
-        end
-    end
-end
-
-function M.update(dt)
-    -- Handle held keys for repeating actions in battle menus
-    local keysToCheck = {"up", "down", "left", "right"}
-    for _, keyName in ipairs(keysToCheck) do
-        if love.keyboard.isDown(keyName) then
-            -- Key is being held down
-            if not M.heldKeys[keyName] then
-                -- Key just started being held
-                M.heldKeys[keyName] = true
-                M.holdDelays[keyName] = 0
-            else
-                -- Key has been held, increment delay
-                M.holdDelays[keyName] = (M.holdDelays[keyName] or 0) + dt
-                -- Check if enough time has passed for repeating
-                if M.holdDelays[keyName] >= M.holdInitialDelay then
-                    -- Time for another repeat
-                    M.holdDelays[keyName] = M.holdDelays[keyName] - M.holdRepeatDelay
-                    -- Trigger the action again
-                    M.keypressed(keyName)
-                end
-            end
-        else
-            -- Key is not being held
-            M.heldKeys[keyName] = nil
-            M.holdDelays[keyName] = nil
-        end
-    end
-    
-    -- If there are queued messages and we're not currently waiting for Z,
-    -- move one message from the queue into the visible battleLog and pause.
-    if M.active and not M.waitingForZ and #M.logQueue > 0 then
-        log.log("battle.update: moving queued log -> visible; queue=", #M.logQueue, " logs=", #M.battleLog)
-        local item = table.remove(M.logQueue, 1)
-        table.insert(M.battleLog, item)
-        if #M.battleLog > M.maxLogLines then
-            table.remove(M.battleLog, 1)
-        end
-        M.waitingForZ = true
-    end
-    
-    -- Animate HP bars
-    if M.p1 and M.p1.currentHP then
-        local targetHP = M.p1.currentHP
-        local diff = targetHP - M.p1AnimatedHP
-        if math.abs(diff) > 0.5 then
-            M.p1AnimatedHP = M.p1AnimatedHP + diff * 8 * dt
-        else
-            M.p1AnimatedHP = targetHP
-        end
-    end
-    
-    if M.p2 and M.p2.currentHP then
-        local targetHP = M.p2.currentHP
-        local diff = targetHP - M.p2AnimatedHP
-        if math.abs(diff) > 0.5 then
-            M.p2AnimatedHP = M.p2AnimatedHP + diff * 8 * dt
-        else
-            M.p2AnimatedHP = targetHP
-        end
-    end
-    
-    -- Animate EXP bar
-    if M.p1 and M.p1.exp then
-        local targetExp = M.p1.exp
-        local diff = targetExp - M.p1AnimatedExp
-        if math.abs(diff) > 0.5 then
-            M.p1AnimatedExp = M.p1AnimatedExp + diff * 6 * dt
-        else
-            M.p1AnimatedExp = targetExp
-        end
-    end
-    
-    -- Update attack animation
-    if M.attackAnimating then
-        M.attackAnimTime = M.attackAnimTime + dt
+        -- Draw stat stage indicators (top-right corner of slot)
+        drawStatStageIndicators(pokemon, x, y + 5, width - 5)
         
-        local progress = M.attackAnimTime / M.attackAnimDuration
-        if progress >= 1 then
-            -- Animation complete
-            M.attackAnimating = false
-            M.attackAnimOffset.x = 0
-            M.attackAnimOffset.y = 0
-        else
-            -- Calculate animation offset based on type
-            if M.attackAnimType == "damage" then
-                -- Damage animation: move toward target and back
-                -- Use a sine wave for smooth motion
-                local distance = 40
-                local wave = math.sin(progress * math.pi) -- 0 to 1 to 0
-                
-                if M.attackAnimTarget == "p1" then
-                    -- Player attacks (moves right toward opponent)
-                    M.attackAnimOffset.x = distance * wave
-                else
-                    -- Opponent attacks (moves left toward player)
-                    M.attackAnimOffset.x = -distance * wave
-                end
-            else
-                -- Status animation: bob up and down
-                local bobHeight = 15
-                local wave = math.sin(progress * math.pi * 2) -- oscillate up and down
-                M.attackAnimOffset.y = -bobHeight * math.abs(wave)
-            end
+        -- Draw AP/PP indicators
+        drawPointIndicators(pokemon, x + 5, y + height - 38, width - 10)
+        
+        -- Draw HP bar
+        drawHPBar(pokemon, x + 5, y + height - 18, width - 10, 8)
+        
+        -- Draw name (small)
+        love.graphics.setColor(1, 1, 1, 1)
+        local name = pokemon.nickname or pokemon.name or "???"
+        if #name > 8 then name = name:sub(1, 7) .. "." end
+        love.graphics.print(name, x + 5, y + height - 30)
+    else
+        -- Empty slot indicator in tactics mode
+        if M.tacticsMode and M.battlePhase == "tactics" then
+            love.graphics.setColor(0.5, 0.5, 0.5, 0.5)
+            love.graphics.printf("Empty", x, y + height/2 - 8, width, "center")
         end
     end
 end
 
 function M.draw()
     if not M.active then return end
-    love.graphics.push()
-    love.graphics.origin()
-    local ww, hh = UI.getGameScreenDimensions()
     
-    -- Battle background - light gray gradient feel
-    love.graphics.setColor(0.9, 0.92, 0.9, 1)
-    love.graphics.rectangle("fill", 0, 0, ww, hh)
+    local screenW, screenH = UI.getGameScreenDimensions()
     
-    local font = love.graphics.getFont()
-    local lineH = (font and font:getHeight() or 12) + 4
+    -- Draw background
+    love.graphics.setColor(0.85, 0.9, 0.85, 1)
+    love.graphics.rectangle("fill", 0, 0, screenW, screenH)
     
-    -- Show different title for trainer vs wild battles
-    local battleTitle = "WILD BATTLE"
-    if M.isTrainerBattle and M.trainer then
-        battleTitle = "VS " .. M.trainer:getDisplayName()
-    end
-    love.graphics.setColor(unpack(UI.colors.textDark))
-    love.graphics.printf(battleTitle, 0, hh * 0.02, ww, "center")
-
-    local function name_with_level(p)
-        if not p then return "---" end
-        local nm = p.nickname or p.name or tostring(p)
-        local lv = p.level or p.l or nil
-        if lv then
-            return string.format("%s Lv%s", tostring(nm), tostring(lv))
-        end
-        return tostring(nm)
-    end
+    -- Formation layout constants (left/right layout)
+    local slotWidth = 70
+    local slotHeight = 85
+    local rowGap = 5
+    local colGap = 8
     
-    -- Opponent info panel (top-left)
-    local oppPanelW = ww * 0.45
-    local oppPanelH = 55
-    local oppPanelX = 10
-    local oppPanelY = hh * 0.08
-    UI.drawBox(oppPanelX, oppPanelY, oppPanelW, oppPanelH, 2)
+    -- Log box at bottom
+    local logBoxHeight = 50
+    local logBoxY = screenH - logBoxHeight - 5
     
-    local oppName = name_with_level(M.p2)
-    local oppCur = (M.p2 and (M.p2.currentHP ~= nil)) and M.p2.currentHP or 0
-    local oppMax = (M.p2 and M.p2.stats and M.p2.stats.hp) and M.p2.stats.hp or 1
+    -- Available height for formations (above log box)
+    local formationAreaHeight = logBoxY - 30
+    local formationAreaTop = 25
     
-    love.graphics.setColor(unpack(UI.colors.textDark))
-    love.graphics.print(oppName, oppPanelX + 10, oppPanelY + 8)
+    -- Center formations vertically in available area
+    local totalFormationHeight = slotHeight * 3 + rowGap * 2
+    local formationStartY = formationAreaTop + (formationAreaHeight - totalFormationHeight) / 2
     
-    -- Opponent status condition badge
-    if M.p2 and M.p2.status then
-        UI.drawStatusBadge(M.p2.status, oppPanelX + 10 + font:getWidth(oppName) + 8, oppPanelY + 8)
-    end
+    -- Player formation on LEFT side
+    -- Back row (slots 4-6) on far left, Front row (slots 1-3) closer to center
+    local playerBackX = 10
+    local playerFrontX = playerBackX + slotWidth + colGap
     
-    -- Opponent HP bar (use animated value)
-    local oppAnimatedHP = math.floor(M.p2AnimatedHP)
-    UI.drawHPBar(oppAnimatedHP, oppMax, oppPanelX + 10, oppPanelY + 28, oppPanelW - 20, 12)
+    -- Enemy formation on RIGHT side
+    -- Front row (slots 1-3) closer to center, Back row (slots 4-6) on far right
+    local enemyFrontX = screenW - 10 - slotWidth * 2 - colGap
+    local enemyBackX = screenW - 10 - slotWidth
     
-    -- Show remaining Pokemon count for trainer battles (as pokeball icons placeholder)
-    if M.isTrainerBattle and M.trainer then
-        local remaining = M.trainer:getRemainingPokemonCount()
-        local total = #M.trainer.party
-        love.graphics.setColor(unpack(UI.colors.textGray))
-        love.graphics.print(remaining .. "/" .. total, oppPanelX + oppPanelW - 35, oppPanelY + 8)
+    -- Draw labels
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print("Player", playerBackX, formationStartY - 18)
+    love.graphics.print("Enemy", enemyFrontX, formationStartY - 18)
+    
+    -- Draw player formation (LEFT side)
+    -- Back row (slots 4-6)
+    for i = 4, 6 do
+        local row = i - 3  -- 1, 2, 3
+        local y = formationStartY + (row - 1) * (slotHeight + rowGap)
+        drawFormationSlot(M.playerFormation[i], playerBackX, y, slotWidth, slotHeight, true, i)
     end
     
-    -- Opponent sprite area (top-right) - larger size without box
-    local oppSpriteW = hh * 0.35
-    local oppSpriteX = ww - oppSpriteW - 20
-    local oppSpriteY = hh * 0.05
-    
-    -- Draw opponent's Pokemon sprite (front view)
-    if M.p2 then
-        local offsetX = 0
-        local offsetY = 0
-        if M.attackAnimating and M.attackAnimTarget == "p2" then
-            offsetX = M.attackAnimOffset.x
-            offsetY = M.attackAnimOffset.y
-        end
-        drawPokemonSprite(M.p2, oppSpriteX + offsetX, oppSpriteY + offsetY, oppSpriteW, oppSpriteW, false)
-    end
-
-    -- Player info panel (right side, middle)
-    local playerPanelW = ww * 0.45
-    local playerPanelH = 80
-    local playerPanelX = ww - playerPanelW - 10
-    local playerPanelY = hh * 0.40
-    UI.drawBox(playerPanelX, playerPanelY, playerPanelW, playerPanelH, 2)
-    
-    local playerName = name_with_level(M.p1)
-    local playerCur = (M.p1 and (M.p1.currentHP ~= nil)) and M.p1.currentHP or 0
-    local playerMax = (M.p1 and M.p1.stats and M.p1.stats.hp) and M.p1.stats.hp or 1
-    
-    love.graphics.setColor(unpack(UI.colors.textDark))
-    love.graphics.print(playerName, playerPanelX + 10, playerPanelY + 8)
-    
-    -- Player status condition badge
-    if M.p1 and M.p1.status then
-        UI.drawStatusBadge(M.p1.status, playerPanelX + 10 + font:getWidth(playerName) + 8, playerPanelY + 8)
+    -- Front row (slots 1-3)
+    for i = 1, 3 do
+        local y = formationStartY + (i - 1) * (slotHeight + rowGap)
+        drawFormationSlot(M.playerFormation[i], playerFrontX, y, slotWidth, slotHeight, true, i)
     end
     
-    -- Player HP bar (use animated value)
-    local playerAnimatedHP = math.floor(M.p1AnimatedHP)
-    UI.drawHPBar(playerAnimatedHP, playerMax, playerPanelX + 10, playerPanelY + 28, playerPanelW - 20, 12)
-    
-    -- HP text
-    local playerHpText = tostring(playerCur) .. "/" .. tostring(playerMax)
-    love.graphics.setColor(unpack(UI.colors.textDark))
-    love.graphics.print(playerHpText, playerPanelX + playerPanelW - 60, playerPanelY + 26)
-    
-    -- Player EXP bar (use animated value)
-    local expAnimated = math.floor(M.p1AnimatedExp)
-    local expThisLvl = (M.p1 and M.p1.getExpForLevel) and M.p1:getExpForLevel(M.p1.level) or 0
-    local expNextLvl = (M.p1 and M.p1.getExpForLevel) and M.p1:getExpForLevel(M.p1.level + 1) or 1
-    UI.drawEXPBar(expAnimated, expThisLvl, expNextLvl, playerPanelX + 10, playerPanelY + 48, playerPanelW - 20, 10)
-    
-    -- Player sprite area (left side, middle) - larger size without box
-    local playerSpriteW = hh * 0.35
-    local playerSpriteX = 20
-    local playerSpriteY = hh * 0.30
-    
-    -- Draw player's Pokemon sprite (back view)
-    if M.p1 then
-        local offsetX = 0
-        local offsetY = 0
-        if M.attackAnimating and M.attackAnimTarget == "p1" then
-            offsetX = M.attackAnimOffset.x
-            offsetY = M.attackAnimOffset.y
-        end
-        drawPokemonSprite(M.p1, playerSpriteX + offsetX, playerSpriteY + offsetY, playerSpriteW, playerSpriteW, true)
+    -- Draw enemy formation (RIGHT side)
+    -- Front row (slots 1-3)
+    for i = 1, 3 do
+        local y = formationStartY + (i - 1) * (slotHeight + rowGap)
+        drawFormationSlot(M.enemyFormation[i], enemyFrontX, y, slotWidth, slotHeight, false, nil)
     end
-
-    -- Draw player's menu/moves grid or the choose-pokemon party list
-    if M.itemSelectMode then
-        -- Draw overlay box for Pokemon selection
-        local boxW = ww * 0.5
-        local boxH = hh * 0.45
-        local boxX = (ww - boxW) / 2
-        local boxY = hh * 0.28
+    
+    -- Back row (slots 4-6)
+    for i = 4, 6 do
+        local row = i - 3  -- 1, 2, 3
+        local y = formationStartY + (row - 1) * (slotHeight + rowGap)
+        drawFormationSlot(M.enemyFormation[i], enemyBackX, y, slotWidth, slotHeight, false, nil)
+    end
+    
+    -- Draw VS indicator in center
+    love.graphics.setColor(0.8, 0.2, 0.2, 1)
+    local vsX = screenW / 2
+    local vsY = formationStartY + totalFormationHeight / 2
+    love.graphics.printf("VS", vsX - 30, vsY - 10, 60, "center")
+    
+    -- Draw attack animation sprite
+    if M.animating and M.animAction and M.animAction.user then
+        local animPokemon = M.animAction.user
+        local animSize = 50
+        local animX = M.animCurrentX - animSize / 2
+        local animY = M.animCurrentY - animSize / 2
         
-        UI.drawOverlay()
-        UI.drawBox(boxX, boxY, boxW, boxH, 3)
-        
-        UI.drawTitle("USE ON WHICH POKEMON?", boxX, boxY + 8, boxW)
-        
-        local party = (M.player and M.player.party) or {}
-        local lh = (font and font:getHeight() or 12) + 8
-        local count = #party
-        local listX = boxX + 20
-        local listY = boxY + 35
-        
-        if count == 0 then
-            love.graphics.setColor(unpack(UI.colors.textGray))
-            love.graphics.print("No Pokemon", listX, listY)
-        else
-            for i, p in ipairs(party) do
-                local y = listY + (i-1) * lh
-                local name = tostring(p.nickname or p.name or "Unknown")
-                local lvl = tostring(p.level or "?")
-                local hp = tostring(p.currentHP or 0)
-                local max = tostring((p.stats and p.stats.hp) or p.maxHp or p.hp or "?")
-                local statusStr = UI.getStatusString(p)
-                local line = string.format("%s  Lv%s  HP:%s/%s", name, lvl, hp, max)
-                if statusStr then line = line .. "  [" .. statusStr .. "]" end
-                UI.drawOption(line, listX, y, i == M.chooseIndex)
-            end
-        end
-        
-        -- Cancel option
-        local cancelY = listY + count * lh
-        UI.drawOption("Cancel", listX, cancelY, M.chooseIndex == count + 1)
-        
-    elseif M.mode == "choose_pokemon" then
-        -- Draw overlay box for Pokemon selection
-        local boxW = ww * 0.5
-        local boxH = hh * 0.5
-        local boxX = (ww - boxW) / 2
-        local boxY = hh * 0.25
-        
-        UI.drawOverlay()
-        UI.drawBox(boxX, boxY, boxW, boxH, 3)
-        
-        UI.drawTitle("POKEMON", boxX, boxY + 8, boxW)
-        
-        local party = (M.player and M.player.party) or {}
-        local lh = (font and font:getHeight() or 12) + 8
-        local count = #party
-        local listX = boxX + 20
-        local listY = boxY + 35
-        
-        if count == 0 then
-            love.graphics.setColor(unpack(UI.colors.textGray))
-            love.graphics.print("No Pokemon", listX, listY)
-            local backY = listY + lh
-            UI.drawOption("Back", listX, backY, M.chooseIndex == 1)
-        else
-            for i, p in ipairs(party) do
-                local y = listY + (i-1) * lh
-                local name = tostring(p.nickname or p.name or "Unknown")
-                local lvl = tostring(p.level or "?")
-                local hp = tostring(p.currentHP or 0)
-                local max = tostring((p.stats and p.stats.hp) or p.maxHp or p.hp or "?")
-                local statusStr = UI.getStatusString(p)
-                local line = string.format("%s  Lv%s  HP:%s/%s", name, lvl, hp, max)
-                if statusStr then line = line .. "  [" .. statusStr .. "]" end
-                UI.drawOption(line, listX, y, i == M.chooseIndex)
-            end
-            -- Back option
-            local by = listY + count * lh
-            UI.drawOption("Back", listX, by, M.chooseIndex == count + 1)
-        end
-    elseif M.mode == "items" then
-        -- Draw items overlay box
-        local boxW = ww * 0.55
-        local boxH = hh * 0.5
-        local boxX = (ww - boxW) / 2
-        local boxY = hh * 0.25
-        
-        UI.drawOverlay()
-        UI.drawBox(boxX, boxY, boxW, boxH, 3)
-        
-        UI.drawTitle("ITEMS", boxX, boxY + 8, boxW)
-        
-        local lh = (font and font:getHeight() or 12) + 8
-        local listX = boxX + 20
-        local listY = boxY + 55
-        
-        -- Show category tabs with left/right arrows
-        local category = M.battleItemCategories[M.battleCurrentCategory]
-        local categoryDisplay = (category:gsub("_", " ")):sub(1,1):upper() .. (category:gsub("_", " ")):sub(2)
-        local categoryText = "<  " .. categoryDisplay .. "  >"
-        love.graphics.setColor(unpack(UI.colors.textHighlight))
-        love.graphics.printf(categoryText, boxX, boxY + 32, boxW, "center")
-        
-        local itemCount = #M.battleCategoryItems
-        
-        if itemCount == 0 then
-            love.graphics.setColor(unpack(UI.colors.textGray))
-            love.graphics.print("No items", listX, listY)
-            local backY = listY + lh
-            UI.drawOption("Back", listX, backY, M.selectedOption == 1)
-        else
-            -- Show scrollable list (max 6 visible at a time)
-            local maxVisible = 6
-            local startIdx = M.battleItemScrollOffset + 1
-            local endIdx = math.min(startIdx + maxVisible - 1, itemCount)
+        -- For status moves, don't draw the attacker moving - draw flash on target
+        if M.animPhase == "status_flash" then
+            -- Draw purple/blue flash effect on target for status moves
+            local statusDuration = 0.3
+            local statusProgress = math.min(1, M.animTimer / statusDuration)
+            local flashAlpha = 0.6 * math.sin(statusProgress * math.pi)  -- Fade in and out
             
-            local drawIdx = 0
-            for i = startIdx, endIdx do
-                local item = M.battleCategoryItems[i]
-                if item then
-                    local y = listY + drawIdx * lh
-                    -- Show if item can be used in battle
-                    local usable = item:canUse("battle")
-                    local line = string.format("%s x%s%s", item.data.name, tostring(item.quantity), usable and "" or " (X)")
+            love.graphics.setColor(0.5, 0.3, 0.9, flashAlpha)
+            love.graphics.circle("fill", M.animTargetX, M.animTargetY, 35 + 10 * math.sin(statusProgress * math.pi))
+            
+            -- Draw some sparkle effects around the target
+            love.graphics.setColor(0.8, 0.6, 1, flashAlpha)
+            for i = 1, 4 do
+                local angle = (i / 4) * math.pi * 2 + M.animTimer * 3
+                local dist = 30 + 10 * math.sin(statusProgress * math.pi * 2)
+                local sparkleX = M.animTargetX + math.cos(angle) * dist
+                local sparkleY = M.animTargetY + math.sin(angle) * dist
+                love.graphics.circle("fill", sparkleX, sparkleY, 5)
+            end
+        else
+            -- Normal attack animation: Draw a slight trail/shadow
+            love.graphics.setColor(0.3, 0.3, 0.5, 0.3)
+            love.graphics.rectangle("fill", animX - 5, animY - 5, animSize + 10, animSize + 10, 8, 8)
+            
+            -- Draw the Pokemon sprite using same orientation as formation
+            -- Player Pokemon: back sprite (facing right toward enemy)
+            -- Enemy Pokemon: front sprite (facing left toward player)
+            local isPlayerTeam = M.animAction.team == "player"
+            drawPokemonSprite(animPokemon, animX, animY, animSize, animSize, isPlayerTeam)
+            
+            -- Draw attack effect at impact
+            if M.animPhase == "move_back" then
+                love.graphics.setColor(1, 1, 0.5, 0.6)
+                love.graphics.circle("fill", M.animTargetX, M.animTargetY, 20 + math.random(5))
+            end
+        end
+    end
+    
+    -- Draw passive animation effects
+    if M.passiveAnimating and M.passiveAnimUser then
+        local animSize = 50
+        
+        if M.passiveAnimType == "heal" then
+            -- Draw healer at bounced position
+            local animX = M.passiveAnimUserCurrentX - animSize / 2
+            local animY = M.passiveAnimUserCurrentY - animSize / 2
+            local isPlayer = M.getFormationSide(M.passiveAnimUser) == "player"
+            -- Use same sprite orientation as formation (back for player, front for enemy)
+            drawPokemonSprite(M.passiveAnimUser, animX, animY, animSize, animSize, isPlayer)
+            
+            -- Draw green flash on target during flash phase
+            if M.passiveAnimPhase == "flash" and M.passiveAnimTarget then
+                local targetIsPlayer = M.getFormationSide(M.passiveAnimTarget) == "player"
+                local targetX, targetY = M.getSlotPosition(M.passiveAnimTarget, targetIsPlayer)
+                if targetX then
+                    -- Pulsing green glow
+                    local flashAlpha = 0.5 + 0.3 * math.sin(M.passiveFlashTimer * 15)
+                    love.graphics.setColor(0, 1, 0.3, flashAlpha)
+                    love.graphics.circle("fill", targetX, targetY, 35 + 5 * math.sin(M.passiveFlashTimer * 10))
                     
-                    if i == M.selectedOption then
-                        love.graphics.setColor(unpack(UI.colors.textSelected))
-                        love.graphics.print(">", listX - 15, y)
-                    end
-                    
-                    if not usable then
-                        love.graphics.setColor(unpack(UI.colors.textGray))
-                    else
-                        love.graphics.setColor(unpack(UI.colors.textDark))
-                    end
-                    love.graphics.print(line, listX, y)
-                    drawIdx = drawIdx + 1
+                    -- Green plus sign
+                    love.graphics.setColor(0.2, 1, 0.4, 0.9)
+                    love.graphics.setLineWidth(4)
+                    love.graphics.line(targetX - 12, targetY, targetX + 12, targetY)
+                    love.graphics.line(targetX, targetY - 12, targetX, targetY + 12)
+                    love.graphics.setLineWidth(1)
                 end
             end
             
-            -- Back option (always visible)
-            local by = listY + drawIdx * lh
-            UI.drawOption("Back", listX, by, M.selectedOption == itemCount + 1)
+        elseif M.passiveAnimType == "guard" then
+            -- Draw guardian at current animated position
+            local animX = M.passiveAnimUserCurrentX - animSize / 2
+            local animY = M.passiveAnimUserCurrentY - animSize / 2
+            local isPlayer = M.getFormationSide(M.passiveAnimUser) == "player"
             
-            -- Show scroll indicators
-            if M.battleItemScrollOffset > 0 then
-                love.graphics.setColor(unpack(UI.colors.textGray))
-                love.graphics.printf("^ MORE", boxX, listY - lh * 0.5, boxW, "center")
-            end
-            if endIdx < itemCount then
-                love.graphics.setColor(unpack(UI.colors.textGray))
-                love.graphics.printf("v MORE", boxX, listY + maxVisible * lh, boxW, "center")
-            end
-        end
-    else
-        local opts = (M.mode == "menu") and M.menuOptions or M.moveOptions
-        -- Bottom action panel area
-        local actionPanelH = hh * 0.3
-        local actionPanelY = hh - actionPanelH
-        
-        -- Draw action panel background
-        UI.drawBox(0, actionPanelY, ww, actionPanelH, 3)
-        
-        local cols = 2
-        local pad = 15
-        if opts and #opts > 0 then
-            local menuAreaW = (M.mode == "moves") and (ww * 0.6) or (ww * 0.9)
-            local cellW = (menuAreaW - pad * 3) / cols
-            local cellH = (font and font:getHeight() or 12) + 12
-            local menuX = pad
-            local menuY = actionPanelY + 20
+            -- Draw trail effect
+            love.graphics.setColor(0, 0.5, 1, 0.3)
+            love.graphics.rectangle("fill", animX - 3, animY - 3, animSize + 6, animSize + 6, 8, 8)
             
-            for i, opt in ipairs(opts) do
-                local r = math.floor((i - 1) / cols)
-                local c = (i - 1) % cols
-                local x = menuX + c * (cellW + pad)
-                local y = menuY + r * (cellH + 8)
-                local label = opt
-                if type(opt) == "table" and opt.name then 
-                    label = opt.name 
-                elseif type(opt) == "string" then
-                    -- Convert move IDs like "thunder_shock" to "Thunder Shock"
-                    label = opt:gsub("_", " "):gsub("(%l)(%w*)", function(a,b) return a:upper()..b end)
-                end
-                if M.mode == "moves" then if not label or label == "" then label = "---" end end
+            -- Use same sprite orientation as formation (back for player, front for enemy)
+            drawPokemonSprite(M.passiveAnimUser, animX, animY, animSize, animSize, isPlayer)
+            
+            -- Draw blue flash during guard_flash phase
+            if M.passiveAnimPhase == "guard_flash" then
+                -- Flash on guardian
+                local flashAlpha = 0.4 + 0.3 * math.sin(M.passiveFlashTimer * 20)
+                love.graphics.setColor(0, 0.5, 1, flashAlpha)
+                love.graphics.circle("fill", M.passiveAnimUserCurrentX, M.passiveAnimUserCurrentY, 40)
                 
-                -- Draw option cell with border
-                if i == M.selectedOption then
-                    love.graphics.setColor(0.9, 0.95, 1, 1)
-                    love.graphics.rectangle("fill", x - 5, y - 3, cellW + 10, cellH + 2, 3)
-                    love.graphics.setColor(unpack(UI.colors.textSelected))
-                    love.graphics.rectangle("line", x - 5, y - 3, cellW + 10, cellH + 2, 3)
-                    love.graphics.setColor(unpack(UI.colors.textSelected))
+                -- Flash on ally being protected
+                if M.passiveAnimTarget then
+                    local targetIsPlayer = M.getFormationSide(M.passiveAnimTarget) == "player"
+                    local targetX, targetY = M.getSlotPosition(M.passiveAnimTarget, targetIsPlayer)
+                    if targetX then
+                        love.graphics.setColor(0, 0.4, 0.9, flashAlpha * 0.7)
+                        love.graphics.circle("fill", targetX, targetY, 30)
+                        
+                        -- Shield icon
+                        love.graphics.setColor(0.3, 0.6, 1, 0.9)
+                        love.graphics.setLineWidth(3)
+                        love.graphics.arc("line", "open", targetX, targetY - 5, 15, -2.5, -0.6)
+                        love.graphics.setLineWidth(1)
+                    end
+                end
+            end
+        elseif M.passiveAnimType == "attack" then
+            -- Attack animation for passives like Pursuit
+            local animX = M.passiveAnimUserCurrentX - animSize / 2
+            local animY = M.passiveAnimUserCurrentY - animSize / 2
+            local isPlayer = M.getFormationSide(M.passiveAnimUser) == "player"
+            
+            -- Draw trail effect (orange for attack)
+            love.graphics.setColor(1, 0.5, 0.2, 0.3)
+            love.graphics.rectangle("fill", animX - 3, animY - 3, animSize + 6, animSize + 6, 8, 8)
+            
+            -- Use same sprite orientation as formation (back for player, front for enemy)
+            drawPokemonSprite(M.passiveAnimUser, animX, animY, animSize, animSize, isPlayer)
+            
+            -- Draw orange hit effect during attack_hit phase
+            if M.passiveAnimPhase == "attack_hit" and M.passiveAnimTarget then
+                local flashAlpha = 0.6 + 0.3 * math.sin(M.passiveFlashTimer * 20)
+                love.graphics.setColor(1, 0.6, 0.2, flashAlpha)
+                love.graphics.circle("fill", M.passiveAnimTargetStartX, M.passiveAnimTargetStartY, 25 + math.random(5))
+                
+                -- Impact lines
+                love.graphics.setColor(1, 1, 0.5, 0.8)
+                love.graphics.setLineWidth(2)
+                for i = 1, 4 do
+                    local angle = (i / 4) * math.pi * 2 + M.passiveFlashTimer * 5
+                    local len = 15 + math.random(10)
+                    love.graphics.line(
+                        M.passiveAnimTargetStartX + math.cos(angle) * 10,
+                        M.passiveAnimTargetStartY + math.sin(angle) * 10,
+                        M.passiveAnimTargetStartX + math.cos(angle) * len,
+                        M.passiveAnimTargetStartY + math.sin(angle) * len
+                    )
+                end
+                love.graphics.setLineWidth(1)
+            end
+        elseif M.passiveAnimType == "buff" then
+            -- Buff animation: golden/yellow rising effect on user
+            local flashAlpha = 0.4 + 0.4 * math.sin(M.passiveFlashTimer * 15)
+            local isPlayer = M.getFormationSide(M.passiveAnimUser) == "player"
+            local userX, userY = M.passiveAnimUserStartX, M.passiveAnimUserStartY
+            
+            -- Yellow glow around user
+            love.graphics.setColor(1, 0.85, 0.2, flashAlpha)
+            love.graphics.circle("fill", userX, userY, 35 + 5 * math.sin(M.passiveFlashTimer * 10))
+            
+            -- Upward arrow indicators
+            love.graphics.setColor(1, 0.9, 0.3, 0.9)
+            love.graphics.setLineWidth(3)
+            local arrowOffset = 20 + 10 * math.sin(M.passiveFlashTimer * 8)
+            for i = -1, 1, 2 do
+                local ax = userX + i * 25
+                local ay = userY - arrowOffset
+                love.graphics.line(ax, ay + 10, ax, ay - 5)
+                love.graphics.line(ax - 5, ay, ax, ay - 5)
+                love.graphics.line(ax + 5, ay, ax, ay - 5)
+            end
+            love.graphics.setLineWidth(1)
+            
+        elseif M.passiveAnimType == "debuff" then
+            -- Debuff animation: purple/dark effect on target
+            local flashAlpha = 0.4 + 0.4 * math.sin(M.passiveFlashTimer * 15)
+            local targetX, targetY = M.passiveAnimTargetStartX, M.passiveAnimTargetStartY
+            
+            -- Purple glow around target
+            love.graphics.setColor(0.6, 0.2, 0.8, flashAlpha)
+            love.graphics.circle("fill", targetX, targetY, 35 + 5 * math.sin(M.passiveFlashTimer * 10))
+            
+            -- Downward arrow indicators
+            love.graphics.setColor(0.8, 0.3, 1, 0.9)
+            love.graphics.setLineWidth(3)
+            local arrowOffset = 20 + 10 * math.sin(M.passiveFlashTimer * 8)
+            for i = -1, 1, 2 do
+                local ax = targetX + i * 25
+                local ay = targetY + arrowOffset
+                love.graphics.line(ax, ay - 10, ax, ay + 5)
+                love.graphics.line(ax - 5, ay, ax, ay + 5)
+                love.graphics.line(ax + 5, ay, ax, ay + 5)
+            end
+            love.graphics.setLineWidth(1)
+            
+        elseif M.passiveAnimType == "recoil" then
+            -- Recoil animation: red flash on attacker (who takes damage)
+            local flashAlpha = 0.5 + 0.4 * math.sin(M.passiveFlashTimer * 20)
+            local targetX, targetY = M.passiveAnimTargetStartX, M.passiveAnimTargetStartY
+            
+            -- Red flash
+            love.graphics.setColor(1, 0.2, 0.2, flashAlpha)
+            love.graphics.circle("fill", targetX, targetY, 30 + 8 * math.sin(M.passiveFlashTimer * 12))
+            
+            -- Small damage particles
+            love.graphics.setColor(1, 0.5, 0.3, 0.8)
+            for i = 1, 6 do
+                local angle = (i / 6) * math.pi * 2 + M.passiveFlashTimer * 3
+                local dist = 25 + 10 * math.sin(M.passiveFlashTimer * 10 + i)
+                local px = targetX + math.cos(angle) * dist
+                local py = targetY + math.sin(angle) * dist
+                love.graphics.circle("fill", px, py, 4)
+            end
+        end
+    end
+    
+    -- Draw AP/PP legend
+    love.graphics.setColor(0.2, 0.5, 1, 1)
+    love.graphics.circle("fill", 15, 10, 5)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print("AP", 23, 5)
+    
+    love.graphics.setColor(1, 0.6, 0.2, 1)
+    love.graphics.circle("fill", 50, 10, 5)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print("PP", 58, 5)
+    
+    -- Draw turn/round counter
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print("Round: " .. M.roundNumber .. "  Turn: " .. M.turnNumber, screenW - 130, 5)
+    
+    -- Draw battle log at bottom
+    UI.drawBox(5, logBoxY, screenW - 10, logBoxHeight)
+    
+    love.graphics.setColor(0.1, 0.1, 0.1, 1)
+    local logY = logBoxY + 8
+    local lineHeight = 14
+    for i, msg in ipairs(M.battleLog) do
+        -- Split message by newlines and draw each line
+        for line in string.gmatch(msg .. "\n", "([^\n]*)\n") do
+            if line ~= "" then
+                love.graphics.print(line, 15, logY)
+                logY = logY + lineHeight
+            end
+        end
+    end
+    
+    -- Draw instructions
+    love.graphics.setColor(0.5, 0.5, 0.5, 1)
+    if M.skillEditMode then
+        -- Skill edit mode instructions
+        if M.skillPickerOpen then
+            love.graphics.print("[Z] Select  [X] Cancel", screenW - 160, logBoxY + logBoxHeight - 16)
+        else
+            love.graphics.print("[Z] Edit  [X] Back  [Arrows] Navigate", screenW - 220, logBoxY + logBoxHeight - 16)
+        end
+        love.graphics.setColor(0.9, 0.6, 0.2, 1)
+        love.graphics.print("SKILL EDIT", screenW / 2 - 40, 5)
+    elseif M.tacticsMode and M.battlePhase == "tactics" then
+        -- Tactics mode instructions
+        if M.tacticsSelected then
+            love.graphics.print("[Z] Swap  [X] Cancel", screenW - 145, logBoxY + logBoxHeight - 16)
+        else
+            love.graphics.print("[Z] Select  [C] Skills  [X] Fight!", screenW - 210, logBoxY + logBoxHeight - 16)
+        end
+        -- Draw "TACTICS" label
+        love.graphics.setColor(0.2, 0.7, 1, 1)
+        love.graphics.print("TACTICS", screenW / 2 - 30, 5)
+    elseif M.waitingForZ then
+        love.graphics.print("[Z] Continue", screenW - 95, logBoxY + logBoxHeight - 16)
+    elseif M.mode == "idle" and M.battlePhase == "round_end" then
+        if M.isTrainerBattle then
+            love.graphics.print("[Z] Organize", screenW - 100, logBoxY + logBoxHeight - 16)
+        else
+            love.graphics.print("[Z] Organize  [X] Run", screenW - 155, logBoxY + logBoxHeight - 16)
+        end
+    elseif M.mode == "idle" and M.battlePhase ~= "end" then
+        if M.isTrainerBattle then
+            love.graphics.print("[Z] Attack", screenW - 85, logBoxY + logBoxHeight - 16)
+        else
+            love.graphics.print("[Z] Attack  [X] Run", screenW - 140, logBoxY + logBoxHeight - 16)
+        end
+    end
+    
+    -- Draw skill edit overlay if active
+    if M.skillEditMode and M.skillEditPokemon then
+        -- Dim background
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.rectangle("fill", 0, 0, screenW, screenH)
+        
+        -- Skill edit panel
+        local panelW = 320
+        local panelH = 220
+        local panelX = (screenW - panelW) / 2
+        local panelY = (screenH - panelH) / 2 - 20
+        
+        -- Panel background
+        love.graphics.setColor(0.15, 0.15, 0.25, 0.95)
+        love.graphics.rectangle("fill", panelX, panelY, panelW, panelH, 8, 8)
+        love.graphics.setColor(0.4, 0.5, 0.8, 1)
+        love.graphics.setLineWidth(2)
+        love.graphics.rectangle("line", panelX, panelY, panelW, panelH, 8, 8)
+        love.graphics.setLineWidth(1)
+        
+        -- Title
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.print(M.skillEditPokemon.name .. " - Skill Loadout", panelX + 10, panelY + 8)
+        
+        -- Column headers
+        local colSkillX = panelX + 15
+        local colCond1X = panelX + 115
+        local colCond2X = panelX + 220
+        local headerY = panelY + 28
+        
+        love.graphics.setColor(0.7, 0.7, 0.9, 1)
+        love.graphics.print("Skill", colSkillX, headerY)
+        love.graphics.print("Filter 1", colCond1X, headerY)
+        love.graphics.print("Filter 2", colCond2X, headerY)
+        
+        -- Get loadout
+        local loadout = getOrCreateLoadout(M.skillEditPokemon)
+        
+        -- Draw skill slots
+        local slotY = headerY + 18
+        local slotHeight = 20
+        for i = 1, M.maxSkillSlots do
+            local slot = loadout[i] or {}
+            local y = slotY + (i - 1) * slotHeight
+            
+            -- Highlight current slot
+            if i == M.skillEditSlot then
+                love.graphics.setColor(0.3, 0.4, 0.6, 0.5)
+                love.graphics.rectangle("fill", panelX + 5, y - 2, panelW - 10, slotHeight, 3, 3)
+            end
+            
+            -- Slot number
+            love.graphics.setColor(0.5, 0.5, 0.6, 1)
+            love.graphics.print(i .. ".", panelX + 5, y)
+            
+            -- Skill name
+            local skillName = slot.skill or "(Empty)"
+            local skill = Skills[slot.skill] or Passives[slot.skill]
+            if skill then skillName = skill.name end
+            
+            if i == M.skillEditSlot and M.skillEditField == 1 then
+                love.graphics.setColor(0.3, 0.8, 1, 1)
+            elseif skill and skill.skillType == "passive" then
+                love.graphics.setColor(1, 0.7, 0.4, 1)
+            else
+                love.graphics.setColor(0.8, 0.8, 1, 1)
+            end
+            love.graphics.print(skillName, colSkillX, y)
+            
+            -- Condition 1
+            local cond1Name = "None"
+            local cond1 = getConditionById(slot.condition1)
+            if cond1 then cond1Name = cond1.name end
+            
+            if i == M.skillEditSlot and M.skillEditField == 2 then
+                love.graphics.setColor(0.3, 0.8, 1, 1)
+            else
+                love.graphics.setColor(0.7, 0.7, 0.7, 1)
+            end
+            -- Truncate long condition names
+            if #cond1Name > 12 then cond1Name = cond1Name:sub(1, 11) .. "." end
+            love.graphics.print(cond1Name, colCond1X, y)
+            
+            -- Condition 2
+            local cond2Name = "None"
+            local cond2 = getConditionById(slot.condition2)
+            if cond2 then cond2Name = cond2.name end
+            
+            if i == M.skillEditSlot and M.skillEditField == 3 then
+                love.graphics.setColor(0.3, 0.8, 1, 1)
+            else
+                love.graphics.setColor(0.7, 0.7, 0.7, 1)
+            end
+            if #cond2Name > 12 then cond2Name = cond2Name:sub(1, 11) .. "." end
+            love.graphics.print(cond2Name, colCond2X, y)
+        end
+        
+        -- Draw picker overlay if open
+        if M.skillPickerOpen then
+            local pickerItems = {}
+            local pickerTitle = ""
+            
+            if M.skillEditField == 1 then
+                pickerTitle = "Select Skill"
+                table.insert(pickerItems, {id = nil, name = "(Empty)", desc = "Remove skill from slot"})
+                
+                -- Show only skills this Pokemon knows
+                local speciesId = M.skillEditPokemon.speciesId or 
+                                 (M.skillEditPokemon.species and M.skillEditPokemon.species.name and 
+                                  M.skillEditPokemon.species.name:lower():gsub(" ", "_"))
+                local level = M.skillEditPokemon.level or 5
+                local knownSkills = SkillsModule.getKnownSkills(speciesId or "unknown", level)
+                
+                for _, skillId in ipairs(knownSkills) do
+                    local skill = SkillsModule.getSkillById(skillId)
+                    if skill then
+                        table.insert(pickerItems, skill)
+                    end
+                end
+            elseif M.skillEditField == 2 or M.skillEditField == 3 then
+                if M.skillPickerMode == "category" then
+                    -- Show categories
+                    pickerTitle = M.skillEditField == 2 and "Filter 1 Category" or "Filter 2 Category"
+                    for _, cat in ipairs(ConditionCategories) do
+                        table.insert(pickerItems, cat)
+                    end
                 else
-                    love.graphics.setColor(unpack(UI.colors.textDark))
+                    -- Show conditions in selected category
+                    local catName = M.skillPickerCategory or "?"
+                    for _, cat in ipairs(ConditionCategories) do
+                        if cat.id == M.skillPickerCategory then catName = cat.name break end
+                    end
+                    pickerTitle = catName .. " Filters"
+                    local conditions = getConditionsByCategory(M.skillPickerCategory)
+                    for _, cond in ipairs(conditions) do
+                        table.insert(pickerItems, cond)
+                    end
                 end
-                love.graphics.printf(label, x, y, cellW, "center")
             end
-
-            -- Draw move info panel when in moves mode
-            if M.mode == "moves" then
-                local infoW = ww * 0.35
-                local infoH = actionPanelH - 20
-                local infoX = ww - infoW - 10
-                local infoY = actionPanelY + 10
-                
-                -- Info panel with border
-                love.graphics.setColor(0.95, 0.97, 0.95, 1)
-                love.graphics.rectangle("fill", infoX, infoY, infoW, infoH, 5)
-                love.graphics.setColor(unpack(UI.colors.borderDark))
-                love.graphics.rectangle("line", infoX, infoY, infoW, infoH, 5)
-
-                -- Resolve the selected move object (try to require moves module)
-                local sel = M.moveOptions[M.selectedOption]
-                local mvobj = nil
-                if sel then
-                    if type(sel) == "table" then mvobj = sel
-                    elseif type(sel) == "string" then
-                        local ok, mm = pcall(require, "moves")
-                        if ok and mm then
-                            local key = sel
-                            local norm = sel:gsub("%s+", "")
-                            local norm2 = norm:gsub("%p", "")
-                            local lkey = string.lower(key)
-                            local lnorm = string.lower(norm)
-                            local lnorm2 = string.lower(norm2)
-                            local cls = mm[key] or mm[norm] or mm[norm2] or mm[lkey] or mm[lnorm] or mm[lnorm2]
-                            if cls and type(cls) == "table" and cls.new then
-                                local suc, inst = pcall(function() return cls:new() end)
-                                if suc and inst then mvobj = inst end
-                            elseif mm.Move and mm.Move.new then
-                                local suc, inst = pcall(function() return mm.Move:new({ name = sel }) end)
-                                if suc and inst then mvobj = inst end
-                            end
-                        end
+            
+            -- Picker panel - overlay on the main panel for better visibility
+            local pickW = 180
+            local pickH = math.min(200, 30 + #pickerItems * 16)
+            
+            -- Position picker based on which field is selected
+            local pickX, pickY
+            if M.skillEditField == 1 then
+                -- Skill picker - overlay on left side of panel
+                pickX = panelX + 10
+            elseif M.skillEditField == 2 then
+                -- Condition picker - center
+                pickX = panelX + (panelW - pickW) / 2
+            else
+                -- Condition 2 picker - right side
+                pickX = panelX + panelW - pickW - 10
+            end
+            pickY = panelY + 20
+            
+            -- Clamp to screen bounds
+            if pickX < 5 then pickX = 5 end
+            if pickX + pickW > screenW - 5 then pickX = screenW - pickW - 5 end
+            if pickY + pickH > screenH - 10 then pickY = screenH - pickH - 10 end
+            
+            love.graphics.setColor(0.1, 0.1, 0.2, 0.95)
+            love.graphics.rectangle("fill", pickX, pickY, pickW, pickH, 5, 5)
+            love.graphics.setColor(0.5, 0.6, 0.9, 1)
+            love.graphics.rectangle("line", pickX, pickY, pickW, pickH, 5, 5)
+            
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.print(pickerTitle, pickX + 5, pickY + 5)
+            
+            -- Scrollable list
+            local listY = pickY + 25
+            local visibleItems = math.floor((pickH - 30) / 16)
+            local scrollOffset = math.max(0, M.skillPickerCursor - visibleItems)
+            
+            for i = 1, math.min(visibleItems, #pickerItems) do
+                local idx = i + scrollOffset
+                if idx <= #pickerItems then
+                    local item = pickerItems[idx]
+                    local itemY = listY + (i - 1) * 16
+                    
+                    if idx == M.skillPickerCursor then
+                        love.graphics.setColor(0.3, 0.5, 0.8, 0.7)
+                        love.graphics.rectangle("fill", pickX + 2, itemY - 1, pickW - 4, 16, 2, 2)
+                        love.graphics.setColor(1, 1, 0.8, 1)
+                    elseif item.skillType == "passive" then
+                        love.graphics.setColor(1, 0.7, 0.4, 1)
+                    elseif M.skillPickerMode == "category" then
+                        love.graphics.setColor(0.6, 0.9, 0.6, 1)
+                    else
+                        love.graphics.setColor(0.8, 0.8, 0.9, 1)
                     end
+                    
+                    local displayName = item.name or item.id or "?"
+                    if #displayName > 22 then displayName = displayName:sub(1, 21) .. "." end
+                    love.graphics.print(displayName, pickX + 8, itemY)
                 end
-                -- Fallback to a minimal object with name
-                if not mvobj then mvobj = (type(sel) == "string") and { name = sel } or mvobj end
-
-                local function getfirst(o, ...)
-                    if not o then return nil end
-                    for ii = 1, select('#', ...) do
-                        local k = select(ii, ...)
-                        if o[k] ~= nil then return o[k] end
-                    end
-                    return nil
-                end
-
-                local mvname = getfirst(mvobj, 'name', 'Name') or "Unknown"
-                local mvtype = getfirst(mvobj, 'type', 't', 'moveType') or "-"
-                local ppcur = getfirst(mvobj, 'pp', 'current_pp', 'currentPP')
-                local pptot = getfirst(mvobj, 'total_pp', 'maxpp', 'pp_max', 'ppTotal', 'maxPP', 'max_pp')
-                -- If only one pp field present, show as / total if possible
-                if ppcur == nil and pptot ~= nil then ppcur = pptot end
-                if pptot == nil and ppcur ~= nil then pptot = ppcur end
-
-                local linesp = 22
-                love.graphics.setColor(unpack(UI.colors.textDark))
-                love.graphics.printf(tostring(mvname), infoX, infoY + 10, infoW, "center")
-                love.graphics.setColor(unpack(UI.colors.textGray))
-                love.graphics.printf("Type: " .. tostring(mvtype), infoX + 10, infoY + 10 + linesp, infoW - 20, "left")
-                local pptext = "PP: " .. (pptot and tostring(ppcur or "-") .. "/" .. tostring(pptot) or "-/-")
-                love.graphics.printf(pptext, infoX + 10, infoY + 10 + linesp * 2, infoW - 20, "left")
+            end
+            
+            -- Scroll indicators
+            if scrollOffset > 0 then
+                love.graphics.setColor(0.6, 0.6, 0.8, 1)
+                love.graphics.print("^", pickX + pickW - 15, pickY + 22)
+            end
+            if scrollOffset + visibleItems < #pickerItems then
+                love.graphics.setColor(0.6, 0.6, 0.8, 1)
+                love.graphics.print("v", pickX + pickW - 15, pickY + pickH - 15)
+            end
+            
+            -- Show back hint for condition picker
+            if M.skillPickerMode == "list" and (M.skillEditField == 2 or M.skillEditField == 3) then
+                love.graphics.setColor(0.5, 0.5, 0.7, 1)
+                love.graphics.print("[X] Back", pickX + 5, pickY + pickH - 15)
             end
         end
+    -- Draw selected Pokemon info in tactics mode (when not in skill edit)
+    elseif M.tacticsMode and M.battlePhase == "tactics" then
+        local hoveredPokemon = M.playerFormation[M.tacticsCursor]
+        if hoveredPokemon then
+            -- Draw info panel
+            local infoX = screenW / 2 - 60
+            local infoY = formationStartY + totalFormationHeight / 2 - 40
+            
+            love.graphics.setColor(0.1, 0.1, 0.2, 0.9)
+            love.graphics.rectangle("fill", infoX - 5, infoY - 5, 130, 90, 5, 5)
+            love.graphics.setColor(0.3, 0.5, 0.8, 1)
+            love.graphics.rectangle("line", infoX - 5, infoY - 5, 130, 90, 5, 5)
+            
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.print(hoveredPokemon.name, infoX, infoY)
+            
+            -- Count active/passive skills in loadout
+            local loadout = getOrCreateLoadout(hoveredPokemon)
+            local activeCount, passiveCount = 0, 0
+            for _, slot in ipairs(loadout) do
+                if slot.skill then
+                    if Skills[slot.skill] then activeCount = activeCount + 1
+                    elseif Passives[slot.skill] then passiveCount = passiveCount + 1
+                    end
+                end
+            end
+            
+            love.graphics.setColor(0.8, 0.8, 1, 1)
+            love.graphics.print("Active: " .. activeCount .. " skill(s)", infoX, infoY + 16)
+            love.graphics.setColor(1, 0.8, 0.5, 1)
+            love.graphics.print("Passive: " .. passiveCount .. " skill(s)", infoX, infoY + 32)
+            
+            -- Show row info
+            love.graphics.setColor(0.7, 0.7, 0.7, 1)
+            local rowText = M.tacticsCursor <= 3 and "Front Row" or "Back Row"
+            love.graphics.print(rowText, infoX, infoY + 48)
+            
+            love.graphics.setColor(0.5, 0.7, 1, 1)
+            love.graphics.print("[C] Edit Skills", infoX, infoY + 64)
+        end
     end
-    
-    -- Draw battle log overlay at bottom only when waiting for acknowledgement.
-    if M.waitingForZ and #M.battleLog > 0 then
-        UI.drawMessageBox(M.battleLog[#M.battleLog].text or tostring(M.battleLog[#M.battleLog] or ""), 0, hh * 0.75, ww, hh * 0.2)
-    end
-    
-    -- Prompt at the very bottom
-    love.graphics.setColor(unpack(UI.colors.textGray))
-    if M.waitingForZ then
-        love.graphics.printf("Press Z to continue", 0, hh * 0.96, ww, "center")
-    elseif M.awaitingClose and M.faintedName then
-        local msg = (M.faintedName or "Pokemon") .. " fainted. Press Z to exit"
-        love.graphics.printf(msg, 0, hh * 0.96, ww, "center")
-    else
-        love.graphics.printf("Press SPACE/B to exit", 0, hh * 0.96, ww, "center")
-    end
-    love.graphics.pop()
 end
 
 return M

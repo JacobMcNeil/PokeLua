@@ -241,4 +241,72 @@ function M.getMinEncounterLevel(routeId, terrainType)
     return minLevel ~= math.huge and minLevel or 1
 end
 
+-- Roll a wild party matching player party size and average level
+-- Returns array of {species, level} entries with varied Pokemon
+-- partySize: number of Pokemon to generate
+-- targetLevel: the level to use for all wild Pokemon
+function M.rollWildParty(routeId, terrainType, partySize, targetLevel)
+    local encounters = M.getEncounterTable(routeId, terrainType)
+    if not encounters or #encounters == 0 then return nil end
+    
+    partySize = partySize or 1
+    targetLevel = targetLevel or 5
+    
+    -- Build weighted pool
+    local totalWeight = 0
+    for _, enc in ipairs(encounters) do
+        totalWeight = totalWeight + (enc.weight or 1)
+    end
+    
+    if totalWeight <= 0 then return nil end
+    
+    -- Roll for party, trying to avoid duplicates when possible
+    local wildParty = {}
+    local usedSpecies = {}
+    local availableEncounters = #encounters
+    
+    for i = 1, partySize do
+        -- Build pool excluding recently used species (if we have enough variety)
+        local rollPool = {}
+        local poolWeight = 0
+        
+        for _, enc in ipairs(encounters) do
+            -- Allow duplicates only if we've used all available species
+            local canUse = not usedSpecies[enc.species] or #wildParty >= availableEncounters
+            if canUse then
+                table.insert(rollPool, enc)
+                poolWeight = poolWeight + (enc.weight or 1)
+            end
+        end
+        
+        -- If pool is empty (all species used), reset and allow any
+        if #rollPool == 0 then
+            rollPool = encounters
+            poolWeight = totalWeight
+        end
+        
+        -- Roll from pool
+        local roll = math.random(1, poolWeight)
+        local cumulative = 0
+        local selected = rollPool[1]
+        
+        for _, enc in ipairs(rollPool) do
+            cumulative = cumulative + (enc.weight or 1)
+            if roll <= cumulative then
+                selected = enc
+                break
+            end
+        end
+        
+        -- Add to party with target level
+        table.insert(wildParty, {
+            species = selected.species,
+            level = targetLevel
+        })
+        usedSpecies[selected.species] = true
+    end
+    
+    return wildParty
+end
+
 return M

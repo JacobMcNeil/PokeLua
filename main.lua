@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field, undefined-field, need-check-nil
 -- main.lua
 -- Main game loop - uses modular components for cleaner organization
 
@@ -184,16 +185,36 @@ local function checkEncounter()
     end
     
     -- Roll for the specific Pokemon encounter
-    local encounterData = encounters.rollEncounter(routeId, terrainType)
-    if not encounterData then return end
-    
-    -- Create the wild Pokemon
+    -- Generate wild party matching player party size and level
     local ok, pmod = pcall(require, "pokemon")
     if not ok or not pmod or not pmod.Pokemon then return end
     
-    local wildPokemon = pmod.Pokemon:new(encounterData.species, encounterData.level)
-    if wildPokemon then
-        battle.start({wildPokemon}, player)
+    -- Get player party size and average level
+    local playerPartySize = player.party and #player.party or 1
+    local avgLevel = 5
+    if player.party and #player.party > 0 then
+        local totalLevel = 0
+        for _, p in ipairs(player.party) do
+            totalLevel = totalLevel + (p.level or 5)
+        end
+        avgLevel = math.floor(totalLevel / #player.party)
+    end
+    
+    -- Roll a wild party with varied Pokemon at player's level
+    local wildPartyData = encounters.rollWildParty(routeId, terrainType, playerPartySize, avgLevel)
+    if not wildPartyData or #wildPartyData == 0 then return end
+    
+    -- Create the wild Pokemon from the rolled data
+    local wildParty = {}
+    for _, data in ipairs(wildPartyData) do
+        local wildPokemon = pmod.Pokemon:new(data.species, data.level)
+        if wildPokemon then
+            table.insert(wildParty, wildPokemon)
+        end
+    end
+    
+    if #wildParty > 0 then
+        battle.start(wildParty, player)
     end
 end
 
@@ -294,9 +315,9 @@ function love.load()
         end
         -- Initialize player's Pokemon party
         if pmod.Pokemon then
-            table.insert(player.party, pmod.Pokemon:new("grass_squirrel", 5))
-            table.insert(player.party, pmod.Pokemon:new("cardinel", 5))
-            table.insert(player.party, pmod.Pokemon:new("water_beaver", 5))
+            table.insert(player.party, pmod.Pokemon:new("bulbasaur", 10))
+            table.insert(player.party, pmod.Pokemon:new("squirtle", 10))
+            table.insert(player.party, pmod.Pokemon:new("charmander", 10))
         end
     end
     
